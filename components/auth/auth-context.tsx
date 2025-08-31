@@ -28,13 +28,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
-    const authStatus = localStorage.getItem("isAuthenticated")
-    const userData = localStorage.getItem("currentUser")
+    if (typeof window !== "undefined") {
+      const authStatus = localStorage.getItem("isAuthenticated")
+      const userData = localStorage.getItem("currentUser")
 
-    setIsAuthenticated(authStatus === "true")
-    if (userData) {
-      setUser(JSON.parse(userData))
+      setIsAuthenticated(authStatus === "true")
+      if (userData) {
+        setUser(JSON.parse(userData))
+      }
     }
   }, [])
 
@@ -49,15 +50,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setIsAuthenticated(true)
     setUser(userData)
-    localStorage.setItem("isAuthenticated", "true")
-    localStorage.setItem("currentUser", JSON.stringify(userData))
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("isAuthenticated", "true")
+      localStorage.setItem("currentUser", JSON.stringify(userData))
+    }
   }
 
   const logout = () => {
     setIsAuthenticated(false)
     setUser(null)
-    localStorage.removeItem("isAuthenticated")
-    localStorage.removeItem("currentUser")
+
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("isAuthenticated")
+      localStorage.removeItem("currentUser")
+    }
   }
 
   return <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>{children}</AuthContext.Provider>
