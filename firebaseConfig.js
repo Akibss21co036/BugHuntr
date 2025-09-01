@@ -11,7 +11,11 @@ const firebaseConfig = {
   storageBucket: "bughuntr-3f895.appspot.com",
   messagingSenderId: "880398940533",
   appId: "1:880398940533:web:835cd3f7c8e4083d8d3b3c",
+<<<<<<< HEAD
   measurementId: "G-G9K6NC2J3K"
+=======
+  measurementId: "G-G9K6NC2J3K",
+>>>>>>> e43e63133f4241c27aa6a4baff57a456e061bff2
 };
 
 // Initialize Firebase

@@ -22,10 +22,17 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const { isAuthenticated, logout } = useAuth()
 
   const handleLogout = () => {
+<<<<<<< HEAD
     logout()
     // Redirect to home page
     if (typeof window !== "undefined") {
       window.location.href = "/"
+=======
+    logout();
+    // Redirect to home page
+    if (typeof window !== "undefined") {
+      window.location.href = "/";
+>>>>>>> e43e63133f4241c27aa6a4baff57a456e061bff2
     }
   }
 

@@ -1,6 +1,5 @@
 "use client"
 
-<<<<<<< HEAD
 import { useState, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -443,14 +442,4 @@ export default function AdminSubmissionsPage() {
       </Dialog>
     </div>
   )
-=======
-import dynamic from "next/dynamic";
-
-const AdminSubmissionsPage = dynamic(() => import("./AdminSubmissionsPage"), {
-  ssr: false,
-});
-
-export default function Page() {
-  return <AdminSubmissionsPage />;
->>>>>>> e43e63133f4241c27aa6a4baff57a456e061bff2
 }

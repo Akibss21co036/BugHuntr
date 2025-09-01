@@ -17,6 +17,7 @@ export function useUserHunts() {
       setJoinedHunts((prev) => prev.filter((h) => h.huntId !== huntId))
     }
 
+<<<<<<< HEAD
     if (typeof window !== "undefined") {
       window.addEventListener("huntRemoved", handleHuntRemoved as EventListener)
     }
@@ -24,6 +25,11 @@ export function useUserHunts() {
       if (typeof window !== "undefined") {
         window.removeEventListener("huntRemoved", handleHuntRemoved as EventListener)
       }
+=======
+    window.addEventListener("huntRemoved", handleHuntRemoved as EventListener)
+    return () => {
+      window.removeEventListener("huntRemoved", handleHuntRemoved as EventListener)
+>>>>>>> e43e63133f4241c27aa6a4baff57a456e061bff2
     }
   }, [])
 
