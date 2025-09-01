@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import React, { useState, useCallback } from "react"
 import type { BugSubmission } from "@/types/bug-submission"
 
 // Mock data for submissions (in a real app, this would come from an API)
@@ -62,7 +62,30 @@ const mockSubmissions: BugSubmission[] = [
 ]
 
 export function useBugSubmission() {
-  const [submissions, setSubmissions] = useState<BugSubmission[]>(mockSubmissions)
+  // Load submissions from localStorage, always merge with mockSubmissions
+  const [submissions, setSubmissions] = useState<BugSubmission[]>(mockSubmissions);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("bugSubmissions");
+      if (stored) {
+        try {
+          const userSubs = JSON.parse(stored);
+          // Merge user submissions and mock submissions, user first
+          setSubmissions([
+            ...userSubs,
+            ...mockSubmissions.filter(
+              (m) => !(userSubs as Array<{ id: string }>).some((u: { id: string }) => u.id === m.id)
+            ),
+          ]);
+        } catch {
+          setSubmissions(mockSubmissions);
+        }
+      } else {
+        setSubmissions(mockSubmissions);
+      }
+    }
+  }, []);
 
   const submitBugReport = useCallback((huntId: string, submissionData: Partial<BugSubmission>) => {
     const newSubmission: BugSubmission = {
@@ -79,11 +102,16 @@ export function useBugSubmission() {
       submittedBy: submissionData.submittedBy || "anonymous",
       submittedAt: new Date().toISOString(),
       status: "pending",
-    }
-
-    setSubmissions((prev) => [newSubmission, ...prev])
-    return newSubmission
-  }, [])
+    };
+    setSubmissions((prev) => {
+      const updated = [newSubmission, ...prev];
+      if (typeof window !== "undefined") {
+        localStorage.setItem("bugSubmissions", JSON.stringify(updated));
+      }
+      return updated;
+    });
+    return newSubmission;
+  }, []);
 
   const updateSubmissionStatus = useCallback(
     (
@@ -93,8 +121,8 @@ export function useBugSubmission() {
       pointsAwarded?: number,
       reviewedBy?: string,
     ) => {
-      setSubmissions((prev) =>
-        prev.map((submission) => {
+      setSubmissions((prev) => {
+        const updated = prev.map((submission) => {
           if (submission.id === submissionId) {
             return {
               ...submission,
@@ -103,14 +131,18 @@ export function useBugSubmission() {
               pointsAwarded,
               reviewedBy,
               reviewedAt: new Date().toISOString(),
-            }
+            };
           }
-          return submission
-        }),
-      )
+          return submission;
+        });
+        if (typeof window !== "undefined") {
+          localStorage.setItem("bugSubmissions", JSON.stringify(updated));
+        }
+        return updated;
+      });
     },
     [],
-  )
+  );
 
   const getSubmissionsByUser = useCallback(
     (userId: string) => {

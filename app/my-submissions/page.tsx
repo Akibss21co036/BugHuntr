@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import React, { useState, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -28,17 +28,27 @@ import { useAuth } from "@/components/auth/auth-context"
 import type { BugSubmission } from "@/types/bug-submission"
 
 export default function MySubmissionsPage() {
-  const { user } = useAuth()
-  const { submissions, getSubmissionsByUser } = useBugSubmission()
-  const [selectedSubmission, setSelectedSubmission] = useState<BugSubmission | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [severityFilter, setSeverityFilter] = useState("all")
+  const { user } = useAuth();
+  const { getSubmissionsByUser } = useBugSubmission();
+  const [selectedSubmission, setSelectedSubmission] = useState<BugSubmission | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [severityFilter, setSeverityFilter] = useState("all");
+  const [userSubmissions, setUserSubmissions] = useState<BugSubmission[]>([]);
 
-  const userSubmissions = useMemo(() => {
-    if (!user) return []
-    return getSubmissionsByUser(user.username || user.id)
-  }, [user, getSubmissionsByUser])
+  // Reload submissions from localStorage on mount and when localStorage changes
+  React.useEffect(() => {
+    function updateSubmissions() {
+      if (user) {
+        setUserSubmissions(getSubmissionsByUser(user.username || user.id));
+      }
+    }
+    updateSubmissions();
+    window.addEventListener("storage", updateSubmissions);
+    return () => {
+      window.removeEventListener("storage", updateSubmissions);
+    };
+  }, [user, getSubmissionsByUser]);
 
   const filteredSubmissions = useMemo(() => {
     return userSubmissions.filter((submission) => {

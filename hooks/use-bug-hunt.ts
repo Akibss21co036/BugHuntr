@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -5,9 +6,36 @@ import { type BugHunt, type BugHuntSubmission, BUG_HUNT_TEMPLATES } from "@/type
 import { db } from "@/firebaseConfig"
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from "firebase/firestore"
 
+
+
 export function useBugHunt() {
   const [bugHunts, setBugHunts] = useState<BugHunt[]>([])
   const [submissions, setSubmissions] = useState<BugHuntSubmission[]>([])
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const handler = async (event: Event) => {
+        const customEvent = event as CustomEvent;
+        const { huntId } = customEvent.detail;
+        setBugHunts(prev => prev.map(hunt =>
+          hunt.id === huntId
+            ? { ...hunt, currentParticipants: (hunt.currentParticipants || 0) + 1 }
+            : hunt
+        ));
+        try {
+          const current = bugHunts.find(h => h.id === huntId)?.currentParticipants || 0;
+          await updateDoc(doc(db, "bugHunts", huntId), {
+            currentParticipants: current + 1,
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.error("Failed to increment participants:", e);
+        }
+      };
+      window.addEventListener("incrementParticipants", handler);
+      return () => window.removeEventListener("incrementParticipants", handler);
+    }
+  }, [bugHunts]);
 
   useEffect(() => {
     // Fetch bug hunts from Firestore

@@ -1,13 +1,16 @@
+
 "use client"
 
-import { useState, useMemo } from "react"
+// ...existing code...
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { BugCard } from "@/components/bug-feed/bug-card"
 import { FilterControls } from "@/components/bug-feed/filter-controls"
 import { BugCardSkeleton } from "@/components/loading/bug-card-skeleton"
 import { FadeIn } from "@/components/animations/fade-in"
-import { mockBugs } from "@/data/mock-bugs"
+import React, { useState, useMemo, useEffect } from "react"
+import { collection, getDocs } from "firebase/firestore"
+import { db } from "@/firebaseConfig"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, Shield, Users, Award } from "lucide-react"
@@ -15,48 +18,124 @@ import { BugHuntCard } from "@/components/bug-hunt/bug-hunt-card"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
 
 export default function BugFeedPage() {
-  const [selectedSeverity, setSelectedSeverity] = useState("all")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [sortBy, setSortBy] = useState("newest")
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  // Hardcoded bug cards to restore
+  const hardcodedBugs = [
+    {
+      id: "hardcoded-1",
+      title: "SQL Injection in Login Form",
+      severity: "critical",
+      category: "Web Application",
+      company: "TechCorp",
+      summary: "SQL injection vulnerability allows attackers to bypass authentication.",
+      postedTime: "2 hours ago",
+      date: new Date().toISOString(),
+      isLocked: false,
+      author: "admin",
+      bounty: 1000,
+      views: 120,
+      status: "pending",
+    },
+    {
+      id: "hardcoded-2",
+      title: "Broken Access Control",
+      severity: "high",
+      category: "API Security",
+      company: "FinBank",
+      summary: "Sensitive endpoints accessible without proper authorization.",
+      postedTime: "1 day ago",
+      date: new Date().toISOString(),
+      isLocked: false,
+      author: "security_team",
+      bounty: 500,
+      views: 80,
+      status: "approved",
+    },
+    {
+      id: "hardcoded-3",
+      title: "XSS in Feedback Widget",
+      severity: "medium",
+      category: "Web Application",
+      company: "EduLearn",
+      summary: "Reflected XSS in feedback widget allows script injection.",
+      postedTime: "3 days ago",
+      date: new Date().toISOString(),
+      isLocked: false,
+      author: "researcher1",
+      bounty: 200,
+      views: 45,
+      status: "resolved",
+    },
+  ];
+  const [selectedSeverity, setSelectedSeverity] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [isLoading, setIsLoading] = useState(false);
+  const [allBugs, setAllBugs] = useState<any[]>([]);
+  const router = useRouter();
 
-  const { getActiveBugHunts } = useBugHunt()
-  const activeBugHunts = getActiveBugHunts() || []
+  const { getActiveBugHunts } = useBugHunt();
+  const activeBugHunts = getActiveBugHunts() || [];
+
+  // Fetch all bugs from Firestore on mount
+  useEffect(() => {
+    async function fetchBugs() {
+      const querySnapshot = await getDocs(collection(db, "bugs"));
+      const bugs = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          title: data.title,
+          severity: data.severity,
+          category: data.category || "Web Application",
+          company: data.huntTitle || "Unknown",
+          summary: data.description || data.impact || "No summary provided.",
+          postedTime: "Just now",
+          date: data.submittedAt,
+          isLocked: false,
+          author: data.submittedBy,
+          bounty: 0,
+          views: 0,
+          status: data.status || "pending",
+        };
+      });
+      setAllBugs(bugs);
+    }
+    fetchBugs();
+  }, []);
 
   const filteredAndSortedBugs = useMemo(() => {
-    let filteredBugs = mockBugs
+  let filteredBugs = [...hardcodedBugs, ...allBugs];
 
     if (selectedSeverity !== "all") {
-      filteredBugs = filteredBugs.filter((bug) => bug.severity === selectedSeverity)
+      filteredBugs = filteredBugs.filter((bug) => bug.severity === selectedSeverity);
     }
 
     if (selectedCategory !== "all") {
-      filteredBugs = filteredBugs.filter((bug) => bug.category === selectedCategory)
+      filteredBugs = filteredBugs.filter((bug) => bug.category === selectedCategory);
     }
 
     if (sortBy === "oldest") {
-      filteredBugs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      filteredBugs = [...filteredBugs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     } else {
-      filteredBugs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      filteredBugs = [...filteredBugs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
 
-    return filteredBugs
-  }, [selectedSeverity, selectedCategory, sortBy])
+    return filteredBugs;
+  }, [allBugs, selectedSeverity, selectedCategory, sortBy]);
 
   const stats = useMemo(() => {
-    const totalBugs = mockBugs.length
-    const criticalCount = mockBugs.filter((bug) => bug.severity === "critical").length
-    const resolvedCount = mockBugs.filter((bug) => bug.status === "resolved").length
-    const activeHunters = new Set(mockBugs.map((bug) => bug.author)).size
+    const totalBugs = allBugs.length;
+    const criticalCount = allBugs.filter((bug) => bug.severity === "critical").length;
+    const resolvedCount = allBugs.filter((bug) => bug.status === "resolved").length;
+    const activeHunters = new Set(allBugs.map((bug) => bug.author)).size;
 
     return {
       total: totalBugs,
       critical: criticalCount,
       resolved: resolvedCount,
       hunters: activeHunters,
-    }
-  }, [])
+    };
+  }, [allBugs]);
 
   const handleClearFilters = () => {
     setSelectedSeverity("all")
@@ -138,7 +217,7 @@ export default function BugFeedPage() {
               onCategoryChange={(value) => handleFilterChange("category", value)}
               onSortChange={(value) => handleFilterChange("sort", value)}
               onClearFilters={handleClearFilters}
-              totalCount={mockBugs.length}
+              totalCount={allBugs.length}
               filteredCount={filteredAndSortedBugs.length}
             />
           </div>

@@ -9,7 +9,20 @@ interface UserHuntParticipation {
 }
 
 export function useUserHunts() {
-  const [joinedHunts, setJoinedHunts] = useState<UserHuntParticipation[]>([])
+  const [joinedHunts, setJoinedHunts] = useState<UserHuntParticipation[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = window.localStorage.getItem("joinedHunts");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          return parsed.map((h: any) => ({ ...h, joinedAt: new Date(h.joinedAt) }));
+        } catch {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
 
   useEffect(() => {
     const handleHuntRemoved = (event: CustomEvent) => {
@@ -24,18 +37,31 @@ export function useUserHunts() {
   }, []);
 
   const joinHunt = useCallback((huntId: string) => {
-    setJoinedHunts((prev: UserHuntParticipation[]) => [
-      ...prev.filter((h: UserHuntParticipation) => h.huntId !== huntId),
-      {
-        huntId,
-        joinedAt: new Date(),
-        status: "active",
-      },
-    ]);
+    setJoinedHunts((prev: UserHuntParticipation[]) => {
+      const updated: UserHuntParticipation[] = [
+        ...prev.filter((h: UserHuntParticipation) => h.huntId !== huntId),
+        {
+          huntId,
+          joinedAt: new Date(),
+          status: "active" as "active",
+        },
+      ];
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("joinedHunts", JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent("incrementParticipants", { detail: { huntId } }));
+      }
+      return updated;
+    });
   }, []);
 
   const leaveHunt = useCallback((huntId: string) => {
-    setJoinedHunts((prev: UserHuntParticipation[]) => prev.filter((h: UserHuntParticipation) => h.huntId !== huntId));
+    setJoinedHunts((prev: UserHuntParticipation[]) => {
+      const updated = prev.filter((h: UserHuntParticipation) => h.huntId !== huntId);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("joinedHunts", JSON.stringify(updated));
+      }
+      return updated;
+    });
   }, []);
 
   const isJoinedToHunt = useCallback(
@@ -50,7 +76,13 @@ export function useUserHunts() {
   }, [joinedHunts]);
 
   const removeUserFromHunt = useCallback((huntId: string) => {
-    setJoinedHunts((prev: UserHuntParticipation[]) => prev.map((h: UserHuntParticipation) => (h.huntId === huntId ? { ...h, status: "removed" as const } : h)));
+    setJoinedHunts((prev: UserHuntParticipation[]) => {
+      const updated = prev.map((h: UserHuntParticipation) => (h.huntId === huntId ? { ...h, status: "removed" as const } : h));
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("joinedHunts", JSON.stringify(updated));
+      }
+      return updated;
+    });
   }, []);
 
   return {

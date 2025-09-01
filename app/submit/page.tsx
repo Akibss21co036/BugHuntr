@@ -19,6 +19,8 @@ import { useRouter } from "next/navigation"
 import { Bug, Trophy, AlertTriangle, Star, Target, Calendar, Users, Award } from "lucide-react"
 import { FadeIn } from "@/components/animations/fade-in"
 import { BugHuntCreationForm } from "@/components/bug-hunt/bug-hunt-creation-form"
+import { db } from "@/firebaseConfig"
+import { collection, addDoc, Timestamp } from "firebase/firestore"
 
 interface BugSubmission {
   title: string
@@ -33,8 +35,6 @@ interface BugSubmission {
 export default function SubmitBugPage() {
   const { user } = useAuth()
   const { addPoints } = useRanking()
-  const { getActiveBugHunts } = useBugHunt()
-  const { joinHunt, isJoinedToHunt, getJoinedHunts } = useUserHunts()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedHunt, setSelectedHunt] = useState<string>("")
@@ -47,52 +47,40 @@ export default function SubmitBugPage() {
     description: "",
     poc: "",
   })
-
+  const { getActiveBugHunts } = useBugHunt()
   const activeBugHunts = getActiveBugHunts()
-  const userJoinedHunts = getJoinedHunts()
-  const availableHuntsForSubmission = activeBugHunts.filter((hunt) =>
-    userJoinedHunts.some((joined) => joined.huntId === hunt.id),
-  )
-
-  if (user?.role === "admin") {
-    return <BugHuntCreationForm />
-  }
-
-  const handleJoinHunt = (huntId: string) => {
-    joinHunt(huntId)
-    alert("Successfully joined the bug hunt! You can now submit vulnerabilities for this hunt.")
-  }
+  const availableHuntsForSubmission = activeBugHunts
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
-
+    e.preventDefault();
+    if (!user) return;
     if (!selectedHunt) {
-      alert("Please select a bug hunt to submit your vulnerability report to.")
-      return
+      alert("Please select a bug hunt to submit your vulnerability report to.");
+      return;
     }
-
-    setIsSubmitting(true)
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      const bugId = Date.now()
-
-      addPoints(user.id, bugId, formData.severity, `Bug report: ${formData.title} (${formData.severity} severity)`)
-
-      alert(
-        `Bug submitted successfully! You earned ${SEVERITY_POINTS[formData.severity]} points. Your submission is now under review.`,
-      )
-
-      router.push("/my-submissions")
+      // Save submission to Firestore
+      const bugData = {
+        huntId: selectedHunt,
+        huntTitle: availableHuntsForSubmission.find(h => h.id === selectedHunt)?.title || "Unknown Hunt",
+        stepsToReproduce: formData.poc,
+        impact: formData.summary,
+        attachments: [],
+        submittedBy: user.id,
+        submittedAt: Timestamp.now().toDate().toISOString(),
+        status: "pending",
+      };
+      await addDoc(collection(db, "bugs"), bugData);
+      addPoints(user.id, Date.now(), formData.severity, `Bug report: ${formData.title} (${formData.severity} severity)`);
+      alert(`Bug submitted successfully! You earned ${SEVERITY_POINTS[formData.severity]} points. Your submission is now under review.`);
+      router.push("/feed");
     } catch (error) {
-      console.error("Error submitting bug:", error)
-      alert("Error submitting bug report. Please try again.")
+      console.error("Error submitting bug:", error);
+      alert("Error submitting bug report. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleInputChange = (field: keyof BugSubmission, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -131,80 +119,7 @@ export default function SubmitBugPage() {
           </div>
         </FadeIn>
 
-        {activeBugHunts.length > 0 && (
-          <FadeIn delay={0.1}>
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Target className="h-5 w-5 text-cyber-blue" />
-                Active Bug Hunts
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {activeBugHunts.slice(0, 6).map((hunt) => (
-                  <Card key={hunt.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-base">{hunt.title}</CardTitle>
-                          <p className="text-sm text-muted-foreground mt-1">{hunt.company}</p>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <Badge variant="outline" className="bg-neon-green/10 text-neon-green border-neon-green/20">
-                            Active
-                          </Badge>
-                          {isJoinedToHunt(hunt.id) && (
-                            <Badge
-                              variant="outline"
-                              className="bg-cyber-blue/10 text-cyber-blue border-cyber-blue/20 text-xs"
-                            >
-                              Joined
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <p className="text-sm text-muted-foreground line-clamp-2">{hunt.description}</p>
-
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {hunt.currentParticipants}/{hunt.maxParticipants || "∞"}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(hunt.endDate).toLocaleDateString()}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Award className="h-3 w-3" />
-                          Up to {hunt.rewards.critical} pts
-                        </div>
-                        {isJoinedToHunt(hunt.id) ? (
-                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                            Joined
-                          </Badge>
-                        ) : (
-                          <Button size="sm" variant="outline" onClick={() => handleJoinHunt(hunt.id)}>
-                            Join Hunt
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              {activeBugHunts.length > 6 && (
-                <div className="text-center mt-4">
-                  <Button variant="outline" onClick={() => router.push("/bug-hunts")}>
-                    View All Bug Hunts ({activeBugHunts.length})
-                  </Button>
-                </div>
-              )}
-            </div>
-          </FadeIn>
-        )}
+  {/* Removed Active Bug Hunts section and join logic */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
@@ -218,37 +133,17 @@ export default function SubmitBugPage() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    {availableHuntsForSubmission.length > 0 && (
-                      <div className="space-y-2">
-                        <Label htmlFor="hunt">Select Bug Hunt *</Label>
-                        <Select value={selectedHunt} onValueChange={setSelectedHunt}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choose a bug hunt to submit to" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {availableHuntsForSubmission.map((hunt) => (
-                              <SelectItem key={hunt.id} value={hunt.id}>
-                                {hunt.title} - {hunt.company}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">
-                          You can only submit to bug hunts you've joined. Join a hunt above to submit vulnerabilities.
-                        </p>
-                      </div>
-                    )}
-
-                    {availableHuntsForSubmission.length === 0 && (
-                      <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                        <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                          <AlertTriangle className="h-4 w-4 inline mr-2" />
-                          You haven't joined any bug hunts yet. Join a hunt above to start submitting vulnerability
-                          reports.
-                        </p>
-                      </div>
-                    )}
-
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Title *</Label>
+                      <Input
+                        id="title"
+                        placeholder="Enter vulnerability title"
+                        value={formData.title}
+                        onChange={(e) => handleInputChange("title", e.target.value)}
+                        required
+                      />
+                    </div>
+                    {/* Always show bug hunt selection, no join required */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="title">Vulnerability Title *</Label>

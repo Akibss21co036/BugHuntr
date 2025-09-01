@@ -22,12 +22,14 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
   const [isRemoving, setIsRemoving] = useState(false)
   const { removeBugHunt } = useBugHunt()
   const { user } = useAuth()
+  const { joinHunt, isJoinedToHunt } = require("@/hooks/use-user-hunts").useUserHunts ? require("@/hooks/use-user-hunts").useUserHunts() : {};
 
   const isAdmin = user?.role === "admin"
 
   const daysRemaining = Math.ceil((new Date(hunt.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
 
-  const progressPercentage = hunt.maxSubmissions ? (hunt.currentSubmissions / hunt.maxSubmissions) * 100 : 0
+  // Show progress based on participants if needed
+  const progressPercentage = hunt.maxParticipants ? (hunt.currentParticipants / hunt.maxParticipants) * 100 : 0
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -81,7 +83,7 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
               <div className="text-right">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <DollarSign className="h-3 w-3" />
-                  <span>{hunt.totalRewardPoints?.toLocaleString() || "0"} pts</span>
+                  <span>{hunt.rewards?.critical ? hunt.rewards.critical : 0} pts</span>
                 </div>
                 {isAdmin && (
                   <Button
@@ -125,16 +127,16 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
                 <span className="text-muted-foreground">Participants</span>
               </div>
               <div className="text-right">
-                <span className="font-medium">{hunt.currentSubmissions || 0}</span>
+                <span className="font-medium">{hunt.currentParticipants || 0}</span>
               </div>
             </div>
 
-            {hunt.maxSubmissions && (
+            {hunt.maxParticipants && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Submissions</span>
+                  <span className="text-muted-foreground">Participants</span>
                   <span className="font-medium">
-                    {hunt.currentSubmissions || 0}/{hunt.maxSubmissions || 0}
+                    {hunt.currentParticipants || 0}/{hunt.maxParticipants || 0}
                   </span>
                 </div>
                 <Progress value={progressPercentage} className="h-2" />
@@ -142,15 +144,26 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
             )}
 
             <div className="flex gap-2 pt-2">
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={() => setShowSubmissionModal(true)}
-                disabled={hunt.status !== "active"}
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Submit Report
-              </Button>
+              {!isJoinedToHunt(hunt.id) ? (
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => joinHunt(hunt.id)}
+                  disabled={hunt.status !== "active"}
+                >
+                  Join Bug Hunt
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setShowSubmissionModal(true)}
+                  disabled={hunt.status !== "active"}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Submit Report
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>

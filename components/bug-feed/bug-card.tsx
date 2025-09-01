@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 interface BugCardProps {
   bug: {
-    id: number
+    id: string | number
     title: string
     severity: "critical" | "high" | "medium" | "low"
     category: string
@@ -20,6 +20,7 @@ interface BugCardProps {
     author: string
     bounty?: number
     views?: number
+    status?: string
   }
   className?: string
   index?: number
@@ -88,21 +89,23 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.1 + 0.2 }}
               >
-                <Badge className={cn(getSeverityColor(bug.severity), "font-semibold text-xs shrink-0")}>
-                  {bug.severity.toUpperCase()}
+                <Badge className={cn(getSeverityColor(bug.severity), "font-semibold text-xs shrink-0")}> 
+                  {bug.severity ? bug.severity.toUpperCase() : <span className="bg-cyber-blue text-white px-2 py-0.5 rounded">UNKNOWN</span>}
                 </Badge>
                 <Badge variant="outline" className="border-cyber-blue/30 text-xs shrink-0 truncate max-w-24">
-                  {bug.category}
+                  {bug.category || "Web Application"}
                 </Badge>
-                <Badge
-                  variant="secondary"
-                  className="bg-cyber-blue/10 text-cyber-blue text-xs shrink-0 truncate max-w-32"
-                >
-                  {bug.company}
-                </Badge>
+                {bug.company && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-cyber-blue/10 text-cyber-blue text-xs shrink-0 truncate max-w-32"
+                  >
+                    {bug.company}
+                  </Badge>
+                )}
               </motion.div>
               <CardTitle className="text-base sm:text-lg leading-tight group-hover:text-cyber-blue transition-colors duration-200 line-clamp-2">
-                {bug.title}
+                {bug.title || <span className="text-muted-foreground">No title provided</span>}
               </CardTitle>
             </div>
             {bug.isLocked && (
@@ -119,20 +122,22 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <CardDescription className="text-sm leading-relaxed line-clamp-3 break-words">{bug.summary}</CardDescription>
+          <CardDescription className="text-sm leading-relaxed line-clamp-3 break-words">
+            {bug.summary && bug.summary !== "No summary provided." ? bug.summary : <span className="text-muted-foreground">No summary provided</span>}
+          </CardDescription>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-border/50">
             <div className="flex items-center gap-2 min-w-0">
               <Avatar className="h-6 w-6 shrink-0">
                 <AvatarImage src={`/placeholder.svg?height=24&width=24&query=${bug.author}`} />
                 <AvatarFallback className="text-xs bg-cyber-blue/20 text-cyber-blue">
-                  {bug.author.slice(0, 2).toUpperCase()}
+                  {bug.author ? bug.author.slice(0, 2).toUpperCase() : "??"}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium text-muted-foreground truncate">@{bug.author}</span>
+              <span className="text-sm font-medium text-muted-foreground truncate">@{bug.author || "unknown"}</span>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground flex-wrap">
-              {bug.bounty && (
+              {bug.bounty ? (
                 <motion.div
                   className="flex items-center gap-1 text-neon-green shrink-0"
                   whileHover={{ scale: 1.1 }}
@@ -141,16 +146,20 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                   <DollarSign className="h-3 w-3" />
                   <span className="font-semibold">{bug.bounty.toLocaleString()}</span>
                 </motion.div>
+              ) : (
+                <span className="font-semibold text-muted-foreground">00</span>
               )}
-              {bug.views && (
+              {bug.views ? (
                 <div className="flex items-center gap-1 shrink-0">
                   <Eye className="h-3 w-3" />
                   <span>{bug.views}</span>
                 </div>
+              ) : (
+                <span className="text-muted-foreground">00</span>
               )}
               <div className="flex items-center gap-1 shrink-0">
                 <Clock className="h-3 w-3" />
-                <span className="truncate">{bug.postedTime}</span>
+                <span className="truncate">{bug.postedTime || "Just now"}</span>
               </div>
             </div>
           </div>
