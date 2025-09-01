@@ -27,13 +27,9 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
 
   const handleVerify = () => {
     if (typeof window !== "undefined") {
-<<<<<<< HEAD
-      window.open(certificate.verificationUrl, "_blank")
-=======
       window.open(certificate.verificationUrl, "_blank");
->>>>>>> e43e63133f4241c27aa6a4baff57a456e061bff2
     }
-  }
+  };
 
   return (
     <Card className="h-fit">

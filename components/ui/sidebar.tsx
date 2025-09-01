@@ -106,21 +106,11 @@ function SidebarProvider({
     }
 
     if (typeof window !== "undefined") {
-<<<<<<< HEAD
-      window.addEventListener("keydown", handleKeyDown)
-    }
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("keydown", handleKeyDown)
-      }
-    }
-=======
       window.addEventListener("keydown", handleKeyDown);
       return () => window.removeEventListener("keydown", handleKeyDown);
     }
     return undefined;
->>>>>>> e43e63133f4241c27aa6a4baff57a456e061bff2
-  }, [toggleSidebar])
+  }, [toggleSidebar]);
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.
