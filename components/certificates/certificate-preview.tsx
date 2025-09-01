@@ -26,7 +26,9 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
   }
 
   const handleVerify = () => {
-    window.open(certificate.verificationUrl, "_blank")
+    if (typeof window !== "undefined") {
+      window.open(certificate.verificationUrl, "_blank")
+    }
   }
 
   return (

@@ -24,7 +24,9 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const handleLogout = () => {
     logout()
     // Redirect to home page
-    window.location.href = "/"
+    if (typeof window !== "undefined") {
+      window.location.href = "/"
+    }
   }
 
   return (
