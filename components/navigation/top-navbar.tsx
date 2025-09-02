@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/components/auth/auth-context"
+import { useState, useEffect } from "react"
+import { useSearch } from "@/components/search/search-context"
 
 interface TopNavbarProps {
   onMenuClick: () => void
@@ -28,6 +30,10 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
       window.location.href = "/";
     }
   };
+
+
+  // Add search state and handler
+  const { searchTerm, setSearchTerm } = useSearch();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -51,6 +57,8 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               type="text"
               placeholder="Search vulnerabilities..."
               className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
         </div>

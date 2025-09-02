@@ -1,7 +1,5 @@
-
 "use client"
 
-// ...existing code...
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import { BugCard } from "@/components/bug-feed/bug-card"
@@ -16,8 +14,10 @@ import { Button } from "@/components/ui/button"
 import { TrendingUp, Shield, Users, Award } from "lucide-react"
 import { BugHuntCard } from "@/components/bug-hunt/bug-hunt-card"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
+import { useSearch } from "@/components/search/search-context"
 
 export default function BugFeedPage() {
+  const { searchTerm } = useSearch();
   // Hardcoded bug cards to restore
   const hardcodedBugs = [
     {
@@ -33,7 +33,7 @@ export default function BugFeedPage() {
       author: "admin",
       bounty: 1000,
       views: 120,
-      status: "pending",
+      status: "pending"
     },
     {
       id: "hardcoded-2",
@@ -48,7 +48,7 @@ export default function BugFeedPage() {
       author: "security_team",
       bounty: 500,
       views: 80,
-      status: "approved",
+      status: "approved"
     },
     {
       id: "hardcoded-3",
@@ -63,8 +63,8 @@ export default function BugFeedPage() {
       author: "researcher1",
       bounty: 200,
       views: 45,
-      status: "resolved",
-    },
+      status: "resolved"
+    }
   ];
   const [selectedSeverity, setSelectedSeverity] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -105,7 +105,18 @@ export default function BugFeedPage() {
   }, []);
 
   const filteredAndSortedBugs = useMemo(() => {
-  let filteredBugs = [...hardcodedBugs, ...allBugs];
+    let filteredBugs = [...hardcodedBugs, ...allBugs];
+
+    if (searchTerm && searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      filteredBugs = filteredBugs.filter(
+        bug =>
+          bug.title?.toLowerCase().includes(term) ||
+          bug.summary?.toLowerCase().includes(term) ||
+          bug.company?.toLowerCase().includes(term) ||
+          bug.category?.toLowerCase().includes(term)
+      );
+    }
 
     if (selectedSeverity !== "all") {
       filteredBugs = filteredBugs.filter((bug) => bug.severity === selectedSeverity);
@@ -122,7 +133,7 @@ export default function BugFeedPage() {
     }
 
     return filteredBugs;
-  }, [allBugs, selectedSeverity, selectedCategory, sortBy]);
+  }, [allBugs, selectedSeverity, selectedCategory, sortBy, searchTerm]);
 
   const stats = useMemo(() => {
     const totalBugs = allBugs.length;

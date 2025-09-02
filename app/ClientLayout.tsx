@@ -38,6 +38,7 @@ export default function ClientLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const { SearchProvider } = require("@/components/search/search-context");
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -53,7 +54,9 @@ html {
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <CommunityProvider>
-              <InnerLayout>{children}</InnerLayout>
+              <SearchProvider>
+                <InnerLayout>{children}</InnerLayout>
+              </SearchProvider>
             </CommunityProvider>
           </AuthProvider>
         </ThemeProvider>

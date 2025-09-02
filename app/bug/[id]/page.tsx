@@ -104,7 +104,7 @@ export default function BugDetailsPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Bug Not Found</h1>
           <p className="text-muted-foreground mb-4">The requested vulnerability report could not be found.</p>
-          <button onClick={() => router.push("/")} className="text-cyber-blue hover:underline">
+          <button onClick={() => router.push("/feed")} className="text-cyber-blue hover:underline">
             Return to Bug Feed
           </button>
         </div>
