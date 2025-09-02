@@ -1,6 +1,11 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuth } from "@/components/auth/auth-context"
+import { db } from "@/firebaseConfig"
+import { doc, deleteDoc } from "firebase/firestore"
+import { useEffect, useState } from "react"
+import { formatDistanceToNow } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Shield, Eye, Clock, DollarSign } from "lucide-react"
@@ -18,6 +23,7 @@ interface BugCardProps {
     postedTime: string
     isLocked: boolean
     author: string
+    email?: string
     bounty?: number
     views?: number
     status?: string
@@ -57,6 +63,40 @@ const getSeverityGlow = (severity: string) => {
 }
 
 export function BugCard({ bug, className, index = 0 }: BugCardProps) {
+  const { user } = useAuth();
+  const isOwner = user?.email && bug.email && user.email === bug.email;
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!bug.id) return;
+    if (!window.confirm("Are you sure you want to delete this bug report? This action cannot be undone.")) return;
+    try {
+      await deleteDoc(doc(db, "bugs", bug.id.toString()));
+      window.location.reload();
+    } catch (err) {
+      alert("Failed to delete bug. Try again.");
+    }
+  };
+  // Real-time 'time ago' logic
+  const [timeAgo, setTimeAgo] = useState("");
+  useEffect(() => {
+    function updateTimeAgo() {
+      if (bug.postedTime) {
+        const date = new Date(bug.postedTime);
+        if (!isNaN(date.getTime())) {
+          setTimeAgo(formatDistanceToNow(date, { addSuffix: true }));
+        } else {
+          setTimeAgo("Just now");
+        }
+      } else {
+        setTimeAgo("Just now");
+      }
+    }
+    updateTimeAgo();
+    const interval = setInterval(updateTimeAgo, 60000); // update every minute
+    return () => clearInterval(interval);
+  }, [bug.postedTime]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 50 }}
@@ -127,14 +167,26 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
           </CardDescription>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-border/50">
-            <div className="flex items-center gap-2 min-w-0">
-              <Avatar className="h-6 w-6 shrink-0">
-                <AvatarImage src={`/placeholder.svg?height=24&width=24&query=${bug.author}`} />
-                <AvatarFallback className="text-xs bg-cyber-blue/20 text-cyber-blue">
-                  {bug.author ? bug.author.slice(0, 2).toUpperCase() : "??"}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium text-muted-foreground truncate">@{bug.author || "unknown"}</span>
+            <div className="flex items-center justify-end gap-3 min-w-0 pt-2 border-t border-border/50">
+              <button
+                className="px-3 py-1 text-xs bg-cyber-blue text-white rounded hover:bg-cyber-blue/80"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/bug/${bug.id}`;
+                }}
+              >
+                Open
+              </button>
+              {isOwner && (
+                <button
+                  className="px-3 py-1 text-xs bg-destructive text-white rounded hover:bg-destructive/80"
+                  onClick={handleDelete}
+                  title="Delete Bug"
+                >
+                  Delete
+                </button>
+              )}
+              <span className="text-xs text-muted-foreground flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> {timeAgo}</span>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground flex-wrap">
               {bug.bounty ? (
@@ -157,10 +209,6 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
               ) : (
                 <span className="text-muted-foreground">00</span>
               )}
-              <div className="flex items-center gap-1 shrink-0">
-                <Clock className="h-3 w-3" />
-                <span className="truncate">{bug.postedTime || "Just now"}</span>
-              </div>
             </div>
           </div>
         </CardContent>

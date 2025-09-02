@@ -22,7 +22,7 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
   const [isRemoving, setIsRemoving] = useState(false)
   const { removeBugHunt } = useBugHunt()
   const { user } = useAuth()
-  const { joinHunt, isJoinedToHunt } = require("@/hooks/use-user-hunts").useUserHunts ? require("@/hooks/use-user-hunts").useUserHunts() : {};
+  const { joinHunt, isJoinedToHunt, leaveHunt } = require("@/hooks/use-user-hunts").useUserHunts ? require("@/hooks/use-user-hunts").useUserHunts() : {};
 
   const isAdmin = user?.role === "admin"
 
@@ -154,15 +154,30 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
                   Join Bug Hunt
                 </Button>
               ) : (
-                <Button
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => setShowSubmissionModal(true)}
-                  disabled={hunt.status !== "active"}
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Submit Report
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setShowSubmissionModal(true)}
+                    disabled={hunt.status !== "active"}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Submit Report
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    variant="outline"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.dispatchEvent(new CustomEvent("decrementParticipants", { detail: { huntId: hunt.id } }));
+                      }
+                      if (typeof leaveHunt === "function") leaveHunt(hunt.id);
+                    }}
+                  >
+                    Leave Hunt
+                  </Button>
+                </>
               )}
             </div>
           </CardContent>

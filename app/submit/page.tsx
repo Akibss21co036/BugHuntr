@@ -52,23 +52,22 @@ export default function SubmitBugPage() {
   const availableHuntsForSubmission = activeBugHunts
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    if (!selectedHunt) {
-      alert("Please select a bug hunt to submit your vulnerability report to.");
-      return;
-    }
+  e.preventDefault();
+  if (!user) return;
     try {
       // Save submission to Firestore
       const bugData = {
-        huntId: selectedHunt,
-        huntTitle: availableHuntsForSubmission.find(h => h.id === selectedHunt)?.title || "Unknown Hunt",
-        stepsToReproduce: formData.poc,
-        impact: formData.summary,
-        attachments: [],
-        submittedBy: user.id,
-        submittedAt: Timestamp.now().toDate().toISOString(),
-        status: "pending",
+  email: user.email || "",
+    title: formData.title,
+    huntId: selectedHunt,
+    huntTitle: availableHuntsForSubmission.find(h => h.id === selectedHunt)?.title || "Unknown Hunt",
+    stepsToReproduce: formData.poc,
+    impact: formData.summary,
+    attachments: [],
+    submittedBy: user.id,
+    postedTime: Timestamp.now().toDate().toISOString(),
+    submittedAt: Timestamp.now().toDate().toISOString(),
+    status: "pending",
       };
       await addDoc(collection(db, "bugs"), bugData);
       addPoints(user.id, Date.now(), formData.severity, `Bug report: ${formData.title} (${formData.severity} severity)`);

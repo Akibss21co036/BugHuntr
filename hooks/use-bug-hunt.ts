@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { type BugHunt, type BugHuntSubmission, BUG_HUNT_TEMPLATES } from "@/types/bug-hunt"
 import { db } from "@/firebaseConfig"
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from "firebase/firestore"
@@ -12,30 +12,66 @@ export function useBugHunt() {
   const [bugHunts, setBugHunts] = useState<BugHunt[]>([])
   const [submissions, setSubmissions] = useState<BugHuntSubmission[]>([])
 
+  // Use a ref to always access the latest bugHunts state in event handlers
+  const bugHuntsRef = useRef<BugHunt[]>(bugHunts);
+  useEffect(() => {
+    bugHuntsRef.current = bugHunts;
+  }, [bugHunts]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const handler = async (event: Event) => {
+      const incrementHandler = async (event: Event) => {
         const customEvent = event as CustomEvent;
         const { huntId } = customEvent.detail;
-        setBugHunts(prev => prev.map(hunt =>
-          hunt.id === huntId
-            ? { ...hunt, currentParticipants: (hunt.currentParticipants || 0) + 1 }
-            : hunt
-        ));
+        // Get current count from ref
+        const current = bugHuntsRef.current.find(h => h.id === huntId)?.currentParticipants || 0;
+        const newCount = current + 1;
+        setTimeout(() => {
+          setBugHunts(prev => prev.map(hunt =>
+            hunt.id === huntId
+              ? { ...hunt, currentParticipants: newCount }
+              : hunt
+          ));
+        }, 0);
         try {
-          const current = bugHunts.find(h => h.id === huntId)?.currentParticipants || 0;
           await updateDoc(doc(db, "bugHunts", huntId), {
-            currentParticipants: current + 1,
+            currentParticipants: newCount,
             updatedAt: new Date().toISOString(),
           });
         } catch (e) {
           console.error("Failed to increment participants:", e);
         }
       };
-      window.addEventListener("incrementParticipants", handler);
-      return () => window.removeEventListener("incrementParticipants", handler);
+      const decrementHandler = async (event: Event) => {
+        const customEvent = event as CustomEvent;
+        const { huntId } = customEvent.detail;
+        // Get current count from ref
+        const current = bugHuntsRef.current.find(h => h.id === huntId)?.currentParticipants || 0;
+        const newCount = Math.max(current - 1, 0);
+        setTimeout(() => {
+          setBugHunts(prev => prev.map(hunt =>
+            hunt.id === huntId
+              ? { ...hunt, currentParticipants: newCount }
+              : hunt
+          ));
+        }, 0);
+        try {
+          await updateDoc(doc(db, "bugHunts", huntId), {
+            currentParticipants: newCount,
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.error("Failed to decrement participants:", e);
+        }
+      };
+      window.addEventListener("incrementParticipants", incrementHandler);
+      window.addEventListener("decrementParticipants", decrementHandler);
+      return () => {
+        window.removeEventListener("incrementParticipants", incrementHandler);
+        window.removeEventListener("decrementParticipants", decrementHandler);
+      };
     }
-  }, [bugHunts]);
+  }, []); // Only set up listeners once
 
   useEffect(() => {
     // Fetch bug hunts from Firestore

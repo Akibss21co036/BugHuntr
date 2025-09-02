@@ -70,6 +70,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     { id: "leaderboard", label: "Leaderboard", icon: Award, href: "/leaderboard" },
     { id: "my-reports", label: "My Reports", icon: FileText, href: "/reports" },
     { id: "communities", label: "Communities", icon: Users, href: "/communities" },
+    { id: "docs", label: "Docs", icon: FileText, href: "/docs" },
     { id: "settings", label: "Settings", icon: Settings, href: "/settings" },
   ]
 
