@@ -95,7 +95,8 @@ export default function LandingPage() {
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-background via-background to-cyber-blue/5 relative overflow-hidden"
+      className="min-h-screen bg-gradient-to-br from-background via-background to-cyber-blue/5 relative overflow-hidden font-montserrat"
+      style={{ fontFamily: 'Montserrat, sans-serif' }}
     >
       <motion.div style={{ y: backgroundY }} className="absolute inset-0 bg-grid-pattern opacity-5" />
 
@@ -189,14 +190,14 @@ export default function LandingPage() {
               <div className="text-center max-w-4xl mx-auto">
                 <Badge
                   variant="outline"
-                  className="mb-6 border-cyber-blue/30 text-cyber-blue bg-background/80 backdrop-blur-sm"
+                  className="mb-6 border-cyber-blue/30 text-cyber-blue bg-background/80 backdrop-blur-sm text-lg font-semibold tracking-wide"
                 >
-                  🔒 Elite Security Research Platform
+                  �️ BugHuntr: Elite Security Research Platform
                 </Badge>
-                <h1 className="text-4xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent leading-tight drop-shadow-lg">
+                <h1 className="text-6xl lg:text-8xl font-extrabold tracking-tight mb-8 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent leading-tight drop-shadow-2xl" style={{ fontFamily: 'Poppins, ui-sans-serif, system-ui' }}>
                   Discover. Analyze. Secure.
                 </h1>
-                <p className="text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed backdrop-blur-sm bg-background/60 rounded-lg p-4">
+                <p className="text-xl lg:text-2xl text-muted-foreground mb-8 leading-relaxed backdrop-blur-sm bg-background/60 rounded-lg p-4 font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                   Join the world's most advanced bug bounty platform where elite security researchers share cutting-edge
                   vulnerabilities and exploitation techniques.
                 </p>
@@ -211,8 +212,7 @@ export default function LandingPage() {
                   </Button>
                   <Button
                     size="lg"
-                    variant="outline"
-                    className="border-cyber-blue/30 text-cyber-blue hover:bg-cyber-blue/10 px-8 py-3 text-lg bg-background/80 backdrop-blur-sm"
+                    className="bg-accent text-accent-foreground px-8 py-3 text-lg shadow-lg hover:bg-accent/80 transition-all duration-300"
                     onClick={() => router.push("/login")}
                   >
                     Sign In
@@ -263,10 +263,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 relative z-10">
           <FadeIn>
             <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Why Choose BugHuntr?
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Access premium security research, connect with elite researchers, and advance your cybersecurity career.
               </p>
             </div>
@@ -311,10 +311,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 relative z-10">
           <FadeIn>
             <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Latest Vulnerability Discoveries
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Get a preview of the high-quality security research shared by our community. Join to access full details
                 and contribute your own findings.
               </p>
@@ -357,10 +357,10 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 relative z-10">
           <FadeIn>
             <div className="text-center max-w-3xl mx-auto">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-6 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Ready to Join the Elite?
               </h2>
-              <p className="text-xl text-muted-foreground mb-8">
+              <p className="text-xl text-muted-foreground mb-8 font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Start your journey in advanced cybersecurity research today. Access premium content, connect with
                 experts, and earn recognized certifications.
               </p>

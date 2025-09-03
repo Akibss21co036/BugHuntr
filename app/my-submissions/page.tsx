@@ -335,11 +335,15 @@ export default function MySubmissionsPage() {
                 <div>
                   <h4 className="font-medium mb-2">Attachments</h4>
                   <div className="space-y-1">
-                    {selectedSubmission.attachments.map((file, index) => (
-                      <div key={index} className="text-sm bg-muted p-2 rounded">
-                        {file}
-                      </div>
-                    ))}
+                    {(selectedSubmission.attachments ?? []).length > 0 ? (
+                      selectedSubmission.attachments.map((file, index) => (
+                        <div key={index} className="text-sm bg-muted p-2 rounded">
+                          {file}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-muted-foreground">No attachments</div>
+                    )}
                   </div>
                 </div>
               </div>

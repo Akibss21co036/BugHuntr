@@ -235,19 +235,31 @@ export default function BugFeedPage() {
           </div>
         </FadeIn>
 
-        {activeBugHunts && activeBugHunts.length > 0 && (
-          <FadeIn delay={0.25}>
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-cyber-blue">Active Bug Hunts</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 mb-8">
-                {activeBugHunts.map((hunt, index) => (
-                  <BugHuntCard key={hunt.id} hunt={hunt} index={index} />
-                ))}
-              </div>
+        {/* Bug Hunt Section */}
+        <FadeIn delay={0.25}>
+          <div className="mb-8">
+            <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent drop-shadow-lg tracking-tight">
+              Active Bug Hunts
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-4">
+              {activeBugHunts.slice(0, 6).map((hunt, index) => (
+                <BugHuntCard key={hunt.id} hunt={hunt} index={index} />
+              ))}
             </div>
-          </FadeIn>
-        )}
+            {activeBugHunts.length > 6 && (
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => router.push('/bug-hunt')}>View All Hunts</Button>
+              </div>
+            )}
+          </div>
+        </FadeIn>
 
+        {/* Bugs Section */}
+        <FadeIn delay={0.3}>
+          <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent drop-shadow-lg tracking-tight">
+            Latest Bugs
+          </h2>
+        </FadeIn>
         <AnimatePresence mode="wait">
           {isLoading ? (
             <motion.div
