@@ -1,6 +1,9 @@
 "use client"
 
 import React, { useState, useCallback } from "react"
+import { useEffect } from "react"
+import { db } from "@/firebaseConfig"
+import { collection, query, where, getDocs } from "firebase/firestore"
 import type { BugSubmission } from "@/types/bug-submission"
 
 // Mock data for submissions (in a real app, this would come from an API)
@@ -61,31 +64,10 @@ const mockSubmissions: BugSubmission[] = [
   },
 ]
 
-export function useBugSubmission() {
-  // Load submissions from localStorage, always merge with mockSubmissions
-  const [submissions, setSubmissions] = useState<BugSubmission[]>(mockSubmissions);
 
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("bugSubmissions");
-      if (stored) {
-        try {
-          const userSubs = JSON.parse(stored);
-          // Merge user submissions and mock submissions, user first
-          setSubmissions([
-            ...userSubs,
-            ...mockSubmissions.filter(
-              (m) => !(userSubs as Array<{ id: string }>).some((u: { id: string }) => u.id === m.id)
-            ),
-          ]);
-        } catch {
-          setSubmissions(mockSubmissions);
-        }
-      } else {
-        setSubmissions(mockSubmissions);
-      }
-    }
-  }, []);
+export function useBugSubmission() {
+  // Only keep mockSubmissions for fallback/testing
+  const [submissions, setSubmissions] = useState<BugSubmission[]>(mockSubmissions);
 
   const submitBugReport = useCallback((huntId: string, submissionData: Partial<BugSubmission>) => {
     const newSubmission: BugSubmission = {
@@ -144,12 +126,22 @@ export function useBugSubmission() {
     [],
   );
 
-  const getSubmissionsByUser = useCallback(
-    (userId: string) => {
-      return submissions.filter((submission) => submission.submittedBy === userId)
-    },
-    [submissions],
-  )
+  // Fetch submissions for a user from Firestore
+  const getSubmissionsByUser = useCallback(async (userId: string) => {
+    if (!userId) return [];
+    try {
+      const q = query(collection(db, "bugs"), where("submittedBy", "==", userId));
+      const querySnapshot = await getDocs(q);
+      const userSubs: BugSubmission[] = [];
+      querySnapshot.forEach((doc) => {
+        userSubs.push({ id: doc.id, ...doc.data() } as BugSubmission);
+      });
+      return userSubs;
+    } catch (err) {
+      // fallback to mockSubmissions if error
+      return mockSubmissions.filter((submission) => submission.submittedBy === userId);
+    }
+  }, []);
 
   const getSubmissionsByHunt = useCallback(
     (huntId: string) => {

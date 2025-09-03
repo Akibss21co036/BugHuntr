@@ -134,6 +134,24 @@ export function useBugHunt() {
     const docRef = await addDoc(collection(db, "bugHuntSubmissions"), newSubmission)
     const submissionWithId: BugHuntSubmission = { ...newSubmission, id: docRef.id }
     setSubmissions(prev => [...prev, submissionWithId])
+
+    // Also save to 'bugs' collection for My Submissions page
+    const bugData = {
+      title: submission.title,
+      huntId: submission.huntId,
+      // huntTitle: submission.huntTitle || "Unknown Hunt",
+      severity: submission.severity,
+      description: submission.description,
+      // stepsToReproduce: submission.stepsToReproduce || "",
+      // impact: submission.impact || "",
+      proofOfConcept: submission.proofOfConcept || "",
+      // attachments: submission.attachments || [],
+      submittedBy: submission.userId,
+      submittedAt: new Date().toISOString(),
+      status: "pending",
+    };
+    await addDoc(collection(db, "bugs"), bugData);
+
     // Update hunt's current participants count
     const hunt = bugHunts.find((h) => h.id === submission.huntId)
     if (hunt) {

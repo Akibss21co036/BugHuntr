@@ -36,31 +36,35 @@ export default function MySubmissionsPage() {
   const [severityFilter, setSeverityFilter] = useState("all");
   const [userSubmissions, setUserSubmissions] = useState<BugSubmission[]>([]);
 
-  // Reload submissions from localStorage on mount and when localStorage changes
+  // Fetch submissions from Firestore on mount and when user changes
   React.useEffect(() => {
-    function updateSubmissions() {
-      if (user) {
-        setUserSubmissions(getSubmissionsByUser(user.username || user.id));
+    async function updateSubmissions() {
+      if (user && user.id) {
+        const subs = await getSubmissionsByUser(user.id);
+        setUserSubmissions(subs);
       }
     }
     updateSubmissions();
-    window.addEventListener("storage", updateSubmissions);
-    return () => {
-      window.removeEventListener("storage", updateSubmissions);
-    };
+    // Optionally listen for changes if you want real-time updates
+    // window.addEventListener("storage", updateSubmissions);
+    // return () => {
+    //   window.removeEventListener("storage", updateSubmissions);
+    // };
   }, [user, getSubmissionsByUser]);
 
   const filteredSubmissions = useMemo(() => {
     return userSubmissions.filter((submission) => {
+      const title = submission.title ?? "";
+      const huntTitle = submission.huntTitle ?? "";
       const matchesSearch =
-        submission.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        submission.huntTitle.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesStatus = statusFilter === "all" || submission.status === statusFilter
-      const matchesSeverity = severityFilter === "all" || submission.severity === severityFilter
+        title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        huntTitle.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "all" || submission.status === statusFilter;
+      const matchesSeverity = severityFilter === "all" || submission.severity === severityFilter;
 
-      return matchesSearch && matchesStatus && matchesSeverity
-    })
-  }, [userSubmissions, searchTerm, statusFilter, severityFilter])
+      return matchesSearch && matchesStatus && matchesSeverity;
+    });
+  }, [userSubmissions, searchTerm, statusFilter, severityFilter]);
 
   const stats = useMemo(() => {
     return {

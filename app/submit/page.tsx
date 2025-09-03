@@ -49,29 +49,34 @@ export default function SubmitBugPage() {
   const { getActiveBugHunts } = useBugHunt()
   const activeBugHunts = getActiveBugHunts()
   const availableHuntsForSubmission = activeBugHunts
+    // Add useBugSubmission for localStorage
+    const { submitBugReport } = require("@/hooks/use-bug-submission")
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!user) return;
+    e.preventDefault();
+    if (!user) return;
+    setIsSubmitting(true);
     try {
-      // Save submission to Firestore
+      // Save all BugSubmission fields to Firestore
       const bugData = {
-  email: user.email || "",
-    title: formData.title,
-    huntId: selectedHunt,
-    huntTitle: availableHuntsForSubmission.find(h => h.id === selectedHunt)?.title || "Unknown Hunt",
-    stepsToReproduce: formData.poc,
-    impact: formData.summary,
-    attachments: [],
-    submittedBy: user.id,
-    postedTime: Timestamp.now().toDate().toISOString(),
-    submittedAt: Timestamp.now().toDate().toISOString(),
-    status: "pending",
+        title: formData.title,
+        huntId: selectedHunt,
+        huntTitle: availableHuntsForSubmission.find(h => h.id === selectedHunt)?.title || "Unknown Hunt",
+        severity: formData.severity,
+        description: formData.description,
+        stepsToReproduce: formData.poc,
+        impact: formData.summary,
+        proofOfConcept: formData.poc,
+        attachments: [],
+        submittedBy: user.id,
+        submittedAt: Timestamp.now().toDate().toISOString(),
+        status: "pending",
       };
       await addDoc(collection(db, "bugs"), bugData);
       addPoints(user.id, Date.now(), formData.severity, `Bug report: ${formData.title} (${formData.severity} severity)`);
       alert(`Bug submitted successfully! You earned ${SEVERITY_POINTS[formData.severity]} points. Your submission is now under review.`);
-      router.push("/feed");
+      router.refresh && router.refresh(); // If router.refresh is available, use it to reload data
+      router.push("/my-submissions"); // Go to My Submissions page after submit
     } catch (error) {
       console.error("Error submitting bug:", error);
       alert("Error submitting bug report. Please try again.");

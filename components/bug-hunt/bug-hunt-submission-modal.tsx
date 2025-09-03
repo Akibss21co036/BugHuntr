@@ -51,6 +51,9 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
         severity: formData.severity as any,
         category: hunt.categories[0] || "General",
         proofOfConcept: formData.proofOfConcept,
+        // stepsToReproduce: formData.stepsToReproduce, // Removed: not in BugHuntSubmission type
+        // impact: formData.impact,
+        // attachments: formData.attachments.map(f => f.name),
       })
       setIsSubmitting(false)
       setSubmitted(true)
