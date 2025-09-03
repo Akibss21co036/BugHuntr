@@ -48,6 +48,18 @@ export function BugHuntCreationForm() {
 
   const activeBugHunts = getActiveBugHunts()
 
+  // Only allow admins to create bug hunts
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="max-w-md p-8 rounded-lg shadow bg-card">
+          <h2 className="text-2xl font-bold mb-4 text-center">Access Denied</h2>
+          <p className="text-muted-foreground text-center">Only admins can create bug hunts. If you believe this is an error, please contact your administrator.</p>
+        </div>
+      </div>
+    )
+  }
+
   const handleRemoveHunt = (huntId: string, huntTitle: string) => {
     if (
       confirm(
@@ -75,7 +87,7 @@ export function BugHuntCreationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+  if (!user || user.role !== "admin") return
 
     setIsCreating(true)
 
@@ -89,7 +101,7 @@ export function BugHuntCreationForm() {
         createdBy: user.id,
       }
 
-      const newHunt = createBugHunt(huntData)
+      const newHunt = await createBugHunt(huntData)
 
       alert(`Bug Hunt "${newHunt.title}" created successfully!`)
       router.push(`/admin/bug-hunts/${newHunt.id}`)

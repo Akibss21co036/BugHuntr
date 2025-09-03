@@ -79,11 +79,25 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
                 <Badge className={getStatusColor(hunt.status)}>
                   {hunt.status.charAt(0).toUpperCase() + hunt.status.slice(1)}
                 </Badge>
+                <div className="mt-2 text-xs text-muted-foreground">{hunt.company}</div>
+                <div className="mt-1 text-xs text-muted-foreground">Difficulty: {hunt.difficulty}</div>
               </div>
-              <div className="text-right">
+              <div className="text-right space-y-1">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <DollarSign className="h-3 w-3" />
-                  <span>{hunt.rewards?.critical ? hunt.rewards.critical : 0} pts</span>
+                  <span>Critical: {hunt.rewards?.critical || 0} pts</span>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <DollarSign className="h-3 w-3" />
+                  <span>High: {hunt.rewards?.high || 0} pts</span>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <DollarSign className="h-3 w-3" />
+                  <span>Medium: {hunt.rewards?.medium || 0} pts</span>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <DollarSign className="h-3 w-3" />
+                  <span>Low: {hunt.rewards?.low || 0} pts</span>
                 </div>
                 {isAdmin && (
                   <Button

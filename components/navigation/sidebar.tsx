@@ -44,12 +44,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, href: "/dashboard" },
     { id: "bug-feed", label: "Bug Feed", icon: Bug, href: "/feed" },
-    {
-      id: "submit-bug",
-      label: user?.role === "admin" ? "Create a Bug Hunt" : "Submit Bug",
-      icon: user?.role === "admin" ? Target : FileText,
-      href: "/submit",
-    },
+    user?.role === "admin"
+      ? { id: "create-bug-hunt", label: "Create a Bug Hunt", icon: Target, href: "/admin/bug-hunts" }
+      : { id: "submit-bug", label: "Submit Bug", icon: FileText, href: "/submit" },
     ...(user?.role === "admin"
       ? [
           {

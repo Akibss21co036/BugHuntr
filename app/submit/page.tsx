@@ -18,7 +18,6 @@ import { SEVERITY_POINTS } from "@/types/ranking"
 import { useRouter } from "next/navigation"
 import { Bug, Trophy, AlertTriangle, Star, Target, Calendar, Users, Award } from "lucide-react"
 import { FadeIn } from "@/components/animations/fade-in"
-import { BugHuntCreationForm } from "@/components/bug-hunt/bug-hunt-creation-form"
 import { db } from "@/firebaseConfig"
 import { collection, addDoc, Timestamp } from "firebase/firestore"
 
