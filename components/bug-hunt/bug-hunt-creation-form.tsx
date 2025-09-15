@@ -102,8 +102,9 @@ export function BugHuntCreationForm() {
       }
 
       const newHunt = await createBugHunt(huntData)
-  alert(`Bug Hunt "${newHunt.title}" created successfully!`)
-  router.push("/feed")
+
+      alert(`Bug Hunt "${newHunt.title}" created successfully!`)
+      router.push(`/admin/bug-hunts/${newHunt.id}`)
     } catch (error) {
       console.error("Error creating bug hunt:", error)
       alert("Error creating bug hunt. Please try again.")
