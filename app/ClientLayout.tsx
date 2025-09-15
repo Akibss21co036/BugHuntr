@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -16,6 +17,15 @@ import "./globals.css"
 function InnerLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { isAuthenticated } = useAuth()
+  const pathname = usePathname()
+  
+  // Check if we're on the landing page
+  const isLandingPage = pathname === '/'
+
+  // If we're on the landing page, render without navigation
+  if (isLandingPage) {
+    return <main className="min-h-screen">{children}</main>
+  }
 
   return (
     <div className="flex h-screen bg-background">
