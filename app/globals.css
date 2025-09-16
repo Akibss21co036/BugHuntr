@@ -1,3 +1,15 @@
+html {
+  scroll-behavior: smooth;
+}
+/* Matte black hover for Explore Bounties button */
+
+button:hover, .btn-matte-black:hover {
+  background-color: hsl(217, 91%, 60%) !important;
+  box-shadow: 0 0 16px 4px hsl(217, 91%, 60%, 0.6), 0 0 32px 8px hsl(217, 91%, 60%, 0.3);
+  color: #fff !important;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Marvel:wght@400;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 

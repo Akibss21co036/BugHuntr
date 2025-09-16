@@ -9,6 +9,7 @@ import { mockBugs } from "@/data/mock-bugs";
 
 export default function LandingPage() {
   const router = useRouter();
+
   return (
     <div className="min-h-screen relative overflow-hidden font-montserrat" style={{ fontFamily: 'Montserrat, sans-serif', backgroundColor: '#10151c' }}>
       {/* Globe background */}
@@ -20,31 +21,69 @@ export default function LandingPage() {
       />
 
       {/* HERO SECTION */}
-  <section className="relative py-24 flex flex-col items-center justify-center z-10">
+      <section className="relative py-24 flex flex-col items-center justify-center z-10">
         <div className="mb-4 flex justify-center">
           <span className="px-4 py-1 rounded-full bg-[#18202b] text-blue-400 text-sm font-semibold shadow border border-blue-700/30">★ Trusted by Elite Security Researchers</span>
         </div>
-        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-center text-white mb-4">
-          Secure the <span className="text-blue-400">Digital World</span>
+        <h1
+          className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-center mb-2 leading-tight"
+          style={{ fontFamily: 'Marvel, sans-serif', letterSpacing: '-2px', color: '#fff', fontWeight: 700 }}
+        >
+          Secure the<br />
+          <span className="text-blue-500" style={{ fontWeight: 700, fontFamily: 'Marvel, sans-serif' }}>Digital World</span>
         </h1>
-        <p className="text-lg md:text-xl text-center text-gray-300 max-w-2xl mb-8">
-          Join the world's most advanced bug bounty platform. Discover vulnerabilities, earn substantial rewards, and connect with elite cybersecurity professionals worldwide.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <p className="text-lg md:text-xl text-center text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed" style={{ fontFamily: 'Marvel, sans-serif' }}>
+            Join the world's most advanced bug bounty platform. Discover vulnerabilities, earn substantial rewards, and connect with elite cybersecurity professionals worldwide.
+          </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">
           <Button
             size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg font-semibold shadow"
+            className="px-10 py-4 text-lg font-semibold transition-transform duration-200 shadow-glow bg-blue-600 text-white scale-100 hover:scale-105 hover:shadow-[0_0_32px_8px_hsl(217,91%,60%,0.5)]"
+            style={{ boxShadow: '0 0 16px 4px hsl(217,91%,60%,0.6)', backgroundColor: 'hsl(217,91%,60%)' }}
             onClick={() => router.push("/signup")}
           >
             Start Hunting Bugs
           </Button>
           <Button
             size="lg"
-            className="bg-[#23272f] hover:bg-[#23272f]/80 text-white px-8 py-3 text-lg font-semibold shadow"
+            className="px-10 py-4 text-lg font-semibold transition-transform duration-200 shadow-glow bg-neutral-900 text-white scale-100 hover:scale-105 hover:shadow-[0_0_32px_8px_#111111] border border-primary/30 backdrop-blur-sm"
+            style={{ boxShadow: '0 0 16px 4px #111111', backgroundColor: '#111111', color: '#fff' }}
             onClick={() => router.push("/login")}
           >
             Explore Bounties
           </Button>
+        </div>
+        {/* Stats Row */}
+        <div className="w-full flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mt-2">
+          {/* Security Researchers */}
+          <div className="flex flex-col items-center justify-center vulnerability-card min-w-[150px]">
+            <div className="flex items-center justify-center rounded-full bg-primary/10 mb-3 border border-primary/20 shadow-glow" style={{ width: 40, height: 40 }}>
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '-1px' }}>15K+</div>
+            <div className="text-sm text-muted-foreground mt-1 font-medium" style={{ fontFamily: 'Montserrat, sans-serif' }}>Security Researchers</div>
+          </div>
+          {/* Vulnerabilities Found */}
+          <div className="flex flex-col items-center justify-center vulnerability-card min-w-[150px]">
+            <div className="flex items-center justify-center rounded-full bg-primary/10 mb-3 border border-primary/20 shadow-glow" style={{ width: 40, height: 40 }}>
+              <Shield className="w-5 h-5 text-primary" />
+            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '-1px' }}>75K+</div>
+            <div className="text-sm text-muted-foreground mt-1 font-medium" style={{ fontFamily: 'Montserrat, sans-serif' }}>Vulnerabilities Found</div>
+          </div>
+          {/* Rewards Distributed */}
+          <div className="flex flex-col items-center justify-center vulnerability-card min-w-[150px]">
+            <div className="flex items-center justify-center rounded-full bg-primary/10 mb-3 border border-primary/20 shadow-glow" style={{ width: 40, height: 40 }}>
+              {/* Use Target icon for rewards */}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="hsl(var(--primary))" strokeWidth="2" fill="hsl(var(--card))" />
+                <circle cx="12" cy="12" r="6" stroke="hsl(var(--primary))" strokeWidth="2" fill="hsl(var(--surface))" />
+                <circle cx="12" cy="12" r="2" fill="hsl(var(--primary))" />
+              </svg>
+            </div>
+            <div className="text-2xl font-black text-foreground tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif', letterSpacing: '-1px' }}>$5M+</div>
+            <div className="text-sm text-muted-foreground mt-1 font-medium" style={{ fontFamily: 'Montserrat, sans-serif' }}>Rewards Distributed</div>
+          </div>
         </div>
       </section>
 
