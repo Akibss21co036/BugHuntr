@@ -1,3 +1,9 @@
+@font-face {
+  font-family: 'Beat Word';
+  src: url('/beat-word-font/BeatWordDemo-nRL20.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
 html {
   scroll-behavior: smooth;
 }
@@ -13,7 +19,7 @@ button:hover, .btn-matte-black:hover {
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* Removed invalid @custom-variant at-rule */
 
 /* Updated color palette for cybersecurity/bug bounty theme with blues, grays, and neon accents */
 :root {

@@ -27,10 +27,10 @@ export default function LandingPage() {
         </div>
         <h1
           className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-center mb-2 leading-tight"
-          style={{ fontFamily: 'Marvel, sans-serif', letterSpacing: '-2px', color: '#fff', fontWeight: 700 }}
+          style={{ fontFamily: 'Beat Word, sans-serif', letterSpacing: '-2px', color: '#fff', fontWeight: 700 }}
         >
           Secure the<br />
-          <span className="text-blue-500" style={{ fontWeight: 700, fontFamily: 'Marvel, sans-serif' }}>Digital World</span>
+          <span className="text-blue-500" style={{ fontWeight: 700, fontFamily: 'Beat Word, sans-serif' }}>Digital World</span>
         </h1>
           <p className="text-lg md:text-xl text-center text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed" style={{ fontFamily: 'Marvel, sans-serif' }}>
             Join the world's most advanced bug bounty platform. Discover vulnerabilities, earn substantial rewards, and connect with elite cybersecurity professionals worldwide.

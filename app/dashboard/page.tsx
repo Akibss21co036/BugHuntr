@@ -1,4 +1,10 @@
+
 "use client"
+// Utility function for deterministic date formatting
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -323,8 +329,9 @@ export default function DashboardPage() {
                           <span>{cert.issuer}</span>
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            <span>Expires {new Date(cert.expiryDate).toLocaleDateString()}</span>
+                            <span>Expires {formatDate(cert.expiryDate)}</span>
                           </div>
+
                         </div>
                         <div className="flex flex-wrap gap-1 mt-2">
                           {cert.skills.slice(0, 3).map((skill) => (

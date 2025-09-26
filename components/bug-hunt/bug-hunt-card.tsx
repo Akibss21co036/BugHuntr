@@ -25,6 +25,7 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
   const { joinHunt, isJoinedToHunt, leaveHunt } = require("@/hooks/use-user-hunts").useUserHunts ? require("@/hooks/use-user-hunts").useUserHunts() : {};
 
   const isAdmin = user?.role === "admin"
+  const isCreatorAdmin = isAdmin && user?.id === hunt.createdBy
 
   const daysRemaining = Math.ceil((new Date(hunt.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
 
@@ -99,7 +100,7 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
                   <DollarSign className="h-3 w-3" />
                   <span>Low: {hunt.rewards?.low || 0} pts</span>
                 </div>
-                {isAdmin && (
+                {isCreatorAdmin && (
                   <Button
                     variant="ghost"
                     size="sm"

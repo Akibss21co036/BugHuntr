@@ -24,8 +24,8 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col">
         <TopNavbar onMenuClick={() => setSidebarOpen(true)} />
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto">{children}</main>
+  {/* Page Content */}
+  <main className="flex-1 overflow-auto" style={{ scrollBehavior: 'smooth' }}>{children}</main>
       </div>
 
       {isAuthenticated && <MobileNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
