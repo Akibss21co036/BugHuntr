@@ -1,7 +1,6 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+import React, { useState } from "react"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -16,19 +15,33 @@ import "./globals.css"
 function InnerLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { isAuthenticated } = useAuth()
+  const [mounted, setMounted] = useState(false)
+  const [isLandingPage, setIsLandingPage] = useState(false)
+
+  // Only run client-only logic after mount
+  React.useEffect(() => {
+    setMounted(true)
+    setIsLandingPage(window.location.pathname === '/')
+  }, [])
+
+  if (!mounted) {
+    // Render nothing until mounted to avoid hydration mismatch
+    return null
+  }
 
   return (
     <div className="flex h-screen bg-background">
-      {isAuthenticated && <Sidebar />}
+      {!isLandingPage && isAuthenticated && <Sidebar />}
 
       <div className="flex-1 flex flex-col">
+        {/* Always show TopNavbar, even on landing page */}
         <TopNavbar onMenuClick={() => setSidebarOpen(true)} />
 
-  {/* Page Content */}
-  <main className="flex-1 overflow-auto" style={{ scrollBehavior: 'smooth' }}>{children}</main>
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto" style={{ scrollBehavior: 'smooth' }}>{children}</main>
       </div>
 
-      {isAuthenticated && <MobileNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
+      {!isLandingPage && isAuthenticated && <MobileNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
     </div>
   )
 }
