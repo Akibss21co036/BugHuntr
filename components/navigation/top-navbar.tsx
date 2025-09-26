@@ -36,7 +36,14 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
   const { searchTerm, setSearchTerm } = useSearch();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-gradient-to-r from-[#0a1623] to-[#0d1a2b] backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header
+      className="sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      style={{
+        background: 'var(--background)',
+        color: 'var(--foreground)',
+        transition: 'background 0.3s, color 0.3s',
+      }}
+    >
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>

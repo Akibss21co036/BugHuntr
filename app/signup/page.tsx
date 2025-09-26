@@ -226,102 +226,68 @@ export default function SignUpPage() {
   }
 
   const renderUserTypeSelection = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-white mb-4">Choose Your Role</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <Button
+        <h3 className="text-2xl font-bold text-white mb-2 tracking-tight drop-shadow-lg">Choose Your Role</h3>
+        <div className="flex justify-center gap-6 mt-6">
+          <button
             type="button"
-            variant={userType === "user" ? "default" : "outline"}
-            className={`h-25 flex flex-col items-center justify-center space-y-2 transition-all duration-200 ${
-              userType === "user"
-                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                : "bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 border-slate-600 hover:border-slate-500"
-            }`}
+            className={`w-40 h-32 rounded-2xl bg-gradient-to-br from-blue-800/60 to-slate-800/60 border border-blue-500/30 shadow-lg backdrop-blur-lg flex flex-col items-center justify-center space-y-2 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${userType === "user" ? "ring-2 ring-blue-400 scale-105" : ""}`}
             onClick={() => handleUserTypeSelect("user")}
           >
-          <User className="h-6 w-6" />
-          <span className="text-sm font-medium">User</span>
-          <span className="text-xs opacity-80">Bug Hunter</span>
-          </Button>
-
-          <Button
+            <User className="h-8 w-8 text-blue-400 mb-1" />
+            <span className="text-lg font-semibold text-white">User</span>
+            <span className="text-xs text-blue-200">Bug Hunter</span>
+          </button>
+          <button
             type="button"
-            variant={userType === "admin" ? "default" : "outline"}
-            className={`h-25 flex flex-col items-center justify-center space-y-2 transition-all duration-200 ${
-              userType === "admin"
-                ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                : "bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 border-slate-600 hover:border-slate-500"
-            }`}
+            className={`w-40 h-32 rounded-2xl bg-gradient-to-br from-blue-800/60 to-slate-800/60 border border-blue-500/30 shadow-lg backdrop-blur-lg flex flex-col items-center justify-center space-y-2 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${userType === "admin" ? "ring-2 ring-blue-400 scale-105" : ""}`}
             onClick={() => handleUserTypeSelect("admin")}
           >
-            <Shield className="h-6 w-6" />
-            <span className="text-sm font-medium">Admin</span>
-            <span className="text-xs opacity-80">Organization</span>
-          </Button>
+            <Shield className="h-8 w-8 text-blue-400 mb-1" />
+            <span className="text-lg font-semibold text-white">Admin</span>
+            <span className="text-xs text-blue-200">Organization</span>
+          </button>
         </div>
       </div>
 
       {userType === "admin" && (
         <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
           <div className="text-center">
-            <h4 className="text-md font-medium text-slate-300 mb-3">Select Admin Type</h4>
-            <div className="grid grid-cols-2 gap-3">
-              <Button
+            <h4 className="text-md font-semibold text-blue-200 mb-3">Select Admin Type</h4>
+            <div className="flex justify-center gap-4 flex-wrap">
+              <button
                 type="button"
-                variant={adminType === "student" ? "default" : "outline"}
-                className={`h-16 flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
-                  adminType === "student"
-                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    : "bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 border-slate-600 hover:border-slate-500"
-                }`}
+                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "student" ? "ring-2 ring-blue-400 scale-105" : ""}`}
                 onClick={() => handleAdminTypeSelect("student")}
               >
-                <GraduationCap className="h-5 w-5" />
-                <span className="text-xs font-medium">Student</span>
-              </Button>
-
-              <Button
+                <GraduationCap className="h-6 w-6 text-blue-300 mb-1" />
+                <span className="text-xs font-semibold text-white">Student</span>
+              </button>
+              <button
                 type="button"
-                variant={adminType === "company" ? "default" : "outline"}
-                className={`h-16 flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
-                  adminType === "company"
-                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    : "bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 border-slate-600 hover:border-slate-500"
-                }`}
+                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "company" ? "ring-2 ring-blue-400 scale-105" : ""}`}
                 onClick={() => handleAdminTypeSelect("company")}
               >
-                <Building className="h-5 w-5" />
-                <span className="text-xs font-medium">Company Rep</span>
-              </Button>
-
-              <Button
+                <Building className="h-6 w-6 text-blue-300 mb-1" />
+                <span className="text-xs font-semibold text-white">Company Rep</span>
+              </button>
+              <button
                 type="button"
-                variant={adminType === "firm" ? "default" : "outline"}
-                className={`h-16 flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
-                  adminType === "firm"
-                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    : "bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 border-slate-600 hover:border-slate-500"
-                }`}
+                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "firm" ? "ring-2 ring-blue-400 scale-105" : ""}`}
                 onClick={() => handleAdminTypeSelect("firm")}
               >
-                <Building className="h-5 w-5" />
-                <span className="text-xs font-medium">Firm Rep</span>
-              </Button>
-
-              <Button
+                <Building className="h-6 w-6 text-blue-300 mb-1" />
+                <span className="text-xs font-semibold text-white">Firm Rep</span>
+              </button>
+              <button
                 type="button"
-                variant={adminType === "individual" ? "default" : "outline"}
-                className={`h-16 flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
-                  adminType === "individual"
-                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    : "bg-slate-700/50 hover:bg-slate-600/70 text-slate-300 border-slate-600 hover:border-slate-500"
-                }`}
+                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "individual" ? "ring-2 ring-blue-400 scale-105" : ""}`}
                 onClick={() => handleAdminTypeSelect("individual")}
               >
-                <Briefcase className="h-5 w-5" />
-                <span className="text-xs font-medium">Individual</span>
-              </Button>
+                <Briefcase className="h-6 w-6 text-blue-300 mb-1" />
+                <span className="text-xs font-semibold text-white">Individual</span>
+              </button>
             </div>
           </div>
         </div>
@@ -680,9 +646,17 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 relative"
+      style={{
+        backgroundImage: 'url(/signup-bg.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       <div className="w-full max-w-md">
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
+        <Card className="border-slate-700 bg-slate-800/60 backdrop-blur-md shadow-2xl">
           <CardHeader className="space-y-1 text-center">
             <div className="flex items-center justify-center mb-4">
               <div className="relative">
