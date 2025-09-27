@@ -25,7 +25,7 @@ interface BugSubmission {
   title: string
   company: string
   category: string
-  severity: "critical" | "high" | "medium" | "low"
+  severity: "critical" | "high" | "medium" | "low" | ""
   summary: string
   description: string
   poc: string
@@ -41,11 +41,12 @@ export default function SubmitBugPage() {
     title: "",
     company: "",
     category: "",
-    severity: "medium",
+    severity: "",
     summary: "",
     description: "",
     poc: "",
   })
+  const [detectingSeverity, setDetectingSeverity] = useState(false);
   const { getActiveBugHunts } = useBugHunt()
   const activeBugHunts = getActiveBugHunts()
   const availableHuntsForSubmission = activeBugHunts
@@ -73,8 +74,12 @@ export default function SubmitBugPage() {
         status: "pending",
       };
       await addDoc(collection(db, "bugs"), bugData);
-      addPoints(user.id, Date.now(), formData.severity, `Bug report: ${formData.title} (${formData.severity} severity)`);
-      alert(`Bug submitted successfully! You earned ${SEVERITY_POINTS[formData.severity]} points. Your submission is now under review.`);
+      if (formData.severity) {
+        addPoints(user.id, Date.now(), formData.severity as "critical" | "high" | "medium" | "low", `Bug report: ${formData.title} (${formData.severity} severity)`);
+        alert(`Bug submitted successfully! You earned ${SEVERITY_POINTS[formData.severity as "critical" | "high" | "medium" | "low"]} points. Your submission is now under review.`);
+      } else {
+        alert("Bug submitted successfully! Your submission is now under review.");
+      }
       router.refresh && router.refresh(); // If router.refresh is available, use it to reload data
       router.push("/my-submissions"); // Go to My Submissions page after submit
     } catch (error) {
@@ -136,16 +141,7 @@ export default function SubmitBugPage() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Title *</Label>
-                      <Input
-                        id="title"
-                        placeholder="Enter vulnerability title"
-                        value={formData.title}
-                        onChange={(e) => handleInputChange("title", e.target.value)}
-                        required
-                      />
-                    </div>
+                    {/* Removed duplicate Title field, only Vulnerability Title remains */}
                     {/* Always show bug hunt selection, no join required */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -190,23 +186,6 @@ export default function SubmitBugPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="severity">Risk Severity *</Label>
-                        <Select
-                          value={formData.severity}
-                          onValueChange={(value) => handleInputChange("severity", value as BugSubmission["severity"])}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="critical">Critical</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="low">Low</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -219,6 +198,13 @@ export default function SubmitBugPage() {
                         rows={3}
                         required
                       />
+                      {formData.severity && (
+                        <div className="flex items-center gap-3 mt-2">
+                          <Badge className={getSeverityColor(formData.severity)}>
+                            {formData.severity.charAt(0).toUpperCase() + formData.severity.slice(1)}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -245,13 +231,32 @@ export default function SubmitBugPage() {
                       />
                     </div>
 
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={isSubmitting || availableHuntsForSubmission.length === 0}
-                    >
-                      {isSubmitting ? "Submitting Report..." : "Submit Vulnerability Report"}
-                    </Button>
+                    {!formData.severity ? (
+                      <Button
+                        type="button"
+                        variant="default"
+                        className="w-full bg-cyber-blue hover:bg-cyber-blue/90"
+                        disabled={detectingSeverity || !formData.summary}
+                        onClick={async () => {
+                          setDetectingSeverity(true);
+                          // Placeholder for AI detection logic
+                          setTimeout(() => {
+                            setFormData((prev) => ({ ...prev, severity: "medium" }));
+                            setDetectingSeverity(false);
+                          }, 1200);
+                        }}
+                      >
+                        {detectingSeverity ? "Detecting..." : "Detect Severity"}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isSubmitting || availableHuntsForSubmission.length === 0}
+                      >
+                        {isSubmitting ? "Submitting Report..." : "Submit Vulnerability Report"}
+                      </Button>
+                    )}
                   </form>
                 </CardContent>
               </Card>
@@ -274,7 +279,9 @@ export default function SubmitBugPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Base Points</span>
-                    <span className="font-bold text-cyber-blue">{SEVERITY_POINTS[formData.severity]}</span>
+                    <span className="font-bold text-cyber-blue">
+                      {formData.severity ? SEVERITY_POINTS[formData.severity] : "-"}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Multiplier</span>
@@ -286,7 +293,7 @@ export default function SubmitBugPage() {
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 text-neon-orange" />
                         <span className="font-bold text-lg text-neon-orange">
-                          {SEVERITY_POINTS[formData.severity] * getPointsMultiplier(formData.severity)}
+                          {formData.severity ? (SEVERITY_POINTS[formData.severity] * getPointsMultiplier(formData.severity)) : "-"}
                         </span>
                       </div>
                     </div>
