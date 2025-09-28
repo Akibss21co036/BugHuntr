@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { type BugHunt, type BugHuntSubmission, BUG_HUNT_TEMPLATES } from "@/types/bug-hunt"
 import { db } from "@/firebaseConfig"
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from "firebase/firestore"
+import { addPointsToUserProfile } from "@/lib/add-points"
 
 
 
@@ -193,6 +194,14 @@ export function useBugHunt() {
           }
         : submission
     ))
+    // If approved and pointsAwarded, add points to user profile
+    if (status === "approved" && pointsAwarded && pointsAwarded > 0) {
+      // Find the submission to get username
+      const sub = submissions.find(s => s.id === submissionId)
+      if (sub && sub.username) {
+        await addPointsToUserProfile(sub.username, pointsAwarded)
+      }
+    }
   }
 
   const getActiveBugHunts = () => {

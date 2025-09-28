@@ -36,7 +36,7 @@ const mockUserProfile = {
   recentActivity: [
     {
       id: 1,
-      type: "report",
+      type: "report" as const,
       title: "SQL Injection in User Authentication",
       company: "TechCorp",
       bounty: 5000,
@@ -45,7 +45,7 @@ const mockUserProfile = {
     },
     {
       id: 2,
-      type: "certificate",
+      type: "certificate" as const,
       title: "Web Application Security Certificate",
       company: "SecurityCorp",
       date: "1 week ago",
@@ -53,7 +53,7 @@ const mockUserProfile = {
     },
     {
       id: 3,
-      type: "report",
+      type: "report" as const,
       title: "XSS in Comment System",
       company: "SocialApp",
       bounty: 2500,

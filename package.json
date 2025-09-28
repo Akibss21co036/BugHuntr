@@ -47,7 +47,7 @@
     "cmdk": "1.0.4",
     "date-fns": "latest",
     "embla-carousel-react": "8.5.1",
-    "firebase": "^12.2.1",
+    "firebase": "^12.3.0",
     "framer-motion": "latest",
     "geist": "latest",
     "input-otp": "1.4.1",
@@ -70,6 +70,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
+    "@types/firebase": "^2.4.32",
     "@types/node": "^22.18.0",
     "@types/nodemailer": "^7.0.1",
     "@types/react": "^19.1.12",

@@ -10,6 +10,8 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { SlideIn } from "@/components/animations/slide-in"
 import { RankBadge } from "@/components/ranking/rank-badge"
 import type { UserRanking } from "@/types/ranking"
+import { useEffect, useState } from "react"
+import { getUserProfileByUsername } from "@/lib/get-user-profile"
 
 interface ProfileHeaderProps {
   user: {
@@ -29,6 +31,40 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
+  const [profilePoints, setProfilePoints] = useState<number | null>(null);
+  const [pointsLoading, setPointsLoading] = useState(true);
+  const [pointsError, setPointsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchPoints() {
+      setPointsLoading(true);
+      setPointsError(null);
+      try {
+        if (user?.username) {
+          const profile = await getUserProfileByUsername(user.username);
+          setProfilePoints((profile as any)?.points ?? null);
+        } else {
+          setProfilePoints(null);
+        }
+      } catch (err) {
+        setPointsError("Failed to load points");
+        setProfilePoints(null);
+      } finally {
+        setPointsLoading(false);
+      }
+    }
+    fetchPoints();
+  }, [user?.username]);
+
+  let pointsToShow = 0;
+  if (pointsLoading) {
+    pointsToShow = 0;
+  } else if (profilePoints !== null) {
+    pointsToShow = profilePoints;
+  } else {
+    pointsToShow = userRanking?.totalPoints ?? user.totalReports;
+  }
+
   return (
     <Card>
       <CardContent className="p-4 sm:p-8">
@@ -139,13 +175,15 @@ export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
                 <motion.div className="text-center" whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
                   <div className="flex items-center justify-center gap-1 text-cyber-purple mb-1">
                     <Trophy className="h-4 w-4" />
-                    <span className="text-xl sm:text-2xl font-bold">
-                      {userRanking ? `${userRanking.totalPoints.toLocaleString()}` : `#${user.rank}`}
-                    </span>
+                    {pointsLoading ? (
+                      <span className="text-cyber-blue text-lg">Loading...</span>
+                    ) : pointsError ? (
+                      <span className="text-red-500 text-sm">{pointsError}</span>
+                    ) : (
+                      <span className="text-xl sm:text-2xl font-bold">{pointsToShow?.toLocaleString?.() ?? pointsToShow}</span>
+                    )}
                   </div>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {userRanking ? "Total Points" : "Global Rank"}
-                  </p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Points</p>
                 </motion.div>
               </div>
             </SlideIn>

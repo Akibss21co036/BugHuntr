@@ -24,6 +24,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "@/components/auth/auth-context"
 import { db } from "@/firebaseConfig"
 import { collection, addDoc } from "firebase/firestore"
+import { createUserProfile } from "@/lib/user-profile"
 import bcrypt from "bcryptjs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
@@ -32,6 +33,27 @@ type UserType = "user" | "admin"
 type AdminType = "company" | "firm" | "student" | "individual"
 
 export default function SignUpPage() {
+  // Username uniqueness check state
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+  const [usernameChecked, setUsernameChecked] = useState(false)
+
+  // Async check for username uniqueness
+  const checkUsernameUnique = async (username: string) => {
+    if (!username || username.length < 3) return false;
+    setIsCheckingUsername(true);
+    try {
+      const q = await import("firebase/firestore");
+      const { getDocs, query, collection, where } = q;
+      const snapshot = await getDocs(query(collection(db, "userProfiles"), where("username", "==", username)));
+      setIsCheckingUsername(false);
+      setUsernameChecked(true);
+      return snapshot.empty;
+    } catch (err) {
+      setIsCheckingUsername(false);
+      setUsernameChecked(false);
+      return false;
+    }
+  };
   const router = useRouter()
   const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
@@ -45,6 +67,7 @@ export default function SignUpPage() {
 
   const [formData, setFormData] = useState({
     // Common fields
+    username: "",
     name: "",
     email: "",
     password: "",
@@ -126,8 +149,21 @@ export default function SignUpPage() {
     return { isValid: true, error: "" }
   }
 
-  const validateForm = () => {
+
+  const validateForm = async () => {
     const newErrors: Record<string, string> = {}
+
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required"
+    } else if (!/^[a-zA-Z0-9_]{3,20}$/.test(formData.username)) {
+      newErrors.username = "Username must be 3-20 characters, letters, numbers, or underscores only"
+    } else {
+      // Check uniqueness
+      const isUnique = await checkUsernameUnique(formData.username.trim());
+      if (!isUnique) {
+        newErrors.username = "Username already exists"
+      }
+    }
 
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required"
@@ -199,7 +235,7 @@ export default function SignUpPage() {
     setIsLoading(true)
     setErrors({})
 
-    const newErrors = validateForm()
+    const newErrors = await validateForm()
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors)
@@ -210,6 +246,7 @@ export default function SignUpPage() {
     try {
       // Encrypt password before saving
       const hashedPassword = await bcrypt.hash(formData.password, 10)
+      // Store user in users collection
       await addDoc(collection(db, "users"), {
         ...formData,
         password: hashedPassword,
@@ -217,6 +254,8 @@ export default function SignUpPage() {
         adminType,
         createdAt: new Date().toISOString(),
       })
+      // Store username and points in userProfiles collection
+      await createUserProfile(formData.username)
       setEmailSent(true)
     } catch (error) {
       setErrors({ general: "An error occurred during signup. Please try again." })
@@ -224,6 +263,42 @@ export default function SignUpPage() {
       setIsLoading(false)
     }
   }
+
+  // Add username field to the form UI
+  const renderUsernameField = () => (
+    <div className="space-y-2">
+      <Label htmlFor="username" className="text-slate-300">Username *</Label>
+      <Input
+        id="username"
+        name="username"
+        type="text"
+        autoComplete="username"
+        value={formData.username}
+        onChange={e => {
+          setFormData({ ...formData, username: e.target.value });
+          setUsernameChecked(false);
+        }}
+        onBlur={async (e) => {
+          const username = e.target.value.trim();
+          if (!username) return;
+          if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) return;
+          setErrors((prev) => ({ ...prev, username: "" }));
+          setIsCheckingUsername(true);
+          const isUnique = await checkUsernameUnique(username);
+          setIsCheckingUsername(false);
+          if (!isUnique) {
+            setErrors((prev) => ({ ...prev, username: "Username already exists" }));
+          }
+        }}
+        placeholder="Choose a username"
+        className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${errors.username ? "border-red-500" : ""}`}
+        required
+      />
+      {isCheckingUsername && <div className="text-blue-400 text-xs mt-1">Checking username...</div>}
+      {errors.username && <div className="text-red-400 text-xs mt-1">{errors.username}</div>}
+      {usernameChecked && !errors.username && <div className="text-green-400 text-xs mt-1">Username available</div>}
+    </div>
+  )
 
   const renderUserTypeSelection = () => (
     <div className="space-y-8">
@@ -301,23 +376,18 @@ export default function SignUpPage() {
     return (
       <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
         {/* Common fields */}
-        <div className="space-y-2">
-          <Label htmlFor="name" className="text-slate-300">
-            Full Name *
-          </Label>
-          <Input
-            id="name"
-            type="text"
-            placeholder="John Doe"
-            value={formData.name}
-            onChange={(e) => handleInputChange("name", e.target.value)}
-            className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-              errors.name ? "border-red-500" : ""
-            }`}
-            required
-          />
-          {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
-        </div>
+        <Input
+          id="name"
+          type="text"
+          placeholder="John Doe"
+          value={formData.name}
+          onChange={(e) => handleInputChange("name", e.target.value)}
+          className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
+            errors.name ? "border-red-500" : ""
+          }`}
+          required
+        />
+        {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
 
         {/* Company/Firm specific fields */}
         {userType === "admin" && (adminType === "company" || adminType === "firm") && (
@@ -496,6 +566,9 @@ export default function SignUpPage() {
           />
           {errors.email && <p className="text-red-400 text-sm">{errors.email}</p>}
         </div>
+
+        {/* Username field (moved below email) */}
+        {renderUsernameField()}
 
         {/* Phone field for user and individual admin */}
         {(userType === "user" || (userType === "admin" && adminType === "individual")) && (

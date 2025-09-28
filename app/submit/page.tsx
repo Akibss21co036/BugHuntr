@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/components/auth/auth-context"
 import { useRanking } from "@/hooks/use-ranking"
+import { addPointsToUserProfile } from "@/lib/add-points"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
 import { useUserHunts } from "@/hooks/use-user-hunts"
 import { SEVERITY_POINTS } from "@/types/ranking"
@@ -75,8 +76,12 @@ export default function SubmitBugPage() {
       };
       await addDoc(collection(db, "bugs"), bugData);
       if (formData.severity) {
-        addPoints(user.id, Date.now(), formData.severity as "critical" | "high" | "medium" | "low", `Bug report: ${formData.title} (${formData.severity} severity)`);
-        alert(`Bug submitted successfully! You earned ${SEVERITY_POINTS[formData.severity as "critical" | "high" | "medium" | "low"]} points. Your submission is now under review.`);
+        const severity = formData.severity as "critical" | "high" | "medium" | "low";
+        const points = SEVERITY_POINTS[severity];
+        addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title} (${severity} severity)`);
+        // Also update Firestore userProfiles points
+        await addPointsToUserProfile(user.username, points);
+        alert(`Bug submitted successfully! You earned ${points} points. Your submission is now under review.`);
       } else {
         alert("Bug submitted successfully! Your submission is now under review.");
       }

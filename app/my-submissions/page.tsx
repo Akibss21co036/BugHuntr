@@ -41,7 +41,8 @@ export default function MySubmissionsPage() {
     async function updateSubmissions() {
       if (user && user.id) {
         const subs = await getSubmissionsByUser(user.id);
-        setUserSubmissions(subs);
+        // Only show submissions that have a huntId (i.e., submitted through a hunt)
+        setUserSubmissions(subs.filter((s) => s.huntId && s.huntId !== ""));
       }
     }
     updateSubmissions();
@@ -253,11 +254,16 @@ export default function MySubmissionsPage() {
                             )}
                           </div>
 
-                          {submission.adminNotes && (
+                          {(submission.reviewedBy || submission.reviewedAt || submission.adminNotes || submission.pointsAwarded) && (
                             <Alert className="mt-3">
                               <AlertTriangle className="h-4 w-4" />
                               <AlertDescription>
-                                <strong>Admin Feedback:</strong> {submission.adminNotes}
+                                <strong>Admin Review:</strong><br />
+                                {submission.reviewedBy && (<span><strong>Reviewed by:</strong> {submission.reviewedBy}<br /></span>)}
+                                {submission.reviewedAt && (<span><strong>Date:</strong> {new Date(submission.reviewedAt).toLocaleString()}<br /></span>)}
+                                <strong>Status:</strong> {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}<br />
+                                {submission.adminNotes && (<span><strong>Feedback:</strong> {submission.adminNotes}<br /></span>)}
+                                {submission.pointsAwarded && (<span><strong>Points Awarded:</strong> {submission.pointsAwarded}</span>)}
                               </AlertDescription>
                             </Alert>
                           )}
@@ -372,24 +378,17 @@ export default function MySubmissionsPage() {
                 </div>
               )}
 
-              {selectedSubmission.adminNotes && (
+              {(selectedSubmission.reviewedBy || selectedSubmission.reviewedAt || selectedSubmission.adminNotes || selectedSubmission.pointsAwarded) && (
                 <div className="border-t pt-6">
                   <h4 className="font-medium mb-2">Admin Review</h4>
                   <Alert>
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                      <strong>Reviewed by:</strong> {selectedSubmission.reviewedBy}
-                      <br />
-                      <strong>Date:</strong>{" "}
-                      {selectedSubmission.reviewedAt ? new Date(selectedSubmission.reviewedAt).toLocaleString() : "N/A"}
-                      <br />
-                      <strong>Feedback:</strong> {selectedSubmission.adminNotes}
-                      {selectedSubmission.pointsAwarded && (
-                        <>
-                          <br />
-                          <strong>Points Awarded:</strong> {selectedSubmission.pointsAwarded}
-                        </>
-                      )}
+                      {selectedSubmission.reviewedBy && (<span><strong>Reviewed by:</strong> {selectedSubmission.reviewedBy}<br /></span>)}
+                      {selectedSubmission.reviewedAt && (<span><strong>Date:</strong> {new Date(selectedSubmission.reviewedAt).toLocaleString()}<br /></span>)}
+                      <strong>Status:</strong> {selectedSubmission.status.charAt(0).toUpperCase() + selectedSubmission.status.slice(1)}<br />
+                      {selectedSubmission.adminNotes && (<span><strong>Feedback:</strong> {selectedSubmission.adminNotes}<br /></span>)}
+                      {selectedSubmission.pointsAwarded && (<span><strong>Points Awarded:</strong> {selectedSubmission.pointsAwarded}</span>)}
                     </AlertDescription>
                   </Alert>
                 </div>
