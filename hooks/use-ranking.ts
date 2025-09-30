@@ -15,7 +15,20 @@ import {
   calculateAdvancedRanking,
   getStreakMultiplier,
 } from "@/types/ranking"
-import { mockBugs } from "@/data/mock-bugs"
+
+import { db } from "../firebaseConfig"
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  onSnapshot,
+  addDoc,
+  query,
+  orderBy,
+  where,
+} from "firebase/firestore"
 
 export function useRanking() {
   const [userRankings, setUserRankings] = useState<UserRanking[]>([])
@@ -23,99 +36,50 @@ export function useRanking() {
   const [userRewards, setUserRewards] = useState<UserReward[]>([])
   const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([])
 
+  // 📡 Load live data from Firestore
   useEffect(() => {
-    // Initialize ranking data from localStorage or create mock data
-    const savedRankings = localStorage.getItem("userRankings")
-    const savedTransactions = localStorage.getItem("pointsTransactions")
-    const savedRewards = localStorage.getItem("userRewards")
-    const savedAchievements = localStorage.getItem("userAchievements")
+  const unsubUsers = onSnapshot(
+  query(collection(db, "userProfiles"), orderBy("points", "desc")),
+  (snapshot) => {
+    setUserRankings(
+      snapshot.docs.map((doc) => {
+        const data = doc.data()
+        return {
+          ...(data as Omit<UserRanking, "userId">),
+          userId: doc.id,
+          totalPoints: data.totalPoints ?? data.points ?? 0, // fallback
+        }
+      })
+    )
+  }
+)
 
-    if (savedRankings) {
-      setUserRankings(JSON.parse(savedRankings))
-    } else {
-      // Create initial rankings based on mock bugs
-      const initialRankings = generateInitialRankings()
-      setUserRankings(initialRankings)
-      localStorage.setItem("userRankings", JSON.stringify(initialRankings))
-    }
 
-    if (savedTransactions) {
-      setPointsTransactions(JSON.parse(savedTransactions))
-    }
 
-    if (savedRewards) {
-      setUserRewards(JSON.parse(savedRewards))
-    }
+    const unsubTransactions = onSnapshot(
+      collection(db, "pointsTransactions"),
+      (snapshot) => {
+        setPointsTransactions(snapshot.docs.map((doc) => doc.data() as PointsTransaction))
+      }
+    )
 
-    if (savedAchievements) {
-      setUserAchievements(JSON.parse(savedAchievements))
+    const unsubRewards = onSnapshot(collection(db, "userRewards"), (snapshot) => {
+      setUserRewards(snapshot.docs.map((doc) => doc.data() as UserReward))
+    })
+
+    const unsubAchievements = onSnapshot(collection(db, "userAchievements"), (snapshot) => {
+      setUserAchievements(snapshot.docs.map((doc) => doc.data() as UserAchievement))
+    })
+
+    return () => {
+      unsubUsers()
+      unsubTransactions()
+      unsubRewards()
+      unsubAchievements()
     }
   }, [])
 
-  const generateInitialRankings = (): UserRanking[] => {
-    const userStats = new Map<
-      string,
-      {
-        points: number
-        bugs: number
-        earnings: number
-        lastBugDate: string
-      }
-    >()
-
-    // Calculate stats from mock bugs
-    mockBugs.forEach((bug) => {
-      const points = SEVERITY_POINTS[bug.severity]
-      const current = userStats.get(bug.author) || {
-        points: 0,
-        bugs: 0,
-        earnings: 0,
-        lastBugDate: bug.date,
-      }
-      userStats.set(bug.author, {
-        points: current.points + points,
-        bugs: current.bugs + 1,
-        earnings: current.earnings + bug.bounty,
-        lastBugDate: bug.date > current.lastBugDate ? bug.date : current.lastBugDate,
-      })
-    })
-
-    return Array.from(userStats.entries())
-      .map(([username, stats]) => {
-        const weeklyPoints = Math.floor(stats.points * 0.3) // Mock weekly points
-        const monthlyPoints = Math.floor(stats.points * 0.7) // Mock monthly points
-        const streak = Math.floor(Math.random() * 15) + 1 // Mock streak
-
-        const user: UserRanking = {
-          userId: username,
-          username,
-          totalPoints: stats.points,
-          rank: calculateRank(stats.points),
-          bugsFound: stats.bugs,
-          totalEarnings: stats.earnings,
-          joinDate: "2024-01-01",
-          weeklyPoints,
-          monthlyPoints,
-          streak,
-          lastActivity: stats.lastBugDate,
-          rankProgress: 0,
-          nextRankPoints: 0,
-        }
-
-        // Calculate rank progress
-        const { rankProgress, nextRankPoints } = calculateRankProgress(user.totalPoints, user.rank)
-        user.rankProgress = rankProgress
-        user.nextRankPoints = nextRankPoints
-
-        return user
-      })
-      .sort((a, b) => {
-        const metricsA = calculateAdvancedRanking(a, [])
-        const metricsB = calculateAdvancedRanking(b, [])
-        return metricsB.totalScore - metricsA.totalScore
-      })
-  }
-
+  // 🏆 Rank utilities
   const calculateRank = (points: number): RankTier => {
     for (const [tier, config] of Object.entries(RANK_CONFIGS)) {
       if (points >= config.minPoints && points <= config.maxPoints) {
@@ -140,13 +104,19 @@ export function useRanking() {
     return { rankProgress, nextRankPoints }
   }
 
-  const addPoints = (userId: string, bugId: number, severity: keyof typeof SEVERITY_POINTS, reason: string) => {
+  // ➕ Add points & update Firestore
+  const addPoints = async (
+    userId: string,
+    bugId: number,
+    severity: keyof typeof SEVERITY_POINTS,
+    reason: string
+  ) => {
     const basePoints = SEVERITY_POINTS[severity]
-
     const user = userRankings.find((u) => u.userId === userId)
     const multiplier = user ? getStreakMultiplier(user.streak) : 1
     const points = Math.floor(basePoints * multiplier)
 
+    // transaction log
     const transaction: PointsTransaction = {
       id: Date.now().toString(),
       userId,
@@ -157,37 +127,32 @@ export function useRanking() {
       severity,
       multiplier: multiplier > 1 ? multiplier : undefined,
     }
+    await setDoc(doc(db, "pointsTransactions", transaction.id), transaction)
 
-    // Update user ranking
-    const updatedRankings = userRankings.map((user) => {
-      if (user.userId === userId) {
-        const newPoints = user.totalPoints + points
-        const newRank = calculateRank(newPoints)
-        const { rankProgress, nextRankPoints } = calculateRankProgress(newPoints, newRank)
+    // update user profile
+    if (user) {
+      const newPoints = user.totalPoints + points
+      const newRank = calculateRank(newPoints)
+      const { rankProgress, nextRankPoints } = calculateRankProgress(newPoints, newRank)
 
-        const now = new Date()
-        const lastActivity = new Date(user.lastActivity)
-        const daysSinceLastActivity = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24))
-        const newStreak = daysSinceLastActivity <= 1 ? user.streak + 1 : 1
+      const now = new Date()
+      const lastActivity = new Date(user.lastActivity)
+      const daysSinceLast = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24))
+      const newStreak = daysSinceLast <= 1 ? user.streak + 1 : 1
 
-        return {
-          ...user,
-          totalPoints: newPoints,
-          rank: newRank,
-          bugsFound: user.bugsFound + 1,
-          weeklyPoints: user.weeklyPoints + points,
-          monthlyPoints: user.monthlyPoints + points,
-          streak: newStreak,
-          lastActivity: now.toISOString(),
-          rankProgress,
-          nextRankPoints,
-        }
-      }
-      return user
-    })
-
-    // Add new user if not exists
-    if (!userRankings.find((u) => u.userId === userId)) {
+      await updateDoc(doc(db, "userProfiles", userId), {
+        totalPoints: newPoints,
+        rank: newRank,
+        bugsFound: user.bugsFound + 1,
+        weeklyPoints: user.weeklyPoints + points,
+        monthlyPoints: user.monthlyPoints + points,
+        streak: newStreak,
+        lastActivity: now.toISOString(),
+        rankProgress,
+        nextRankPoints,
+      })
+    } else {
+      // if user doesn't exist, create them
       const newUser: UserRanking = {
         userId,
         username: userId,
@@ -203,43 +168,31 @@ export function useRanking() {
         rankProgress: 0,
         nextRankPoints: 0,
       }
-
       const { rankProgress, nextRankPoints } = calculateRankProgress(points, newUser.rank)
       newUser.rankProgress = rankProgress
       newUser.nextRankPoints = nextRankPoints
 
-      updatedRankings.push(newUser)
+      await setDoc(doc(db, "userProfiles", userId), newUser)
     }
 
-    const newTransactions = [...pointsTransactions, transaction]
-
-    const sortedRankings = updatedRankings.sort((a, b) => {
-      const metricsA = calculateAdvancedRanking(a, updatedRankings)
-      const metricsB = calculateAdvancedRanking(b, updatedRankings)
-      return metricsB.totalScore - metricsA.totalScore
-    })
-
-    setUserRankings(sortedRankings)
-    setPointsTransactions(newTransactions)
-
-    checkAchievements(userId, sortedRankings.find((u) => u.userId === userId)!, severity)
-
-    // Save to localStorage
-    localStorage.setItem("userRankings", JSON.stringify(sortedRankings))
-    localStorage.setItem("pointsTransactions", JSON.stringify(newTransactions))
+    checkAchievements(userId, severity)
   }
 
-  const checkAchievements = (userId: string, user: UserRanking, severity?: keyof typeof SEVERITY_POINTS) => {
-    const newAchievements: UserAchievement[] = []
+  // 🏅 Check achievements
+  const checkAchievements = async (
+    userId: string,
+    severity?: keyof typeof SEVERITY_POINTS
+  ) => {
+    const user = userRankings.find((u) => u.userId === userId)
+    if (!user) return
 
-    ACHIEVEMENTS.forEach((achievement) => {
-      // Check if user already has this achievement
-      const hasAchievement = userAchievements.some((ua) => ua.userId === userId && ua.achievementId === achievement.id)
-
-      if (hasAchievement) return
+    for (const achievement of ACHIEVEMENTS) {
+      const hasAchievement = userAchievements.some(
+        (ua) => ua.userId === userId && ua.achievementId === achievement.id
+      )
+      if (hasAchievement) continue
 
       let unlocked = false
-
       switch (achievement.requirement.type) {
         case "points":
           unlocked = user.totalPoints >= (achievement.requirement.value as number)
@@ -261,14 +214,15 @@ export function useRanking() {
       }
 
       if (unlocked) {
-        newAchievements.push({
-          id: Date.now().toString() + Math.random(),
+        const newAchievement: UserAchievement = {
+          id: Date.now().toString(),
           userId,
           achievementId: achievement.id,
           unlockedAt: new Date().toISOString(),
-        })
+        }
+        await setDoc(doc(db, "userAchievements", newAchievement.id), newAchievement)
 
-        // Award bonus points for achievement
+        // bonus points
         const bonusTransaction: PointsTransaction = {
           id: Date.now().toString() + "bonus",
           userId,
@@ -278,55 +232,41 @@ export function useRanking() {
           timestamp: new Date().toISOString(),
           severity: "medium",
         }
+        await setDoc(doc(db, "pointsTransactions", bonusTransaction.id), bonusTransaction)
 
-        setPointsTransactions((prev) => [...prev, bonusTransaction])
+        await updateDoc(doc(db, "userProfiles", userId), {
+          totalPoints: user.totalPoints + achievement.pointsReward,
+        })
       }
-    })
-
-    if (newAchievements.length > 0) {
-      const updatedAchievements = [...userAchievements, ...newAchievements]
-      setUserAchievements(updatedAchievements)
-      localStorage.setItem("userAchievements", JSON.stringify(updatedAchievements))
     }
   }
 
-  const redeemReward = (userId: string, rewardId: string): { success: boolean; message: string } => {
+  // 🎁 Redeem rewards
+  const redeemReward = async (
+    userId: string,
+    rewardId: string
+  ): Promise<{ success: boolean; message: string }> => {
     const user = userRankings.find((u) => u.userId === userId)
     const reward = REWARD_CATALOG.find((r) => r.id === rewardId)
 
-    if (!user || !reward) {
-      return { success: false, message: "User or reward not found" }
-    }
-
-    if (!reward.available) {
-      return { success: false, message: "Reward is no longer available" }
-    }
-
-    if (user.totalPoints < reward.pointsCost) {
-      return { success: false, message: "Insufficient points" }
-    }
-
+    if (!user || !reward) return { success: false, message: "User or reward not found" }
+    if (!reward.available) return { success: false, message: "Reward not available" }
+    if (user.totalPoints < reward.pointsCost) return { success: false, message: "Insufficient points" }
     if (reward.requiredRank && !isRankHigherOrEqual(user.rank, reward.requiredRank)) {
-      return { success: false, message: `Requires ${reward.requiredRank} rank or higher` }
+      return { success: false, message: `Requires ${reward.requiredRank} or higher` }
     }
 
-    // Check if limited quantity reward is still available
     if (reward.limitedQuantity) {
       const redeemedCount = userRewards.filter((ur) => ur.rewardId === rewardId).length
       if (redeemedCount >= reward.limitedQuantity) {
-        return { success: false, message: "Reward is out of stock" }
+        return { success: false, message: "Out of stock" }
       }
     }
 
-    // Deduct points from user
-    const updatedRankings = userRankings.map((u) => {
-      if (u.userId === userId) {
-        return { ...u, totalPoints: u.totalPoints - reward.pointsCost }
-      }
-      return u
+    await updateDoc(doc(db, "userProfiles", userId), {
+      totalPoints: user.totalPoints - reward.pointsCost,
     })
 
-    // Add reward to user's collection
     const newReward: UserReward = {
       id: Date.now().toString(),
       userId,
@@ -334,35 +274,22 @@ export function useRanking() {
       redeemedAt: new Date().toISOString(),
       status: "pending",
     }
+    await setDoc(doc(db, "userRewards", newReward.id), newReward)
 
-    const updatedRewards = [...userRewards, newReward]
-
-    setUserRankings(updatedRankings)
-    setUserRewards(updatedRewards)
-
-    localStorage.setItem("userRankings", JSON.stringify(updatedRankings))
-    localStorage.setItem("userRewards", JSON.stringify(updatedRewards))
-
-    return { success: true, message: "Reward redeemed successfully!" }
+    return { success: true, message: "Reward redeemed!" }
   }
 
+  // helpers
   const isRankHigherOrEqual = (userRank: RankTier, requiredRank: RankTier): boolean => {
-    const rankOrder: RankTier[] = ["E", "D", "C", "B", "A", "S"]
-    return rankOrder.indexOf(userRank) >= rankOrder.indexOf(requiredRank)
+    const order: RankTier[] = ["E", "D", "C", "B", "A", "S"]
+    return order.indexOf(userRank) >= order.indexOf(requiredRank)
   }
 
-  const getUserRewards = (userId: string): UserReward[] => {
-    return userRewards.filter((reward) => reward.userId === userId)
-  }
-
-  const getUserAchievements = (userId: string): UserAchievement[] => {
-    return userAchievements.filter((achievement) => achievement.userId === userId)
-  }
-
+  const getUserRewards = (userId: string) => userRewards.filter((r) => r.userId === userId)
+  const getUserAchievements = (userId: string) => userAchievements.filter((a) => a.userId === userId)
   const getAvailableRewards = (userId: string): RewardItem[] => {
     const user = userRankings.find((u) => u.userId === userId)
     if (!user) return []
-
     return REWARD_CATALOG.filter((reward) => {
       if (!reward.available) return false
       if (reward.requiredRank && !isRankHigherOrEqual(user.rank, reward.requiredRank)) return false
@@ -374,23 +301,12 @@ export function useRanking() {
     })
   }
 
-  const getUserRanking = (userId: string): UserRanking | undefined => {
-    return userRankings.find((user) => user.userId === userId)
-  }
-
-  const getLeaderboard = (limit?: number): UserRanking[] => {
-    return limit ? userRankings.slice(0, limit) : userRankings
-  }
-
-  const getRankBenefits = (rank: RankTier) => {
-    return RANK_CONFIGS[rank].benefits
-  }
-
-  const getWeeklyRequirement = (rank: RankTier) => {
-    return RANK_CONFIGS[rank].weeklyRequirement || 0
-  }
-
-  const isRankAtRisk = (user: UserRanking): boolean => {
+  const getUserRanking = (userId: string) => userRankings.find((u) => u.userId === userId)
+  const getLeaderboard = (limit?: number) =>
+    limit ? userRankings.slice(0, limit) : userRankings
+  const getRankBenefits = (rank: RankTier) => RANK_CONFIGS[rank].benefits
+  const getWeeklyRequirement = (rank: RankTier) => RANK_CONFIGS[rank].weeklyRequirement || 0
+  const isRankAtRisk = (user: UserRanking) => {
     const requirement = getWeeklyRequirement(user.rank)
     return requirement > 0 && user.weeklyPoints < requirement
   }

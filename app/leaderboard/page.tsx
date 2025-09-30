@@ -12,29 +12,20 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { motion } from "framer-motion"
 
 export default function LeaderboardPage() {
-  const { getLeaderboard, userRankings } = useRanking()
+  const { userRankings } = useRanking()
   const [searchQuery, setSearchQuery] = useState("")
   const [filterRank, setFilterRank] = useState<string>("all")
   const [timeframe, setTimeframe] = useState<"all" | "monthly" | "weekly">("all")
 
+  // 🔎 Search + Filter
   const filteredUsers = userRankings.filter((user) => {
     const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesRank = filterRank === "all" || user.rank === filterRank
+    const matchesRank = filterRank === "all" || (user.rank ?? "") === filterRank
     return matchesSearch && matchesRank
   })
 
-  const getTimeframeUsers = () => {
-    switch (timeframe) {
-      case "weekly":
-        return [...filteredUsers].sort((a, b) => b.weeklyPoints - a.weeklyPoints)
-      case "monthly":
-        return [...filteredUsers].sort((a, b) => b.monthlyPoints - a.monthlyPoints)
-      default:
-        return filteredUsers
-    }
-  }
-
-  const topUsers = getTimeframeUsers()
+  // ✅ Sort safely by totalPoints
+  const topUsers = [...filteredUsers].sort((a, b) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0))
   const podiumUsers = topUsers.slice(0, 3)
   const remainingUsers = topUsers.slice(3)
 
@@ -74,7 +65,7 @@ export default function LeaderboardPage() {
                   <Select value={filterRank} onValueChange={setFilterRank}>
                     <SelectTrigger className="w-32">
                       <Filter className="w-4 h-4 mr-2" />
-                      <SelectValue />
+                      <SelectValue placeholder="All Ranks" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Ranks</SelectItem>
@@ -122,7 +113,7 @@ export default function LeaderboardPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Second Place */}
+                      {/* 🥈 Second */}
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -133,20 +124,12 @@ export default function LeaderboardPage() {
                           <div className="text-6xl">🥈</div>
                           <div className="space-y-2">
                             <div className="font-bold text-lg">{podiumUsers[1]?.username}</div>
-                            <RankBadge rank={podiumUsers[1]?.rank} size="md" />
-                            <div className="text-2xl font-bold text-cyber-blue">
-                              {timeframe === "weekly"
-                                ? podiumUsers[1]?.weeklyPoints
-                                : timeframe === "monthly"
-                                  ? podiumUsers[1]?.monthlyPoints
-                                  : podiumUsers[1]?.totalPoints}{" "}
-                              pts
-                            </div>
+                            <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[1]?.totalPoints} pts</div>
                           </div>
                         </div>
                       </motion.div>
 
-                      {/* First Place */}
+                      {/* 🥇 First */}
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -157,20 +140,12 @@ export default function LeaderboardPage() {
                           <div className="text-8xl">🏆</div>
                           <div className="space-y-2">
                             <div className="font-bold text-xl">{podiumUsers[0]?.username}</div>
-                            <RankBadge rank={podiumUsers[0]?.rank} size="lg" />
-                            <div className="text-3xl font-bold text-cyber-blue">
-                              {timeframe === "weekly"
-                                ? podiumUsers[0]?.weeklyPoints
-                                : timeframe === "monthly"
-                                  ? podiumUsers[0]?.monthlyPoints
-                                  : podiumUsers[0]?.totalPoints}{" "}
-                              pts
-                            </div>
+                            <div className="text-3xl font-bold text-cyber-blue">{podiumUsers[0]?.totalPoints} pts</div>
                           </div>
                         </div>
                       </motion.div>
 
-                      {/* Third Place */}
+                      {/* 🥉 Third */}
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -181,15 +156,7 @@ export default function LeaderboardPage() {
                           <div className="text-6xl">🥉</div>
                           <div className="space-y-2">
                             <div className="font-bold text-lg">{podiumUsers[2]?.username}</div>
-                            <RankBadge rank={podiumUsers[2]?.rank} size="md" />
-                            <div className="text-2xl font-bold text-cyber-blue">
-                              {timeframe === "weekly"
-                                ? podiumUsers[2]?.weeklyPoints
-                                : timeframe === "monthly"
-                                  ? podiumUsers[2]?.monthlyPoints
-                                  : podiumUsers[2]?.totalPoints}{" "}
-                              pts
-                            </div>
+                            <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[2]?.totalPoints} pts</div>
                           </div>
                         </div>
                       </motion.div>
@@ -222,27 +189,16 @@ export default function LeaderboardPage() {
                           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold">
                             {index + 1}
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div>
-                              <div className="font-medium">{user.username}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {user.bugsFound} bugs • ${user.totalEarnings.toLocaleString()} earned
-                              </div>
-                            </div>
+                          <div>
+                            <div className="font-medium">{user.username}</div>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <div className="font-bold text-lg">
-                              {timeframe === "weekly"
-                                ? user.weeklyPoints
-                                : timeframe === "monthly"
-                                  ? user.monthlyPoints
-                                  : user.totalPoints}
-                            </div>
+                            <div className="font-bold text-lg">{user.totalPoints ?? 0}</div>
                             <div className="text-sm text-muted-foreground">points</div>
                           </div>
-                          <RankBadge rank={user.rank} size="md" />
+                          {user.rank && <RankBadge rank={user.rank} size="md" />}
                         </div>
                       </motion.div>
                     ))}
