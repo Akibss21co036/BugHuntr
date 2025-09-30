@@ -1,32 +1,26 @@
 
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { connectToDatabase } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import { db } from '@/firebaseConfig';
+import { doc, deleteDoc, getDoc } from 'firebase/firestore';
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  // Authenticate admin
-  const session = await getServerSession();
-  // Adjust user type to allow id and isAdmin
-  const user = session?.user as { id?: string; isAdmin?: boolean };
-  if (!user?.isAdmin || !user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const bugHuntId = params.id;
+
+    // Get the bug hunt document
+    const bugHuntRef = doc(db, 'bugHunts', bugHuntId);
+    const bugHuntSnap = await getDoc(bugHuntRef);
+    
+    if (!bugHuntSnap.exists()) {
+      return NextResponse.json({ error: 'Bug hunt not found' }, { status: 404 });
+    }
+
+    // Delete the bug hunt
+    await deleteDoc(bugHuntRef);
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting bug hunt:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  const adminId = user.id;
-  const bugHuntId = params.id;
-
-  const { db } = await connectToDatabase();
-  const bugHunt = await db.collection('bughunts').findOne({ _id: new ObjectId(bugHuntId) });
-
-  if (!bugHunt) {
-    return NextResponse.json({ error: 'BugHunt not found' }, { status: 404 });
-  }
-
-  if (bugHunt.createdBy !== adminId) {
-    return NextResponse.json({ error: 'Forbidden: Only creator can delete' }, { status: 403 });
-  }
-
-  await db.collection('bughunts').deleteOne({ _id: new ObjectId(bugHuntId) });
-  return NextResponse.json({ success: true });
 }
