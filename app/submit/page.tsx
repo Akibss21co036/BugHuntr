@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,10 +13,9 @@ import { useAuth } from "@/components/auth/auth-context"
 import { useRanking } from "@/hooks/use-ranking"
 import { addPointsToUserProfile } from "@/lib/add-points"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
-import { useUserHunts } from "@/hooks/use-user-hunts"
 import { SEVERITY_POINTS } from "@/types/ranking"
 import { useRouter } from "next/navigation"
-import { Bug, Trophy, AlertTriangle, Star, Target, Calendar, Users, Award } from "lucide-react"
+import { Bug, Trophy, AlertTriangle, Star } from "lucide-react"
 import { FadeIn } from "@/components/animations/fade-in"
 import { db } from "@/firebaseConfig"
 import { collection, addDoc, Timestamp } from "firebase/firestore"
@@ -38,6 +36,8 @@ export default function SubmitBugPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedHunt, setSelectedHunt] = useState<string>("")
+  const [detectingSeverity, setDetectingSeverity] = useState(false)
+
   const [formData, setFormData] = useState<BugSubmission>({
     title: "",
     company: "",
@@ -47,23 +47,60 @@ export default function SubmitBugPage() {
     description: "",
     poc: "",
   })
-  const [detectingSeverity, setDetectingSeverity] = useState(false);
+
   const { getActiveBugHunts } = useBugHunt()
   const activeBugHunts = getActiveBugHunts()
   const availableHuntsForSubmission = activeBugHunts
-    // Add useBugSubmission for localStorage
-    const { submitBugReport } = require("@/hooks/use-bug-submission")
+
+  const handleInputChange = (field: keyof BugSubmission, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  // Call backend for severity detection
+  const detectSeverity = async () => {
+    if (!formData.title || !formData.description) {
+      alert("Please fill in Title and Technical Description before detecting severity.")
+      return
+    }
+    try {
+      setDetectingSeverity(true)
+      const response = await fetch("http://localhost:8000/api/analyzeSeverity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      if (data.severity) {
+        setFormData((prev) => ({ ...prev, severity: data.severity.toLowerCase() as BugSubmission["severity"] }))
+      } else {
+        alert("Failed to detect severity. Please try again.")
+      }
+    } catch (err) {
+      console.error("Error detecting severity:", err)
+      alert("Error connecting to severity detection service.")
+    } finally {
+      setDetectingSeverity(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    setIsSubmitting(true);
+    e.preventDefault()
+    if (!user) return
+    setIsSubmitting(true)
+
     try {
-      // Save all BugSubmission fields to Firestore
       const bugData = {
         title: formData.title,
         huntId: selectedHunt,
-        huntTitle: availableHuntsForSubmission.find(h => h.id === selectedHunt)?.title || "Unknown Hunt",
+        huntTitle: availableHuntsForSubmission.find((h) => h.id === selectedHunt)?.title || "Unknown Hunt",
         severity: formData.severity,
         description: formData.description,
         stepsToReproduce: formData.poc,
@@ -73,30 +110,26 @@ export default function SubmitBugPage() {
         submittedBy: user.id,
         submittedAt: Timestamp.now().toDate().toISOString(),
         status: "pending",
-      };
-      await addDoc(collection(db, "bugs"), bugData);
-      if (formData.severity) {
-        const severity = formData.severity as "critical" | "high" | "medium" | "low";
-        const points = SEVERITY_POINTS[severity];
-        addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title} (${severity} severity)`);
-        // Also update Firestore userProfiles points
-        await addPointsToUserProfile(user.username, points);
-        alert(`Bug submitted successfully! You earned ${points} points. Your submission is now under review.`);
-      } else {
-        alert("Bug submitted successfully! Your submission is now under review.");
       }
-      router.refresh && router.refresh(); // If router.refresh is available, use it to reload data
-      router.push("/my-submissions"); // Go to My Submissions page after submit
-    } catch (error) {
-      console.error("Error submitting bug:", error);
-      alert("Error submitting bug report. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      await addDoc(collection(db, "bugs"), bugData)
 
-  const handleInputChange = (field: keyof BugSubmission, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+      if (formData.severity) {
+        const severity = formData.severity as "critical" | "high" | "medium" | "low"
+        const points = SEVERITY_POINTS[severity]
+        addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title} (${severity} severity)`)
+        await addPointsToUserProfile(user.username, points)
+        alert(`Bug submitted successfully! You earned ${points} points. Your submission is now under review.`)
+      } else {
+        alert("Bug submitted successfully! Your submission is now under review.")
+      }
+
+      router.push("/my-submissions")
+    } catch (error) {
+      console.error("Error submitting bug:", error)
+      alert("Error submitting bug report. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const getSeverityColor = (severity: string) => {
@@ -132,8 +165,6 @@ export default function SubmitBugPage() {
           </div>
         </FadeIn>
 
-  {/* Removed Active Bug Hunts section and join logic */}
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <FadeIn delay={0.2}>
@@ -146,8 +177,6 @@ export default function SubmitBugPage() {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Removed duplicate Title field, only Vulnerability Title remains */}
-                    {/* Always show bug hunt selection, no join required */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="title">Vulnerability Title *</Label>
@@ -168,28 +197,6 @@ export default function SubmitBugPage() {
                           onChange={(e) => handleInputChange("company", e.target.value)}
                           required
                         />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="category">Vulnerability Category *</Label>
-                        <Select
-                          value={formData.category}
-                          onValueChange={(value) => handleInputChange("category", value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Web Application">Web Application</SelectItem>
-                            <SelectItem value="API Security">API Security</SelectItem>
-                            <SelectItem value="Mobile Application">Mobile Application</SelectItem>
-                            <SelectItem value="Network Security">Network Security</SelectItem>
-                            <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                            <SelectItem value="Social Engineering">Social Engineering</SelectItem>
-                          </SelectContent>
-                        </Select>
                       </div>
                     </div>
 
@@ -216,7 +223,7 @@ export default function SubmitBugPage() {
                       <Label htmlFor="description">Technical Description *</Label>
                       <Textarea
                         id="description"
-                        placeholder="Detailed technical analysis including affected components, attack vectors, and potential business impact..."
+                        placeholder="Detailed technical analysis..."
                         value={formData.description}
                         onChange={(e) => handleInputChange("description", e.target.value)}
                         rows={6}
@@ -228,7 +235,7 @@ export default function SubmitBugPage() {
                       <Label htmlFor="poc">Proof of Concept *</Label>
                       <Textarea
                         id="poc"
-                        placeholder="Step-by-step reproduction instructions, code snippets, screenshots, or video demonstrations..."
+                        placeholder="Step-by-step reproduction instructions..."
                         value={formData.poc}
                         onChange={(e) => handleInputChange("poc", e.target.value)}
                         rows={6}
@@ -241,24 +248,13 @@ export default function SubmitBugPage() {
                         type="button"
                         variant="default"
                         className="w-full bg-cyber-blue hover:bg-cyber-blue/90"
-                        disabled={detectingSeverity || !formData.summary}
-                        onClick={async () => {
-                          setDetectingSeverity(true);
-                          // Placeholder for AI detection logic
-                          setTimeout(() => {
-                            setFormData((prev) => ({ ...prev, severity: "medium" }));
-                            setDetectingSeverity(false);
-                          }, 1200);
-                        }}
+                        disabled={detectingSeverity}
+                        onClick={detectSeverity}
                       >
                         {detectingSeverity ? "Detecting..." : "Detect Severity"}
                       </Button>
                     ) : (
-                      <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={isSubmitting || availableHuntsForSubmission.length === 0}
-                      >
+                      <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? "Submitting Report..." : "Submit Vulnerability Report"}
                       </Button>
                     )}
@@ -298,46 +294,13 @@ export default function SubmitBugPage() {
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 text-neon-orange" />
                         <span className="font-bold text-lg text-neon-orange">
-                          {formData.severity ? (SEVERITY_POINTS[formData.severity] * getPointsMultiplier(formData.severity)) : "-"}
+                          {formData.severity
+                            ? SEVERITY_POINTS[formData.severity] * getPointsMultiplier(formData.severity)
+                            : "-"}
                         </span>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">Final points awarded after review</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </FadeIn>
-
-            <FadeIn delay={0.4}>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5 text-neon-orange" />
-                    Submission Guidelines
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  <div className="p-3 bg-cyber-blue/5 border border-cyber-blue/20 rounded-lg">
-                    <p className="text-cyber-blue font-medium text-xs mb-1">PRIVACY NOTICE</p>
-                    <p className="text-xs">
-                      Your submission will be kept private and only visible to authorized security reviewers.
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-cyber-blue rounded-full mt-2 flex-shrink-0" />
-                    <span>Ensure vulnerability is reproducible with clear evidence</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-cyber-blue rounded-full mt-2 flex-shrink-0" />
-                    <span>Include detailed technical analysis and business impact</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-cyber-blue rounded-full mt-2 flex-shrink-0" />
-                    <span>Follow responsible disclosure and ethical testing practices</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 bg-cyber-blue rounded-full mt-2 flex-shrink-0" />
-                    <span>Submissions undergo thorough security review process</span>
                   </div>
                 </CardContent>
               </Card>
