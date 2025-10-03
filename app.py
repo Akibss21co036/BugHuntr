@@ -7,6 +7,10 @@ import logging
 from flask_cors import CORS
 import re
 from typing import Tuple
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/components/auth/auth-context"
 import { useRanking } from "@/hooks/use-ranking"
 import { addPointsToUserProfile } from "@/lib/add-points"
+import { updateUserStats } from "@/lib/update-user-stats"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
 import { SEVERITY_POINTS } from "@/types/ranking"
 import { useRouter } from "next/navigation"
@@ -111,13 +112,43 @@ export default function SubmitBugPage() {
         submittedAt: Timestamp.now().toDate().toISOString(),
         status: "pending",
       }
-      await addDoc(collection(db, "bugs"), bugData)
+      
+      // Add bug to Firestore
+      const bugDocRef = await addDoc(collection(db, "bugs"), bugData)
 
+      // Add points based on severity
       if (formData.severity) {
         const severity = formData.severity as "critical" | "high" | "medium" | "low"
         const points = SEVERITY_POINTS[severity]
+        
+        console.log(`Submitting bug with severity: ${severity}, points: ${points}, user: ${user.username}`)
+        
+        // Update local ranking state
         addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title} (${severity} severity)`)
-        await addPointsToUserProfile(user.username, points)
+        
+        // Update points and bug count in Firestore userProfiles
+        const statsUpdated = await updateUserStats(user.username, points, 1)
+        
+        if (statsUpdated) {
+          console.log("Stats updated successfully")
+        } else {
+          console.error("Failed to update stats")
+        }
+        
+        // Also add bug submission to user's submission history
+        await addDoc(collection(db, "bugSubmissions"), {
+          bugId: bugDocRef.id,
+          userId: user.id,
+          username: user.username,
+          title: formData.title,
+          severity: formData.severity,
+          points: points,
+          submittedAt: Timestamp.now().toDate().toISOString(),
+          status: "pending",
+          huntId: selectedHunt,
+          huntTitle: availableHuntsForSubmission.find((h) => h.id === selectedHunt)?.title || "Unknown Hunt",
+        })
+        
         alert(`Bug submitted successfully! You earned ${points} points. Your submission is now under review.`)
       } else {
         alert("Bug submitted successfully! Your submission is now under review.")

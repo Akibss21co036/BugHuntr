@@ -125,7 +125,7 @@ export function useRanking() {
       reason,
       timestamp: new Date().toISOString(),
       severity,
-      multiplier: multiplier > 1 ? multiplier : undefined,
+      ...(multiplier > 1 && { multiplier }),
     }
     await setDoc(doc(db, "pointsTransactions", transaction.id), transaction)
 

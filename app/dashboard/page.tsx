@@ -7,7 +7,7 @@ function formatDate(dateString: string) {
 }
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
+import { UserStatsCards } from "@/components/dashboard/user-stats-cards"
 import { useAuth } from "@/components/auth/auth-context"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
 import { useBugSubmission } from "@/hooks/use-bug-submission"
@@ -89,6 +89,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchPoints();
+    
+    // Set up an interval to refresh points every 10 seconds
+    const interval = setInterval(() => {
+      fetchPoints();
+    }, 10000);
+    
+    return () => clearInterval(interval);
   }, [fetchPoints]);
 
   // Defensive: if not logged in, show nothing
@@ -118,47 +125,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 space-y-8">
-        {/* Top Numbers Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Points Earned</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {pointsLoading ? (
-                <div className="text-cyber-blue text-lg">Loading...</div>
-              ) : pointsError ? (
-                <div className="text-red-500 text-sm">{pointsError}</div>
-              ) : (
-                <div className="text-2xl font-bold text-cyber-blue">{pointsEarned}</div>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Bug Hunts Joined</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{joinedHuntObjs.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Bugs Reported</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{huntSubmissions.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Bugs Submitted</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{bugSubmissionsByUser.length}</div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Top Numbers Row - Real-time Stats */}
+        <UserStatsCards username={user.username} />
 
         {/* Three Sections */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

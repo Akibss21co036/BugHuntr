@@ -1,0 +1,191 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { db } from "@/firebaseConfig"
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore"
+import { Trophy, Bug, Target, Star } from "lucide-react"
+
+interface UserStatsProps {
+  username: string
+}
+
+interface UserStats {
+  points: number
+  bugsSubmitted: number
+  acceptedBugs: number
+  rank: string
+}
+
+export function UserStatsCards({ username }: UserStatsProps) {
+  const [stats, setStats] = useState<UserStats>({
+    points: 0,
+    bugsSubmitted: 0,
+    acceptedBugs: 0,
+    rank: "E"
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!username) return
+
+    const fetchStats = async () => {
+      try {
+        // Get user profile data
+        const userQuery = query(collection(db, "userProfiles"), where("username", "==", username))
+        const userSnapshot = await getDocs(userQuery)
+        
+        if (!userSnapshot.empty) {
+          const userData = userSnapshot.docs[0].data()
+          
+          // Get accepted bugs count
+          const bugsQuery = query(
+            collection(db, "bugs"), 
+            where("submittedBy", "==", username),
+            where("status", "==", "accepted")
+          )
+          const acceptedBugsSnapshot = await getDocs(bugsQuery)
+
+          // Calculate rank based on points
+          const points = userData.points || 0
+          let rank = "E"
+          if (points >= 15000) rank = "S"
+          else if (points >= 8000) rank = "A"
+          else if (points >= 4000) rank = "B"
+          else if (points >= 1500) rank = "C"
+          else if (points >= 500) rank = "D"
+
+          setStats({
+            points: points,
+            bugsSubmitted: userData.bugsSubmitted || 0,
+            acceptedBugs: acceptedBugsSnapshot.size,
+            rank: rank
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching user stats:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+
+    // Set up real-time listener for user profile updates
+    const userQuery = query(collection(db, "userProfiles"), where("username", "==", username))
+    const unsubscribe = onSnapshot(userQuery, (snapshot) => {
+      if (!snapshot.empty) {
+        const userData = snapshot.docs[0].data()
+        const points = userData.points || 0
+        let rank = "E"
+        if (points >= 15000) rank = "S"
+        else if (points >= 8000) rank = "A"
+        else if (points >= 4000) rank = "B"
+        else if (points >= 1500) rank = "C"
+        else if (points >= 500) rank = "D"
+
+        setStats(prev => ({
+          ...prev,
+          points: points,
+          bugsSubmitted: userData.bugsSubmitted || 0,
+          rank: rank
+        }))
+      }
+    })
+
+    return () => unsubscribe()
+  }, [username])
+
+  const getRankColor = (rank: string) => {
+    switch (rank) {
+      case "S": return "text-red-500"
+      case "A": return "text-orange-500"
+      case "B": return "text-purple-500"
+      case "C": return "text-blue-500"
+      case "D": return "text-green-500"
+      default: return "text-gray-500"
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardHeader>
+              <CardTitle>Loading...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+          <Trophy className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-cyber-blue">{stats.points}</div>
+          <p className="text-xs text-muted-foreground">
+            Rank: <span className={getRankColor(stats.rank)}>{stats.rank}</span>
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Bugs Submitted</CardTitle>
+          <Bug className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.bugsSubmitted}</div>
+          <p className="text-xs text-muted-foreground">
+            Total reports submitted
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Accepted Bugs</CardTitle>
+          <Target className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-green-500">{stats.acceptedBugs}</div>
+          <p className="text-xs text-muted-foreground">
+            Success rate: {stats.bugsSubmitted > 0 ? Math.round((stats.acceptedBugs / stats.bugsSubmitted) * 100) : 0}%
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Current Rank</CardTitle>
+          <Star className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold ${getRankColor(stats.rank)}`}>{stats.rank}</div>
+          <p className="text-xs text-muted-foreground">
+            {stats.rank === "S" ? "Legendary!" : `Next: ${getNextRankPoints(stats.points)} pts`}
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+function getNextRankPoints(currentPoints: number): number {
+  if (currentPoints < 500) return 500 - currentPoints
+  if (currentPoints < 1500) return 1500 - currentPoints
+  if (currentPoints < 4000) return 4000 - currentPoints
+  if (currentPoints < 8000) return 8000 - currentPoints
+  if (currentPoints < 15000) return 15000 - currentPoints
+  return 0
+}
