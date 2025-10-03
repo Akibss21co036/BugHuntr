@@ -5,36 +5,26 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Filter, SortAsc, X } from "lucide-react"
 
-interface FilterControlsProps {
-  selectedSeverity: string
-  selectedCategory: string
-  selectedRewardType?: string
+interface BugHuntFilterControlsProps {
+  selectedDifficulty: string
+  selectedRewardType: string
+  selectedStatus: string
   sortBy: string
-  onSeverityChange: (severity: string) => void
-  onCategoryChange: (category: string) => void
-  onRewardTypeChange?: (rewardType: string) => void
+  onDifficultyChange: (difficulty: string) => void
+  onRewardTypeChange: (rewardType: string) => void
+  onStatusChange: (status: string) => void
   onSortChange: (sort: string) => void
   onClearFilters: () => void
   totalCount: number
   filteredCount: number
-  showRewardFilter?: boolean
 }
 
-const severityOptions = [
-  { value: "all", label: "All Severities" },
-  { value: "critical", label: "Critical" },
-  { value: "high", label: "High" },
-  { value: "medium", label: "Medium" },
-  { value: "low", label: "Low" },
-]
-
-const categoryOptions = [
-  { value: "all", label: "All Categories" },
-  { value: "Web Application", label: "Web Application" },
-  { value: "API", label: "API" },
-  { value: "Mobile", label: "Mobile" },
-  { value: "Network", label: "Network" },
-  { value: "Infrastructure", label: "Infrastructure" },
+const difficultyOptions = [
+  { value: "all", label: "All Levels" },
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
+  { value: "expert", label: "Expert" },
 ]
 
 const rewardTypeOptions = [
@@ -45,28 +35,35 @@ const rewardTypeOptions = [
   { value: "jobs", label: "Jobs" },
 ]
 
+const statusOptions = [
+  { value: "all", label: "All Status" },
+  { value: "active", label: "Active" },
+  { value: "draft", label: "Draft" },
+  { value: "paused", label: "Paused" },
+  { value: "completed", label: "Completed" },
+]
+
 const sortOptions = [
   { value: "newest", label: "Newest First" },
   { value: "oldest", label: "Oldest First" },
-  { value: "severity", label: "Severity" },
-  { value: "bounty", label: "Highest Bounty" },
+  { value: "difficulty", label: "Difficulty" },
+  { value: "endDate", label: "Ending Soon" },
 ]
 
-export function FilterControls({
-  selectedSeverity,
-  selectedCategory,
-  selectedRewardType = "all",
+export function BugHuntFilterControls({
+  selectedDifficulty,
+  selectedRewardType,
+  selectedStatus,
   sortBy,
-  onSeverityChange,
-  onCategoryChange,
+  onDifficultyChange,
   onRewardTypeChange,
+  onStatusChange,
   onSortChange,
   onClearFilters,
   totalCount,
   filteredCount,
-  showRewardFilter = false,
-}: FilterControlsProps) {
-  const hasActiveFilters = selectedSeverity !== "all" || selectedCategory !== "all" || (showRewardFilter && selectedRewardType !== "all")
+}: BugHuntFilterControlsProps) {
+  const hasActiveFilters = selectedDifficulty !== "all" || selectedRewardType !== "all" || selectedStatus !== "all"
 
   return (
     <div className="space-y-4">
@@ -77,12 +74,12 @@ export function FilterControls({
             <span className="text-sm font-medium">Filters:</span>
           </div>
 
-          <Select value={selectedSeverity} onValueChange={onSeverityChange}>
+          <Select value={selectedDifficulty} onValueChange={onDifficultyChange}>
             <SelectTrigger className="w-32 sm:w-40 min-w-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {severityOptions.map((option) => (
+              {difficultyOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -90,12 +87,12 @@ export function FilterControls({
             </SelectContent>
           </Select>
 
-          <Select value={selectedCategory} onValueChange={onCategoryChange}>
-            <SelectTrigger className="w-36 sm:w-44 min-w-0">
+          <Select value={selectedRewardType} onValueChange={onRewardTypeChange}>
+            <SelectTrigger className="w-32 sm:w-40 min-w-0">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {categoryOptions.map((option) => (
+              {rewardTypeOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -103,20 +100,18 @@ export function FilterControls({
             </SelectContent>
           </Select>
 
-          {showRewardFilter && onRewardTypeChange && (
-            <Select value={selectedRewardType} onValueChange={onRewardTypeChange}>
-              <SelectTrigger className="w-32 sm:w-40 min-w-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {rewardTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
+          <Select value={selectedStatus} onValueChange={onStatusChange}>
+            <SelectTrigger className="w-32 sm:w-40 min-w-0">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           {hasActiveFilters && (
             <Button variant="outline" size="sm" onClick={onClearFilters} className="gap-1 bg-transparent shrink-0">
@@ -148,26 +143,26 @@ export function FilterControls({
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="text-sm text-muted-foreground">
-          Showing {filteredCount} of {totalCount} vulnerabilities
+          Showing {filteredCount} of {totalCount} bug hunts
         </div>
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2">
-            {selectedSeverity !== "all" && (
+            {selectedDifficulty !== "all" && (
               <Badge variant="secondary" className="gap-1 text-xs">
-                <span className="truncate max-w-20">{selectedSeverity}</span>
-                <X className="h-3 w-3 cursor-pointer shrink-0" onClick={() => onSeverityChange("all")} />
+                <span className="truncate max-w-20">{selectedDifficulty}</span>
+                <X className="h-3 w-3 cursor-pointer shrink-0" onClick={() => onDifficultyChange("all")} />
               </Badge>
             )}
-            {selectedCategory !== "all" && (
-              <Badge variant="secondary" className="gap-1 text-xs">
-                <span className="truncate max-w-24">{selectedCategory}</span>
-                <X className="h-3 w-3 cursor-pointer shrink-0" onClick={() => onCategoryChange("all")} />
-              </Badge>
-            )}
-            {showRewardFilter && selectedRewardType !== "all" && (
+            {selectedRewardType !== "all" && (
               <Badge variant="secondary" className="gap-1 text-xs">
                 <span className="truncate max-w-24">{selectedRewardType}</span>
-                <X className="h-3 w-3 cursor-pointer shrink-0" onClick={() => onRewardTypeChange?.("all")} />
+                <X className="h-3 w-3 cursor-pointer shrink-0" onClick={() => onRewardTypeChange("all")} />
+              </Badge>
+            )}
+            {selectedStatus !== "all" && (
+              <Badge variant="secondary" className="gap-1 text-xs">
+                <span className="truncate max-w-24">{selectedStatus}</span>
+                <X className="h-3 w-3 cursor-pointer shrink-0" onClick={() => onStatusChange("all")} />
               </Badge>
             )}
           </div>

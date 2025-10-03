@@ -20,6 +20,13 @@ export interface BugHunt {
     medium: number
     low: number
   }
+  rewardTypes: ("cash" | "certificates" | "internship" | "jobs")[]
+  rewardDetails: {
+    cash: string
+    certificates: string
+    internship: string
+    jobs: string
+  }
   rules: string[]
   assets: string[]
   submissions: BugHuntSubmission[]

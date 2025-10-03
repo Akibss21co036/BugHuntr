@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, Shield, Users, Award } from "lucide-react"
 import { BugHuntCard } from "@/components/bug-hunt/bug-hunt-card"
+import { BugHuntFilterControls } from "@/components/bug-hunt/bug-hunt-filter-controls"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
 import { useSearch } from "@/components/search/search-context"
 
@@ -69,6 +70,10 @@ export default function BugFeedPage() {
   const [selectedSeverity, setSelectedSeverity] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [selectedHuntDifficulty, setSelectedHuntDifficulty] = useState("all");
+  const [selectedHuntRewardType, setSelectedHuntRewardType] = useState("all");
+  const [selectedHuntStatus, setSelectedHuntStatus] = useState("all");
+  const [huntSortBy, setHuntSortBy] = useState("newest");
   const [isLoading, setIsLoading] = useState(false);
   const [allBugs, setAllBugs] = useState<any[]>([]);
   const router = useRouter();
@@ -134,6 +139,34 @@ export default function BugFeedPage() {
     return filteredBugs;
   }, [allBugs, selectedSeverity, selectedCategory, sortBy, searchTerm]);
 
+  // Bug hunt filtering logic
+  const filteredBugHunts = useMemo(() => {
+    let filtered = [...activeBugHunts];
+
+    if (selectedHuntDifficulty !== "all") {
+      filtered = filtered.filter(hunt => hunt.difficulty === selectedHuntDifficulty);
+    }
+
+    if (selectedHuntRewardType !== "all") {
+      filtered = filtered.filter(hunt => hunt.rewardTypes?.includes(selectedHuntRewardType as any));
+    }
+
+    if (selectedHuntStatus !== "all") {
+      filtered = filtered.filter(hunt => hunt.status === selectedHuntStatus);
+    }
+
+    // Sort bug hunts
+    if (huntSortBy === "oldest") {
+      filtered = [...filtered].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    } else if (huntSortBy === "deadline") {
+      filtered = [...filtered].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime());
+    } else {
+      filtered = [...filtered].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+    }
+
+    return filtered;
+  }, [activeBugHunts, selectedHuntDifficulty, selectedHuntRewardType, selectedHuntStatus, huntSortBy]);
+
   const stats = useMemo(() => {
     const totalBugs = allBugs.length;
     const criticalCount = allBugs.filter((bug) => bug.severity === "critical").length;
@@ -151,6 +184,12 @@ export default function BugFeedPage() {
   const handleClearFilters = () => {
     setSelectedSeverity("all")
     setSelectedCategory("all")
+  }
+
+  const handleClearHuntFilters = () => {
+    setSelectedHuntDifficulty("all")
+    setSelectedHuntRewardType("all")
+    setSelectedHuntStatus("all")
   }
 
   const handleFilterChange = (filterType: string, value: string) => {
@@ -240,8 +279,23 @@ export default function BugFeedPage() {
             <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent drop-shadow-lg tracking-tight">
               Active Bug Hunts
             </h2>
+            <div className="mb-6">
+              <BugHuntFilterControls
+                selectedDifficulty={selectedHuntDifficulty}
+                selectedRewardType={selectedHuntRewardType}
+                selectedStatus={selectedHuntStatus}
+                sortBy={huntSortBy}
+                onDifficultyChange={setSelectedHuntDifficulty}
+                onRewardTypeChange={setSelectedHuntRewardType}
+                onStatusChange={setSelectedHuntStatus}
+                onSortChange={setHuntSortBy}
+                onClearFilters={handleClearHuntFilters}
+                totalCount={activeBugHunts.length}
+                filteredCount={filteredBugHunts.length}
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-4">
-              {activeBugHunts.slice(0, 6).map((hunt, index) => (
+              {filteredBugHunts.slice(0, 6).map((hunt, index) => (
                 <BugHuntCard key={hunt.id} hunt={hunt} index={index} />
               ))}
             </div>

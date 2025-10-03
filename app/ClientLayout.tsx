@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth/auth-context"
+import { RouteProtection } from "@/components/auth/route-protection"
 import { CommunityProvider } from "@/hooks/use-community"
 import { TopNavbar } from "@/components/navigation/top-navbar"
 import { Sidebar } from "@/components/navigation/sidebar"
@@ -63,11 +64,13 @@ html {
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <AuthProvider>
-            <CommunityProvider>
-              <SearchProvider>
-                <InnerLayout>{children}</InnerLayout>
-              </SearchProvider>
-            </CommunityProvider>
+            <RouteProtection>
+              <CommunityProvider>
+                <SearchProvider>
+                  <InnerLayout>{children}</InnerLayout>
+                </SearchProvider>
+              </CommunityProvider>
+            </RouteProtection>
           </AuthProvider>
         </ThemeProvider>
       </body>

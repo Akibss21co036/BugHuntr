@@ -29,7 +29,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Check if user is logged in from localStorage
+      // Clear auth state in development mode to ensure fresh start
+      if (process.env.NODE_ENV === "development") {
+        localStorage.removeItem("isAuthenticated");
+        localStorage.removeItem("currentUser");
+        setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+      
+      // In production, check if user is logged in from localStorage
       const authStatus = localStorage.getItem("isAuthenticated");
       const userData = localStorage.getItem("currentUser");
       setIsAuthenticated(authStatus === "true");

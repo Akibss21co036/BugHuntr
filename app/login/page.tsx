@@ -129,7 +129,14 @@ export default function LoginPage() {
       } else {
         login(formData.email, formData.email, "user", userDoc)
       }
-      router.push("/feed")
+      
+      // Show success message instead of auto-redirect
+      alert("Login successful! Welcome back.")
+      
+      // Optional: redirect after user acknowledgment
+      setTimeout(() => {
+        router.push("/feed")
+      }, 1000)
     } catch (error) {
       console.error("Login error:", error)
       setValidationErrors(["Login failed. Please try again."])

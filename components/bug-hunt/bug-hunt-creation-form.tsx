@@ -42,6 +42,13 @@ export function BugHuntCreationForm() {
       medium: 500,
       low: 200,
     },
+    rewardTypes: [] as ("cash" | "certificates" | "internship" | "jobs")[],
+    rewardDetails: {
+      cash: "",
+      certificates: "",
+      internship: "",
+      jobs: "",
+    },
     rules: [""],
     assets: [""],
   })
@@ -144,6 +151,15 @@ export function BugHuntCreationForm() {
       categories: prev.categories.includes(category)
         ? prev.categories.filter((c) => c !== category)
         : [...prev.categories, category],
+    }))
+  }
+
+  const handleRewardTypeToggle = (rewardType: "cash" | "certificates" | "internship" | "jobs") => {
+    setFormData((prev) => ({
+      ...prev,
+      rewardTypes: prev.rewardTypes.includes(rewardType)
+        ? prev.rewardTypes.filter((r) => r !== rewardType)
+        : [...prev.rewardTypes, rewardType],
     }))
   }
 
@@ -458,6 +474,110 @@ export function BugHuntCreationForm() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-cyber-blue" />
+                  Reward Types
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {["cash", "certificates", "internship", "jobs"].map((rewardType) => (
+                    <div key={rewardType} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={rewardType}
+                        checked={formData.rewardTypes.includes(rewardType as any)}
+                        onCheckedChange={() => handleRewardTypeToggle(rewardType as any)}
+                      />
+                      <Label 
+                        htmlFor={rewardType}
+                        className="text-sm font-medium capitalize cursor-pointer"
+                      >
+                        {rewardType}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Reward Details */}
+                <div className="space-y-4">
+                  {formData.rewardTypes.includes("cash") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="cashDetails">Cash Reward Details</Label>
+                      <Input
+                        id="cashDetails"
+                        placeholder="e.g., $500 for critical, $200 for high severity bugs"
+                        value={formData.rewardDetails.cash}
+                        onChange={(e) =>
+                          handleInputChange("rewardDetails", {
+                            ...formData.rewardDetails,
+                            cash: e.target.value,
+                          })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {formData.rewardTypes.includes("certificates") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="certificateDetails">Certificate Details</Label>
+                      <Textarea
+                        id="certificateDetails"
+                        placeholder="e.g., Industry-recognized cybersecurity certificate, completion certificate from [Company Name]"
+                        value={formData.rewardDetails.certificates}
+                        onChange={(e) =>
+                          handleInputChange("rewardDetails", {
+                            ...formData.rewardDetails,
+                            certificates: e.target.value,
+                          })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                  )}
+
+                  {formData.rewardTypes.includes("internship") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="internshipDetails">Internship Details</Label>
+                      <Textarea
+                        id="internshipDetails"
+                        placeholder="e.g., 3-month paid internship in our cybersecurity team, remote/on-site options available"
+                        value={formData.rewardDetails.internship}
+                        onChange={(e) =>
+                          handleInputChange("rewardDetails", {
+                            ...formData.rewardDetails,
+                            internship: e.target.value,
+                          })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                  )}
+
+                  {formData.rewardTypes.includes("jobs") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="jobDetails">Job Opportunity Details</Label>
+                      <Textarea
+                        id="jobDetails"
+                        placeholder="e.g., Security Analyst position, Junior Penetration Tester role, competitive salary based on experience"
+                        value={formData.rewardDetails.jobs}
+                        onChange={(e) =>
+                          handleInputChange("rewardDetails", {
+                            ...formData.rewardDetails,
+                            jobs: e.target.value,
+                          })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </FadeIn>
+
+          <FadeIn delay={0.6}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="w-5 h-5 text-cyber-blue" />
                   Point Rewards
                 </CardTitle>
               </CardHeader>
@@ -525,7 +645,7 @@ export function BugHuntCreationForm() {
           </FadeIn>
 
           {/* Rules & Assets */}
-          <FadeIn delay={0.6}>
+          <FadeIn delay={0.7}>
             <Card>
               <CardHeader>
                 <CardTitle>Rules & Assets</CardTitle>
