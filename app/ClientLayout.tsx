@@ -10,22 +10,21 @@ import { TopNavbar } from "@/components/navigation/top-navbar"
 import { Sidebar } from "@/components/navigation/sidebar"
 import { MobileNavigation } from "@/components/navigation/mobile-navigation"
 import { useAuth } from "@/components/auth/auth-context"
+import { usePathname } from "next/navigation"
 import "./globals.css"
 
 function InnerLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { isAuthenticated } = useAuth()
   const [mounted, setMounted] = useState(false)
-  const [isLandingPage, setIsLandingPage] = useState(false)
+  const pathname = usePathname()
+  const isLandingPage = pathname === '/'
 
-  // Only run client-only logic after mount
   React.useEffect(() => {
     setMounted(true)
-    setIsLandingPage(window.location.pathname === '/')
   }, [])
 
   if (!mounted) {
-    // Render nothing until mounted to avoid hydration mismatch
     return null
   }
 
@@ -34,10 +33,8 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
       {!isLandingPage && isAuthenticated && <Sidebar />}
 
       <div className="flex-1 flex flex-col">
-        {/* Always show TopNavbar, even on landing page */}
         <TopNavbar onMenuClick={() => setSidebarOpen(true)} />
 
-        {/* Page Content */}
         <main className="flex-1 overflow-auto" style={{ scrollBehavior: 'smooth' }}>{children}</main>
       </div>
 
