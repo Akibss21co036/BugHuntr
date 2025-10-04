@@ -1,7 +1,8 @@
-// Import the functions you need from the SDKs you need
+// Import Firebase SDKs
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage"; // 👈 Added for file uploads
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,11 +17,16 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Initialize Analytics (only on client-side)
 let analytics;
 if (typeof window !== "undefined") {
   analytics = getAnalytics(app);
 }
 
+// Initialize Firestore and Storage
 const db = getFirestore(app);
+const storage = getStorage(app); // 👈 Add this
 
-export { app, analytics, db };
+// Export Firebase instances
+export { app, analytics, db, storage };
