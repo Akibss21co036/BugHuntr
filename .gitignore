@@ -26,5 +26,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.json
+bughuntr-3f895-firebase-adminsdk-fbsvc-35f7a29ea2.json
 
