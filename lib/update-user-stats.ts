@@ -24,9 +24,9 @@ export async function updateUserBugCount(username: string, increment: number = 1
   }
 }
 
-export async function updateUserStats(username: string, points: number, bugIncrement: number = 1) {
+export async function updateUserStats(username: string, points: number, bugIncrement: number = 1, role: "user" | "admin" = "user", companyName?: string) {
   try {
-    console.log(`Updating stats for user: ${username}, points: ${points}`)
+    console.log(`Updating stats for user: ${username}, points: ${points}, role: ${role}, company: ${companyName}`)
     
     // Find the user profile by username
     const q = query(collection(db, "userProfiles"), where("username", "==", username))
@@ -40,6 +40,8 @@ export async function updateUserStats(username: string, points: number, bugIncre
         username: username,
         points: points,
         bugsSubmitted: bugIncrement,
+        role: role,
+        companyName: companyName,
         createdAt: new Date().toISOString(),
         lastActivity: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

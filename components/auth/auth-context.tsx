@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { getDisplayUsername } from "@/lib/extract-username"
 
 interface User {
   id: string
@@ -49,9 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (username: string, email?: string, role: "user" | "admin" = "user", companyData?: Partial<User>) => {
+    // Use provided username or extract from email
+    const displayUsername = getDisplayUsername(username, email)
+    
     const userData: User = {
-      id: username,
-      username,
+      id: displayUsername,
+      username: displayUsername,
       email,
       role,
       ...companyData,

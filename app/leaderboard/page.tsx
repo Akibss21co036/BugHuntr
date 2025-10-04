@@ -12,6 +12,7 @@ import { FadeIn } from "@/components/animations/fade-in"
 import { motion } from "framer-motion"
 import { db } from "@/firebaseConfig"
 import { collection, getDocs, query, orderBy } from "firebase/firestore"
+import { VerificationBadge } from "@/components/ui/verification-badge"
 
 import { RankTier } from "@/types/ranking"
 
@@ -22,6 +23,8 @@ interface LeaderboardUser {
   bugsSubmitted?: number
   joinedAt?: string
   rank?: RankTier
+  role?: "user" | "admin"
+  companyName?: string
 }
 
 export default function LeaderboardPage() {
@@ -47,7 +50,9 @@ export default function LeaderboardPage() {
           points: doc.data().points || 0,
           bugsSubmitted: doc.data().bugsSubmitted || 0,
           joinedAt: doc.data().createdAt || new Date().toISOString(),
-          rank: calculateRank(doc.data().points || 0)
+          rank: calculateRank(doc.data().points || 0),
+          role: doc.data().role || "user",
+          companyName: doc.data().companyName
         }))
         setFirestoreUsers(users)
       } catch (error) {
@@ -77,7 +82,9 @@ export default function LeaderboardPage() {
     points: user.totalPoints || 0,
     bugsSubmitted: user.bugsFound || 0,
     joinedAt: user.joinDate || new Date().toISOString(),
-    rank: user.rank || "E"
+    rank: user.rank || "E",
+    role: "user" as const,
+    companyName: undefined
   }))
 
   const filteredUsers = usersToFilter.filter((user) => {
@@ -186,6 +193,7 @@ export default function LeaderboardPage() {
                           <div className="text-6xl">🥈</div>
                           <div className="space-y-2">
                             <div className="font-bold text-lg">{podiumUsers[1]?.username}</div>
+                            <VerificationBadge isAdmin={podiumUsers[1]?.role === "admin"} companyName={podiumUsers[1]?.companyName} size="sm" />
                             <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[1]?.points} pts</div>
                           </div>
                         </div>
@@ -202,6 +210,7 @@ export default function LeaderboardPage() {
                           <div className="text-8xl">🏆</div>
                           <div className="space-y-2">
                             <div className="font-bold text-xl">{podiumUsers[0]?.username}</div>
+                            <VerificationBadge isAdmin={podiumUsers[0]?.role === "admin"} companyName={podiumUsers[0]?.companyName} size="md" />
                             <div className="text-3xl font-bold text-cyber-blue">{podiumUsers[0]?.points} pts</div>
                           </div>
                         </div>
@@ -218,6 +227,7 @@ export default function LeaderboardPage() {
                           <div className="text-6xl">🥉</div>
                           <div className="space-y-2">
                             <div className="font-bold text-lg">{podiumUsers[2]?.username}</div>
+                            <VerificationBadge isAdmin={podiumUsers[2]?.role === "admin"} companyName={podiumUsers[2]?.companyName} size="sm" />
                             <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[2]?.points} pts</div>
                           </div>
                         </div>
@@ -252,7 +262,10 @@ export default function LeaderboardPage() {
                             {index + 1}
                           </div>
                           <div>
-                            <div className="font-medium">{user.username}</div>
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium">{user.username}</div>
+                              <VerificationBadge isAdmin={user.role === "admin"} companyName={user.companyName} size="sm" />
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">

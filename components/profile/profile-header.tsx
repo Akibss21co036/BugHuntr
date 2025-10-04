@@ -9,6 +9,8 @@ import { motion } from "framer-motion"
 import { FadeIn } from "@/components/animations/fade-in"
 import { SlideIn } from "@/components/animations/slide-in"
 import { RankBadge } from "@/components/ranking/rank-badge"
+import { VerificationBadge } from "@/components/ui/verification-badge"
+import { useAuth } from "@/components/auth/auth-context"
 import type { UserRanking } from "@/types/ranking"
 import { useEffect, useState } from "react"
 import { getUserProfileByUsername } from "@/lib/get-user-profile"
@@ -26,6 +28,8 @@ interface ProfileHeaderProps {
     totalEarnings: number
     totalReports: number
     reputation: number
+    role?: "user" | "admin"
+    companyName?: string
   }
   userRanking?: UserRanking | null
 }
@@ -117,7 +121,10 @@ export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
                     )}
                   </div>
                 </div>
-                <p className="text-base sm:text-lg text-muted-foreground truncate">@{user.username}</p>
+                <p className="text-base sm:text-lg text-muted-foreground truncate flex items-center gap-2">
+                  @{user.username}
+                  <VerificationBadge isAdmin={user.role === "admin"} companyName={user.companyName} size="sm" />
+                </p>
               </div>
             </FadeIn>
 

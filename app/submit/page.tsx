@@ -116,11 +116,44 @@ export default function SubmitBugPage() {
       if (formData.severity) {
         const severity = formData.severity
         const points = SEVERITY_POINTS[severity]
+<<<<<<< HEAD
 
         addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title}`)
         await updateUserStats(user.username, points, 1)
 
         alert(`Bug submitted successfully! You earned ${points} points.`)
+=======
+        
+        console.log(`Submitting bug with severity: ${severity}, points: ${points}, user: ${user.username}`)
+        
+        // Update local ranking state
+        addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title} (${severity} severity)`)
+        
+        // Update points and bug count in Firestore userProfiles
+        const statsUpdated = await updateUserStats(user.username, points, 1, user.role, user.companyName)
+        
+        if (statsUpdated) {
+          console.log("Stats updated successfully")
+        } else {
+          console.error("Failed to update stats")
+        }
+        
+        // Also add bug submission to user's submission history
+        await addDoc(collection(db, "bugSubmissions"), {
+          bugId: bugDocRef.id,
+          userId: user.id,
+          username: user.username,
+          title: formData.title,
+          severity: formData.severity,
+          points: points,
+          submittedAt: Timestamp.now().toDate().toISOString(),
+          status: "pending",
+          huntId: selectedHunt,
+          huntTitle: availableHuntsForSubmission.find((h) => h.id === selectedHunt)?.title || "Unknown Hunt",
+        })
+        
+        alert(`Bug submitted successfully! You earned ${points} points. Your submission is now under review.`)
+>>>>>>> 0de2a3ee8257a652b3fcb0c124cb01914b20d6ec
       } else {
         alert("Bug submitted successfully!")
       }
