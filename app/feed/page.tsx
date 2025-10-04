@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useRouter } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { BugCard } from "@/components/bug-feed/bug-card"
-import { FilterControls } from "@/components/bug-feed/filter-controls"
-import { BugCardSkeleton } from "@/components/loading/bug-card-skeleton"
-import { FadeIn } from "@/components/animations/fade-in"
-import React, { useState, useMemo, useEffect } from "react"
-import { collection, getDocs, onSnapshot } from "firebase/firestore"
-import { db } from "@/firebaseConfig"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { TrendingUp, Shield, Users, Award } from "lucide-react"
-import { BugHuntCard } from "@/components/bug-hunt/bug-hunt-card"
-import { BugHuntFilterControls } from "@/components/bug-hunt/bug-hunt-filter-controls"
-import { useBugHunt } from "@/hooks/use-bug-hunt"
-import { useSearch } from "@/components/search/search-context"
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { BugCard } from "@/components/bug-feed/bug-card";
+import { FilterControls } from "@/components/bug-feed/filter-controls";
+import { BugCardSkeleton } from "@/components/loading/bug-card-skeleton";
+import { FadeIn } from "@/components/animations/fade-in";
+import React, { useState, useMemo, useEffect } from "react";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, Shield, Users, Award } from "lucide-react";
+import { BugHuntCard } from "@/components/bug-hunt/bug-hunt-card";
+import { BugHuntFilterControls } from "@/components/bug-hunt/bug-hunt-filter-controls";
+import { useBugHunt } from "@/hooks/use-bug-hunt";
+import { useSearch } from "@/components/search/search-context";
 
 export default function BugFeedPage() {
   const { searchTerm } = useSearch();
@@ -37,7 +37,7 @@ export default function BugFeedPage() {
   // Real-time updates for bugs from Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "bugs"), (querySnapshot) => {
-      const bugs = querySnapshot.docs.map(doc => {
+      const bugs = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
@@ -62,12 +62,12 @@ export default function BugFeedPage() {
   }, []);
 
   const filteredAndSortedBugs = useMemo(() => {
-  let filteredBugs = [...allBugs];
+    let filteredBugs = [...allBugs];
 
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filteredBugs = filteredBugs.filter(
-        bug =>
+        (bug) =>
           bug.title?.toLowerCase().includes(term) ||
           bug.summary?.toLowerCase().includes(term) ||
           bug.company?.toLowerCase().includes(term) ||
@@ -76,17 +76,25 @@ export default function BugFeedPage() {
     }
 
     if (selectedSeverity !== "all") {
-      filteredBugs = filteredBugs.filter((bug) => bug.severity === selectedSeverity);
+      filteredBugs = filteredBugs.filter(
+        (bug) => bug.severity === selectedSeverity
+      );
     }
 
     if (selectedCategory !== "all") {
-      filteredBugs = filteredBugs.filter((bug) => bug.category === selectedCategory);
+      filteredBugs = filteredBugs.filter(
+        (bug) => bug.category === selectedCategory
+      );
     }
 
     if (sortBy === "oldest") {
-      filteredBugs = [...filteredBugs].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      filteredBugs = [...filteredBugs].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
     } else {
-      filteredBugs = [...filteredBugs].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      filteredBugs = [...filteredBugs].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
     }
 
     return filteredBugs;
@@ -97,33 +105,55 @@ export default function BugFeedPage() {
     let filtered = [...activeBugHunts];
 
     if (selectedHuntDifficulty !== "all") {
-      filtered = filtered.filter(hunt => hunt.difficulty === selectedHuntDifficulty);
+      filtered = filtered.filter(
+        (hunt) => hunt.difficulty === selectedHuntDifficulty
+      );
     }
 
     if (selectedHuntRewardType !== "all") {
-      filtered = filtered.filter(hunt => hunt.rewardTypes?.includes(selectedHuntRewardType as any));
+      filtered = filtered.filter((hunt) =>
+        hunt.rewardTypes?.includes(selectedHuntRewardType as any)
+      );
     }
 
     if (selectedHuntStatus !== "all") {
-      filtered = filtered.filter(hunt => hunt.status === selectedHuntStatus);
+      filtered = filtered.filter((hunt) => hunt.status === selectedHuntStatus);
     }
 
     // Sort bug hunts
     if (huntSortBy === "oldest") {
-      filtered = [...filtered].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+      filtered = [...filtered].sort(
+        (a, b) =>
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      );
     } else if (huntSortBy === "deadline") {
-      filtered = [...filtered].sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime());
+      filtered = [...filtered].sort(
+        (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+      );
     } else {
-      filtered = [...filtered].sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+      filtered = [...filtered].sort(
+        (a, b) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+      );
     }
 
     return filtered;
-  }, [activeBugHunts, selectedHuntDifficulty, selectedHuntRewardType, selectedHuntStatus, huntSortBy]);
+  }, [
+    activeBugHunts,
+    selectedHuntDifficulty,
+    selectedHuntRewardType,
+    selectedHuntStatus,
+    huntSortBy,
+  ]);
 
   const stats = useMemo(() => {
     const totalBugs = allBugs.length;
-    const criticalCount = allBugs.filter((bug) => bug.severity === "critical").length;
-    const resolvedCount = allBugs.filter((bug) => bug.status === "resolved").length;
+    const criticalCount = allBugs.filter(
+      (bug) => bug.severity === "critical"
+    ).length;
+    const resolvedCount = allBugs.filter(
+      (bug) => bug.status === "resolved"
+    ).length;
     const activeHunters = new Set(allBugs.map((bug) => bug.author)).size;
 
     return {
@@ -135,25 +165,25 @@ export default function BugFeedPage() {
   }, [allBugs]);
 
   const handleClearFilters = () => {
-    setSelectedSeverity("all")
-    setSelectedCategory("all")
-  }
+    setSelectedSeverity("all");
+    setSelectedCategory("all");
+  };
 
   const handleClearHuntFilters = () => {
-    setSelectedHuntDifficulty("all")
-    setSelectedHuntRewardType("all")
-    setSelectedHuntStatus("all")
-  }
+    setSelectedHuntDifficulty("all");
+    setSelectedHuntRewardType("all");
+    setSelectedHuntStatus("all");
+  };
 
   const handleFilterChange = (filterType: string, value: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     setTimeout(() => {
-      if (filterType === "severity") setSelectedSeverity(value)
-      if (filterType === "category") setSelectedCategory(value)
-      if (filterType === "sort") setSortBy(value)
-      setIsLoading(false)
-    }, 300)
-  }
+      if (filterType === "severity") setSelectedSeverity(value);
+      if (filterType === "category") setSelectedCategory(value);
+      if (filterType === "sort") setSortBy(value);
+      setIsLoading(false);
+    }, 300);
+  };
 
   return (
     <div className="p-4 lg:p-6 pb-20 lg:pb-6">
@@ -164,7 +194,8 @@ export default function BugFeedPage() {
               Security Intelligence Feed
             </h1>
             <p className="text-muted-foreground">
-              Discover the latest security vulnerabilities and threat intelligence from our community
+              Discover the latest security vulnerabilities and threat
+              intelligence from our community
             </p>
           </div>
         </FadeIn>
@@ -175,54 +206,54 @@ export default function BugFeedPage() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-cyber-blue" />
-                  <span className="text-sm text-muted-foreground">Total Reports</span>
+                  <span className="text-sm text-muted-foreground">
+                    Total Reports
+                  </span>
                 </div>
-                <div className="text-2xl font-bold text-cyber-blue mt-1">{stats.total}</div>
+                <div className="text-2xl font-bold text-cyber-blue mt-1">
+                  {stats.total}
+                </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-severity-critical" />
-                  <span className="text-sm text-muted-foreground">Critical</span>
+                  <span className="text-sm text-muted-foreground">
+                    Critical
+                  </span>
                 </div>
-                <div className="text-2xl font-bold text-severity-critical mt-1">{stats.critical}</div>
+                <div className="text-2xl font-bold text-severity-critical mt-1">
+                  {stats.critical}
+                </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Award className="h-4 w-4 text-neon-green" />
-                  <span className="text-sm text-muted-foreground">Resolved</span>
+                  <span className="text-sm text-muted-foreground">
+                    Resolved
+                  </span>
                 </div>
-                <div className="text-2xl font-bold text-neon-green mt-1">{stats.resolved}</div>
+                <div className="text-2xl font-bold text-neon-green mt-1">
+                  {stats.resolved}
+                </div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-cyber-purple" />
-                  <span className="text-sm text-muted-foreground">Active Hunters</span>
+                  <span className="text-sm text-muted-foreground">
+                    Active Hunters
+                  </span>
                 </div>
-                <div className="text-2xl font-bold text-cyber-purple mt-1">{stats.hunters}</div>
+                <div className="text-2xl font-bold text-cyber-purple mt-1">
+                  {stats.hunters}
+                </div>
               </CardContent>
             </Card>
-          </div>
-        </FadeIn>
-
-        <FadeIn delay={0.2}>
-          <div className="mb-6 lg:mb-8">
-            <FilterControls
-              selectedSeverity={selectedSeverity}
-              selectedCategory={selectedCategory}
-              sortBy={sortBy}
-              onSeverityChange={(value) => handleFilterChange("severity", value)}
-              onCategoryChange={(value) => handleFilterChange("category", value)}
-              onSortChange={(value) => handleFilterChange("sort", value)}
-              onClearFilters={handleClearFilters}
-              totalCount={allBugs.length}
-              filteredCount={filteredAndSortedBugs.length}
-            />
           </div>
         </FadeIn>
 
@@ -254,7 +285,12 @@ export default function BugFeedPage() {
             </div>
             {activeBugHunts.length > 6 && (
               <div className="flex justify-end">
-                <Button variant="outline" onClick={() => router.push('/bug-hunt')}>View All Hunts</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/bug-hunt")}
+                >
+                  View All Hunts
+                </Button>
               </div>
             )}
           </div>
@@ -265,6 +301,23 @@ export default function BugFeedPage() {
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent drop-shadow-lg tracking-tight">
             Latest Bugs
           </h2>
+          <div className="mb-6 lg:mb-8">
+            <FilterControls
+              selectedSeverity={selectedSeverity}
+              selectedCategory={selectedCategory}
+              sortBy={sortBy}
+              onSeverityChange={(value) =>
+                handleFilterChange("severity", value)
+              }
+              onCategoryChange={(value) =>
+                handleFilterChange("category", value)
+              }
+              onSortChange={(value) => handleFilterChange("sort", value)}
+              onClearFilters={handleClearFilters}
+              totalCount={allBugs.length}
+              filteredCount={filteredAndSortedBugs.length}
+            />
+          </div>
         </FadeIn>
         <AnimatePresence mode="wait">
           {isLoading ? (
@@ -299,8 +352,12 @@ export default function BugFeedPage() {
         {!isLoading && filteredAndSortedBugs.length === 0 && (
           <FadeIn delay={0.3}>
             <div className="text-center py-12">
-              <div className="text-muted-foreground text-lg mb-2">No vulnerabilities found</div>
-              <p className="text-sm text-muted-foreground mb-4">Try adjusting your filters to see more results</p>
+              <div className="text-muted-foreground text-lg mb-2">
+                No vulnerabilities found
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Try adjusting your filters to see more results
+              </p>
               <Button variant="outline" onClick={handleClearFilters}>
                 Clear All Filters
               </Button>
@@ -309,5 +366,5 @@ export default function BugFeedPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

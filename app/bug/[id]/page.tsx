@@ -1,48 +1,48 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { doc, getDoc } from "firebase/firestore"
-import { db } from "@/firebaseConfig"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { ArrowLeft, Eye, Calendar } from "lucide-react"
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ArrowLeft, Eye, Calendar } from "lucide-react";
 
 interface BugReport {
-  id: string
-  title: string
-  severity: string
-  category: string
-  company: string
-  summary: string
-  description?: string
-  status: string
-  submittedAt: string
-  submittedBy: string
-  bounty?: number
-  views?: number
-  proofOfConceptUrl?: string
+  id: string;
+  title: string;
+  severity: string;
+  category: string;
+  company: string;
+  summary: string;
+  description?: string;
+  status: string;
+  submittedAt: string;
+  submittedBy: string;
+  bounty?: number;
+  views?: number;
+  proofOfConceptUrl?: string;
 }
 
 export default function BugDetailsPage() {
-  const params = useParams()
-  const router = useRouter()
-  const bugId = params?.id as string
+  const params = useParams();
+  const router = useRouter();
+  const bugId = params?.id as string;
 
-  const [bug, setBug] = useState<BugReport | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("poc")
+  const [bug, setBug] = useState<BugReport | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("poc");
 
   useEffect(() => {
-    if (!bugId) return
+    if (!bugId) return;
 
     const fetchBug = async () => {
       try {
-        const docRef = doc(db, "bugs", bugId)
-        const docSnap = await getDoc(docRef)
+        const docRef = doc(db, "bugs", bugId);
+        const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const data = docSnap.data()
+          const data = docSnap.data();
           setBug({
             id: docSnap.id,
             title: data.title || "Untitled",
@@ -57,22 +57,22 @@ export default function BugDetailsPage() {
             bounty: data.bounty || 0,
             views: data.views || 0,
             proofOfConceptUrl: data.proofOfConceptUrl || "",
-          })
+          });
         } else {
-          setBug(null)
+          setBug(null);
         }
       } catch (err) {
-        console.error("Error fetching bug:", err)
+        console.error("Error fetching bug:", err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchBug()
-  }, [bugId])
+    fetchBug();
+  }, [bugId]);
 
   if (loading) {
-    return <div className="p-6 text-center">Loading bug details...</div>
+    return <div className="p-6 text-center">Loading bug details...</div>;
   }
 
   if (!bug) {
@@ -81,7 +81,7 @@ export default function BugDetailsPage() {
         <p className="mb-4">Bug not found.</p>
         <Button onClick={() => router.push("/bug-feed")}>Go Back</Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -90,7 +90,7 @@ export default function BugDetailsPage() {
       <div className="flex-1">
         <Button
           variant="ghost"
-          onClick={() => router.push("/bug-feed")}
+          onClick={() => router.push("/feed")}
           className="mb-4 flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Bug Feed
@@ -113,22 +113,33 @@ export default function BugDetailsPage() {
           <h1 className="text-2xl font-bold mb-2">{bug.title}</h1>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span>@{bug.submittedBy}</span>
-            <span className="flex items-center gap-1"><Eye className="w-4 h-4"/> {bug.views}</span>
-            <span className="flex items-center gap-1"><Calendar className="w-4 h-4"/> {bug.submittedAt ? new Date(bug.submittedAt).toLocaleString() : "Unknown date"}</span>
+            <span className="flex items-center gap-1">
+              <Eye className="w-4 h-4" /> {bug.views}
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />{" "}
+              {bug.submittedAt
+                ? new Date(bug.submittedAt).toLocaleString()
+                : "Unknown date"}
+            </span>
             {typeof bug.bounty === "number" && bug.bounty > 0 && (
-              <span className="text-green-500 font-semibold">${bug.bounty}</span>
+              <span className="text-green-500 font-semibold">
+                ${bug.bounty}
+              </span>
             )}
           </div>
         </Card>
 
         {/* Tabs */}
         <div className="flex gap-4 border-b border-muted mb-4">
-          {["description", "poc", "timeline", "tags"].map(tab => (
+          {["description", "poc", "timeline", "tags"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`pb-2 px-2 text-sm font-medium ${
-                activeTab === tab ? "border-b-2 border-cyber-blue text-cyber-blue" : "text-muted-foreground"
+                activeTab === tab
+                  ? "border-b-2 border-cyber-blue text-cyber-blue"
+                  : "text-muted-foreground"
               }`}
             >
               {tab === "description" && "Description"}
@@ -144,7 +155,9 @@ export default function BugDetailsPage() {
           {activeTab === "description" && (
             <div>
               <h2 className="text-lg font-semibold mb-2">Description</h2>
-              <p className="text-muted-foreground">{bug.description || "No detailed description provided."}</p>
+              <p className="text-muted-foreground">
+                {bug.description || "No detailed description provided."}
+              </p>
             </div>
           )}
 
@@ -154,25 +167,31 @@ export default function BugDetailsPage() {
               {bug.proofOfConceptUrl ? (
                 <div className="space-y-2">
                   {/* Check if it's a base64 image */}
-                  {bug.proofOfConceptUrl.startsWith('data:image/') ? (
+                  {bug.proofOfConceptUrl.startsWith("data:image/") ? (
                     <img
                       src={bug.proofOfConceptUrl}
                       alt="Proof of Concept"
                       className="rounded-lg border mt-2 max-h-[500px] object-contain w-full"
                     />
-                  ) : /* Check if it's a base64 video */ bug.proofOfConceptUrl.startsWith('data:video/') ? (
+                  ) : /* Check if it's a base64 video */ bug.proofOfConceptUrl.startsWith(
+                      "data:video/"
+                    ) ? (
                     <video
                       src={bug.proofOfConceptUrl}
                       controls
                       className="rounded-lg border mt-2 max-h-[500px] w-full"
                     />
-                  ) : /* Check if it's a regular image URL */ bug.proofOfConceptUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i) ? (
+                  ) : /* Check if it's a regular image URL */ bug.proofOfConceptUrl.match(
+                      /\.(jpeg|jpg|png|gif|webp)$/i
+                    ) ? (
                     <img
                       src={bug.proofOfConceptUrl}
                       alt="Proof of Concept"
                       className="rounded-lg border mt-2 max-h-[500px] object-contain w-full"
                     />
-                  ) : /* Check if it's a regular video URL */ bug.proofOfConceptUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                  ) : /* Check if it's a regular video URL */ bug.proofOfConceptUrl.match(
+                      /\.(mp4|webm|ogg)$/i
+                    ) ? (
                     <video
                       src={bug.proofOfConceptUrl}
                       controls
@@ -189,14 +208,16 @@ export default function BugDetailsPage() {
                       View Proof of Concept
                     </a>
                   )}
-                  
+
                   {/* Add debug info */}
                   <p className="text-xs text-muted-foreground mt-2">
                     Proof URL: {bug.proofOfConceptUrl.substring(0, 100)}...
                   </p>
                 </div>
               ) : (
-                <p className="text-muted-foreground">No proof of concept provided.</p>
+                <p className="text-muted-foreground">
+                  No proof of concept provided.
+                </p>
               )}
             </div>
           )}
@@ -204,7 +225,9 @@ export default function BugDetailsPage() {
           {activeTab === "timeline" && (
             <div>
               <h2 className="text-lg font-semibold mb-2">Timeline</h2>
-              <p className="text-muted-foreground">Timeline events will be shown here...</p>
+              <p className="text-muted-foreground">
+                Timeline events will be shown here...
+              </p>
             </div>
           )}
 
@@ -212,8 +235,12 @@ export default function BugDetailsPage() {
             <div>
               <h2 className="text-lg font-semibold mb-2">Tags</h2>
               <div className="flex gap-2">
-                <span className="px-2 py-1 rounded bg-muted text-sm">Authentication</span>
-                <span className="px-2 py-1 rounded bg-muted text-sm">SQL Injection</span>
+                <span className="px-2 py-1 rounded bg-muted text-sm">
+                  Authentication
+                </span>
+                <span className="px-2 py-1 rounded bg-muted text-sm">
+                  SQL Injection
+                </span>
               </div>
             </div>
           )}
@@ -223,14 +250,19 @@ export default function BugDetailsPage() {
       {/* Related Vulnerabilities */}
       <div className="w-full lg:w-80">
         <Card className="p-4">
-          <h3 className="text-lg font-semibold mb-4">Related Vulnerabilities</h3>
+          <h3 className="text-lg font-semibold mb-4">
+            Related Vulnerabilities
+          </h3>
           <div className="space-y-3">
             {[
               { title: "XSS Vulnerability in Comment System", bounty: 2500 },
               { title: "Server-Side Request Forgery", bounty: 3000 },
               { title: "Privilege Escalation in Admin Panel", bounty: 3500 },
             ].map((vuln, idx) => (
-              <div key={idx} className="p-3 rounded bg-muted/40 hover:bg-muted/60 cursor-pointer">
+              <div
+                key={idx}
+                className="p-3 rounded bg-muted/40 hover:bg-muted/60 cursor-pointer"
+              >
                 <p className="font-medium">{vuln.title}</p>
                 <p className="text-green-500 text-sm">${vuln.bounty}</p>
               </div>
@@ -239,5 +271,5 @@ export default function BugDetailsPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

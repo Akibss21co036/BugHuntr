@@ -1,66 +1,72 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuth } from "@/components/auth/auth-context"
-import { db } from "@/firebaseConfig"
-import { doc, deleteDoc } from "firebase/firestore"
-import { useEffect, useState } from "react"
-import { formatDistanceToNow } from "date-fns"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Shield, Eye, Clock, DollarSign } from "lucide-react"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useAuth } from "@/components/auth/auth-context";
+import { db } from "@/firebaseConfig";
+import { doc, deleteDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Shield, Eye, Clock, DollarSign } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface BugCardProps {
   bug: {
-    id: string | number
-    title: string
-    severity: "critical" | "high" | "medium" | "low"
-    category: string
-    company: string
-    summary: string
-    postedTime: string
-    isLocked: boolean
-    author: string
-    email?: string
-    bounty?: number
-    views?: number
-    status?: string
-  }
-  className?: string
-  index?: number
+    id: string | number;
+    title: string;
+    severity: "critical" | "high" | "medium" | "low";
+    category: string;
+    company: string;
+    summary: string;
+    postedTime: string;
+    isLocked: boolean;
+    author: string;
+    email?: string;
+    bounty?: number;
+    views?: number;
+    status?: string;
+  };
+  className?: string;
+  index?: number;
 }
 
 const getSeverityColor = (severity: string) => {
   switch (severity) {
     case "critical":
-      return "text-severity-critical bg-severity-critical/10 border-severity-critical"
+      return "text-severity-critical bg-severity-critical/10 border-severity-critical";
     case "high":
-      return "text-severity-high bg-severity-high/10 border-severity-high"
+      return "text-severity-high bg-severity-high/10 border-severity-high";
     case "medium":
-      return "text-severity-medium bg-severity-medium/10 border-severity-medium"
+      return "text-severity-medium bg-severity-medium/10 border-severity-medium";
     case "low":
-      return "text-severity-low bg-severity-low/10 border-severity-low"
+      return "text-severity-low bg-severity-low/10 border-severity-low";
     default:
-      return "text-muted-foreground bg-muted border-border"
+      return "text-muted-foreground bg-muted border-border";
   }
-}
+};
 
 const getSeverityGlow = (severity: string) => {
   switch (severity) {
     case "critical":
-      return "hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]"
+      return "hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]";
     case "high":
-      return "hover:shadow-[0_0_30px_rgba(249,115,22,0.4)]"
+      return "hover:shadow-[0_0_30px_rgba(249,115,22,0.4)]";
     case "medium":
-      return "hover:shadow-[0_0_30px_rgba(234,179,8,0.4)]"
+      return "hover:shadow-[0_0_30px_rgba(234,179,8,0.4)]";
     case "low":
-      return "hover:shadow-[0_0_30px_rgba(34,197,94,0.4)]"
+      return "hover:shadow-[0_0_30px_rgba(34,197,94,0.4)]";
     default:
-      return "hover:shadow-xl"
+      return "hover:shadow-xl";
   }
-}
+};
 
 export function BugCard({ bug, className, index = 0 }: BugCardProps) {
   const { user } = useAuth();
@@ -69,7 +75,12 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!bug.id) return;
-    if (!window.confirm("Are you sure you want to delete this bug report? This action cannot be undone.")) return;
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this bug report? This action cannot be undone."
+      )
+    )
+      return;
     try {
       await deleteDoc(doc(db, "bugs", bug.id.toString()));
       window.location.reload();
@@ -117,7 +128,7 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
           "group cursor-pointer transition-all duration-300 border-l-4 border-l-transparent",
           "hover:border-l-cyber-blue",
           getSeverityGlow(bug.severity),
-          "transform-gpu",
+          "transform-gpu"
         )}
       >
         <CardHeader className="pb-3">
@@ -129,10 +140,24 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.1 + 0.2 }}
               >
-                <Badge className={cn(getSeverityColor(bug.severity), "font-semibold text-xs shrink-0")}> 
-                  {bug.severity ? bug.severity.toUpperCase() : <span className="bg-cyber-blue text-white px-2 py-0.5 rounded">UNKNOWN</span>}
+                <Badge
+                  className={cn(
+                    getSeverityColor(bug.severity),
+                    "font-semibold text-xs shrink-0"
+                  )}
+                >
+                  {bug.severity ? (
+                    bug.severity.toUpperCase()
+                  ) : (
+                    <span className="bg-cyber-blue text-white px-2 py-0.5 rounded">
+                      UNKNOWN
+                    </span>
+                  )}
                 </Badge>
-                <Badge variant="outline" className="border-cyber-blue/30 text-xs shrink-0 truncate max-w-24">
+                <Badge
+                  variant="outline"
+                  className="border-cyber-blue/30 text-xs shrink-0 truncate max-w-24"
+                >
                   {bug.category || "Web Application"}
                 </Badge>
                 {bug.company && (
@@ -145,7 +170,11 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                 )}
               </motion.div>
               <CardTitle className="text-base sm:text-lg leading-tight group-hover:text-cyber-blue transition-colors duration-200 line-clamp-2">
-                {bug.title || <span className="text-muted-foreground">No title provided</span>}
+                {bug.title || (
+                  <span className="text-muted-foreground">
+                    No title provided
+                  </span>
+                )}
               </CardTitle>
             </div>
             {bug.isLocked && (
@@ -155,7 +184,9 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                 transition={{ duration: 0.2 }}
               >
                 <Shield className="h-4 w-4" />
-                <span className="text-xs sm:text-sm font-medium hidden sm:inline">Premium</span>
+                <span className="text-xs sm:text-sm font-medium hidden sm:inline">
+                  Premium
+                </span>
               </motion.div>
             )}
           </div>
@@ -163,20 +194,24 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
 
         <CardContent className="space-y-4">
           <CardDescription className="text-sm leading-relaxed line-clamp-3 break-words">
-            {bug.summary && bug.summary !== "No summary provided." ? bug.summary : <span className="text-muted-foreground">No summary provided</span>}
+            {bug.summary && bug.summary !== "No summary provided." ? (
+              bug.summary
+            ) : (
+              <span className="text-muted-foreground">No summary provided</span>
+            )}
           </CardDescription>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-border/50">
             <div className="flex items-center justify-end gap-3 min-w-0 pt-2 border-t border-border/50">
-              <button
-                className="px-3 py-1 text-xs bg-cyber-blue text-white rounded hover:bg-cyber-blue/80"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.location.href = `/bug/${bug.id}`;
-                }}
-              >
-                Open
-              </button>
+              {/* <button
+                  className="px-3 py-1 text-xs bg-cyber-blue text-white rounded hover:bg-cyber-blue/80"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.location.href = `/bug/${bug.id}`;
+                  }}
+                >
+                  Open
+                </button> */}
               {isOwner && (
                 <button
                   className="px-3 py-1 text-xs bg-destructive text-white rounded hover:bg-destructive/80"
@@ -186,7 +221,23 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                   Delete
                 </button>
               )}
-              <span className="text-xs text-muted-foreground flex items-center gap-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="feather feather-clock"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> {timeAgo}</span>
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="feather feather-clock"
+                >
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>{" "}
+                {timeAgo}
+              </span>
             </div>
             <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground flex-wrap">
               {bug.bounty ? (
@@ -196,7 +247,9 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                   transition={{ duration: 0.2 }}
                 >
                   <DollarSign className="h-3 w-3" />
-                  <span className="font-semibold">{bug.bounty.toLocaleString()}</span>
+                  <span className="font-semibold">
+                    {bug.bounty.toLocaleString()}
+                  </span>
                 </motion.div>
               ) : (
                 <span className="font-semibold text-muted-foreground">00</span>
@@ -214,5 +267,5 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
         </CardContent>
       </Card>
     </motion.div>
-  )
+  );
 }
