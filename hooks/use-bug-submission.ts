@@ -130,7 +130,8 @@ export function useBugSubmission() {
   const getSubmissionsByUser = useCallback(async (userId: string) => {
     if (!userId) return [];
     try {
-      const q = query(collection(db, "bugs"), where("submittedBy", "==", userId));
+      // Only query bugHuntSubmissions collection for hunt-related submissions
+      const q = query(collection(db, "bugHuntSubmissions"), where("userId", "==", userId));
       const querySnapshot = await getDocs(q);
       const userSubs: BugSubmission[] = [];
       querySnapshot.forEach((doc) => {

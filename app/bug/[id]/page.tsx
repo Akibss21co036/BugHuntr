@@ -152,22 +152,49 @@ export default function BugDetailsPage() {
             <div>
               <h2 className="text-lg font-semibold mb-2">Proof of Concept</h2>
               {bug.proofOfConceptUrl ? (
-                bug.proofOfConceptUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i) ? (
-                  <img
-                    src={bug.proofOfConceptUrl}
-                    alt="Proof of Concept"
-                    className="rounded-lg border mt-2 max-h-[500px] object-contain"
-                  />
-                ) : (
-                  <a
-                    href={bug.proofOfConceptUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline"
-                  >
-                    View Proof of Concept
-                  </a>
-                )
+                <div className="space-y-2">
+                  {/* Check if it's a base64 image */}
+                  {bug.proofOfConceptUrl.startsWith('data:image/') ? (
+                    <img
+                      src={bug.proofOfConceptUrl}
+                      alt="Proof of Concept"
+                      className="rounded-lg border mt-2 max-h-[500px] object-contain w-full"
+                    />
+                  ) : /* Check if it's a base64 video */ bug.proofOfConceptUrl.startsWith('data:video/') ? (
+                    <video
+                      src={bug.proofOfConceptUrl}
+                      controls
+                      className="rounded-lg border mt-2 max-h-[500px] w-full"
+                    />
+                  ) : /* Check if it's a regular image URL */ bug.proofOfConceptUrl.match(/\.(jpeg|jpg|png|gif|webp)$/i) ? (
+                    <img
+                      src={bug.proofOfConceptUrl}
+                      alt="Proof of Concept"
+                      className="rounded-lg border mt-2 max-h-[500px] object-contain w-full"
+                    />
+                  ) : /* Check if it's a regular video URL */ bug.proofOfConceptUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                    <video
+                      src={bug.proofOfConceptUrl}
+                      controls
+                      className="rounded-lg border mt-2 max-h-[500px] w-full"
+                    />
+                  ) : (
+                    /* Fallback for other URLs */
+                    <a
+                      href={bug.proofOfConceptUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      View Proof of Concept
+                    </a>
+                  )}
+                  
+                  {/* Add debug info */}
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Proof URL: {bug.proofOfConceptUrl.substring(0, 100)}...
+                  </p>
+                </div>
               ) : (
                 <p className="text-muted-foreground">No proof of concept provided.</p>
               )}

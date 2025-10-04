@@ -19,54 +19,7 @@ import { useSearch } from "@/components/search/search-context"
 
 export default function BugFeedPage() {
   const { searchTerm } = useSearch();
-  // Hardcoded bug cards to restore
-  const hardcodedBugs = [
-    {
-      id: "hardcoded-1",
-      title: "SQL Injection in Login Form",
-      severity: "critical",
-      category: "Web Application",
-      company: "TechCorp",
-      summary: "SQL injection vulnerability allows attackers to bypass authentication.",
-      postedTime: "2 hours ago",
-      date: new Date().toISOString(),
-      isLocked: false,
-      author: "admin",
-      bounty: 1000,
-      views: 120,
-      status: "pending"
-    },
-    {
-      id: "hardcoded-2",
-      title: "Broken Access Control",
-      severity: "high",
-      category: "API Security",
-      company: "FinBank",
-      summary: "Sensitive endpoints accessible without proper authorization.",
-      postedTime: "1 day ago",
-      date: new Date().toISOString(),
-      isLocked: false,
-      author: "security_team",
-      bounty: 500,
-      views: 80,
-      status: "approved"
-    },
-    {
-      id: "hardcoded-3",
-      title: "XSS in Feedback Widget",
-      severity: "medium",
-      category: "Web Application",
-      company: "EduLearn",
-      summary: "Reflected XSS in feedback widget allows script injection.",
-      postedTime: "3 days ago",
-      date: new Date().toISOString(),
-      isLocked: false,
-      author: "researcher1",
-      bounty: 200,
-      views: 45,
-      status: "resolved"
-    }
-  ];
+  // Removed static hardcoded bug cards. Only dynamic bugs from Firestore will be shown.
   const [selectedSeverity, setSelectedSeverity] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
@@ -109,7 +62,7 @@ export default function BugFeedPage() {
   }, []);
 
   const filteredAndSortedBugs = useMemo(() => {
-    let filteredBugs = [...hardcodedBugs, ...allBugs];
+  let filteredBugs = [...allBugs];
 
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
