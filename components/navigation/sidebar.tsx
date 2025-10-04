@@ -24,6 +24,7 @@ import { usePathname } from "next/navigation"
 import { useAuth } from "@/components/auth/auth-context"
 import { useRanking } from "@/hooks/use-ranking"
 import { RankBadge } from "@/components/ranking/rank-badge"
+import { VerificationBadge } from "@/components/ui/verification-badge"
 import { useCommunity } from "@/hooks/use-community"
 import { useState } from "react"
 
@@ -229,18 +230,31 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="bg-sidebar-accent rounded-lg p-3 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-cyber-blue to-neon-green rounded-full flex items-center justify-center">
+            <div className="bg-sidebar-accent rounded-lg p-3 space-y-3 overflow-hidden">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-cyber-blue to-neon-green rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-sm">
                     {user?.username ? user.username.charAt(0).toUpperCase() : "JD"}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-sidebar-foreground truncate">{user?.username || "John Doe"}</p>
-                  <p className="text-xs text-sidebar-foreground/70">
-                    {user?.role === "admin" ? "Administrator" : "@" + (user?.username || "johndoe")}
-                  </p>
+                  <div className="flex items-center gap-1 mb-1">
+                    <p className="text-sm font-medium text-sidebar-foreground truncate flex-1">{user?.username || "John Doe"}</p>
+                    <div className="flex-shrink-0">
+                      <VerificationBadge isAdmin={user?.role === "admin"} companyName={user?.companyName} size="sm" compact={true} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 overflow-hidden">
+                    {user?.role === "admin" ? (
+                      <div className="truncate">
+                        <VerificationBadge isAdmin={true} companyName={user?.companyName} size="sm" className="text-xs" />
+                      </div>
+                    ) : (
+                      <p className="text-xs text-sidebar-foreground/70 truncate">
+                        {"@" + (user?.username || "johndoe")}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {userRanking && <RankBadge rank={userRanking.rank} size="sm" />}
               </div>

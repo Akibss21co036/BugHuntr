@@ -127,7 +127,7 @@ export default function SubmitBugPage() {
         addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title} (${severity} severity)`)
         
         // Update points and bug count in Firestore userProfiles
-        const statsUpdated = await updateUserStats(user.username, points, 1)
+        const statsUpdated = await updateUserStats(user.username, points, 1, user.role, user.companyName)
         
         if (statsUpdated) {
           console.log("Stats updated successfully")

@@ -18,7 +18,7 @@ CORS(app, origins=["http://localhost:3000"])
 # -------------------------
 # Firebase Setup
 # -------------------------
-cred_path = 'C:/Users/tendu/OneDrive/Desktop/BugHuntr1/BugHuntr/bughuntr-3f895-firebase-adminsdk-fbsvc-ac4d536490.json'
+cred_path = 'D:/HackathonProject/BugHuntr/bughuntr-3f895-firebase-adminsdk-fbsvc-35f7a29ea2.json'
 cred = credentials.Certificate(cred_path)
 initialize_app(cred)
 db = firestore.client()
