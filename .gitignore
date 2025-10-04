@@ -26,5 +26,22 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Firebase credentials and sensitive files
+*firebase-adminsdk*.json
+*service-account*.json
+*.pem
+*.key
 bughuntr-3f895-firebase-adminsdk-fbsvc-35f7a29ea2.json
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
 

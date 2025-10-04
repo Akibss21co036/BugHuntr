@@ -18,7 +18,11 @@ CORS(app, origins=["http://localhost:3000"])
 # -------------------------
 # Firebase Setup
 # -------------------------
-cred_path = 'D:/HackathonProject/BugHuntr/bughuntr-3f895-firebase-adminsdk-fbsvc-35f7a29ea2.json'
+# Use environment variable for Firebase credentials path
+cred_path = os.getenv('FIREBASE_CREDENTIALS_PATH', './firebase-credentials.json')
+if not os.path.exists(cred_path):
+    raise FileNotFoundError(f"Firebase credentials file not found at: {cred_path}")
+
 cred = credentials.Certificate(cred_path)
 initialize_app(cred)
 db = firestore.client()
