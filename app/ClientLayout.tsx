@@ -40,6 +40,8 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {!isLandingPage && isAuthenticated && <MobileNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
+
+      {isAuthenticated && <BugHuntrAssistant />}
     </div>
   )
 }

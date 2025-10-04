@@ -6,8 +6,9 @@ import os
 import logging
 from flask_cors import CORS
 import re
-from typing import Tuple
+from typing import Tuple, List, Dict, Any
 from dotenv import load_dotenv
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,18 +17,77 @@ app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    raise RuntimeError("GROQ_API_KEY environment variable not set")
+EMERGENT_LLM_KEY = os.getenv("EMERGENT_LLM_KEY")
 
-client = AsyncGroq(api_key=GROQ_API_KEY)
+if not GROQ_API_KEY:
+    print("GROQ_API_KEY not set, bug analysis may not work")
+
+if not EMERGENT_LLM_KEY:
+    raise RuntimeError("EMERGENT_LLM_KEY environment variable not set")
+
+if GROQ_API_KEY:
+    client = AsyncGroq(api_key=GROQ_API_KEY)
 
 class BugReport(BaseModel):
     title: str
     description: str
 
+class ChatMessage(BaseModel):
+    message: str
+    session_id: str = "default"
+
 @app.route("/", methods=["GET"])
 def root():
     return jsonify({"message": "API is running"})
+
+@app.route("/api/chat", methods=["POST"])
+def chat_endpoint():
+    """BugHuntr Assistant chat endpoint"""
+    try:
+        data = request.json
+        chat_data = ChatMessage(**data)
+        
+        # Use asyncio to run the async chat function
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        response = loop.run_until_complete(process_chat_message(chat_data))
+        loop.close()
+        
+        return jsonify({"response": response})
+    
+    except ValidationError as ve:
+        logging.error(f"Chat validation error: {ve}", exc_info=True)
+        return jsonify({"error": "Invalid chat message format"}), 400
+    
+    except Exception as e:
+        logging.error(f"Error in chat endpoint: {e}", exc_info=True)
+        return jsonify({"error": "Error processing chat message"}), 500
+
+async def process_chat_message(chat_data: ChatMessage) -> str:
+    """Process chat message using Emergent LLM"""
+    try:
+        # Initialize the chat with Emergent LLM key
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=chat_data.session_id,
+            system_message=BUGHUNTR_ASSISTANT_PROMPT
+        ).with_model("openai", "gpt-4o-mini")  # Using GPT-4o-mini for efficiency
+        
+        # Create user message
+        user_message = UserMessage(text=chat_data.message)
+        
+        # Get response from LLM
+        response = await chat.send_message(user_message)
+        
+        # Ensure response is concise (max ~250 tokens as specified)
+        if len(response) > 1200:  # Rough token estimate
+            response = response[:1200] + "..."
+            
+        return response
+        
+    except Exception as e:
+        logging.error(f"Error processing chat message: {e}", exc_info=True)
+        return "I'm sorry, I'm having trouble processing your request right now. Please try again or check the documentation in the /docs section."
 
 # -------------------------
 # Deterministic rule classifier
@@ -85,6 +145,63 @@ def classify_with_rules(title: str, desc: str) -> Tuple[str, str]:
     return None, "inconclusive"
 
 # -------------------------
+# BugHuntr Assistant System Prompt
+# -------------------------
+BUGHUNTR_ASSISTANT_PROMPT = """You are **BugHuntr Assistant**, a focused, trustworthy chatbot built into the BugHuntr web app. Your job is to **help users understand and navigate the site**, answer questions about features and data paths, give short copy-paste Firebase v9 code snippets, and provide step-by-step help for common tasks (join/create communities, post, comment, upload attachments, report duplicates, find settings). Be concise, accurate, and friendly. Avoid speculation — if unsure, say "I'm not sure; here's how to check" and point to the exact file, console, or route.
+
+CONFIG:
+- Preferred reply length: **very short** (1–6 sentences) + optional 3–6 step list or tiny code block.
+- Max tokens per reply: ~250 (the caller will enforce in API).
+- Temperature: 0.15 (low hallucination).
+- When returning code, keep snippets ≤ 12 lines and use Firebase v9 modular style.
+- NEVER include API keys or secrets in responses.
+
+CONTEXT (use this to answer user queries; keep answers oriented to these facts):
+- Purpose: collaborative bug-reporting + community discussion app with AI-powered severity analysis.
+- Key pages/flows: Home (communities list) → Community page (posts + join/leave + create post) → Post detail (comments) → Create Community modal → Profile / Dashboard → Bug Submit with severity analysis.
+- Bug Analysis: BugHuntr includes automatic severity classification (Critical/High/Medium/Low) using AI analysis of bug titles and descriptions.
+- Firestore schema (exact paths — give these when asked):
+  - Communities: `/communities/{communityId}` → { id, slug, name, description, createdBy, createdAt, privacy: "public"|"private", membersCount, moderators[], tags[], avatarUrl }
+  - Members: `/communityMembers/{communityId}/members/{uid}` → { uid, role: "member"|"moderator"|"owner", joinedAt, displayName, photoURL }
+  - Posts: `/communityPosts/{communityId}/posts/{postId}` → { id, authorUid, authorDisplayName, authorPhotoURL, title, content, attachments[], createdAt, updatedAt, likesCount, commentsCount, visibility, severityTag }
+  - Comments: `/communityPosts/{communityId}/posts/{postId}/comments/{commentId}` → { id, authorUid, content, createdAt, parentCommentId? }
+  - Notifications: `/notifications/{userId}/notifications/{notifId}` → { id, type, payload, read, createdAt }
+- Storage conventions:
+  - Community avatars: `communityAvatars/{communityId}/avatar.jpg`
+  - Post attachments: `communityPosts/{communityId}/{postId}/{filename}`
+
+INSTRUCTIONS — Behavior rules (always follow):
+1. **Answer concisely first** (1–2 lines). Then optionally give a short numbered list (3–6 steps) or tiny Firebase code snippet.
+2. **Always** provide exact Firestore/storage paths when the user asks where data is saved.
+3. Use Firebase v9 modular snippets only when user asks for code. Keep snippets copy/paste ready and ≤12 lines.
+4. For operations that should be server-side (mass notifications, admin-only actions), explicitly recommend Cloud Functions and **do not** give admin credentials or insecure client-side patterns.
+5. If the user asks DevOps/deployment steps, give minimal commands and exact file names (e.g., `firebase.json`, `firebase.rules`), and mention Firestore Rules must be edited in the Firebase console or deployed from `firebase deploy --only firestore:rules`.
+6. Respect free Gemini key constraints: keep single replies short; suggest paginating long answers.
+7. If the user asks for longer code or files, respond: "I can paste the full file — say 'paste full file'" and wait for explicit request.
+
+FEW-SHOT EXAMPLES (imitate style — concise + steps or snippet):
+
+Q: How do I join a community?
+A: Short: Click **Join** on the community page. Steps: 1) Open `/community/{communityId}`. 2) Click Join — client writes `/communityMembers/{communityId}/members/{yourUid}` with `role: "member"`. 3) The app updates `membersCount` in `/communities/{communityId}`. Need the exact client code?
+
+Q: Where are posts stored?
+A: Posts are in Firestore at `communityPosts/{communityId}/posts/{postId}`. Each post includes `authorUid`, `title`, `content`, `attachments[]`, and timestamps.
+
+Q: How does bug severity analysis work?
+A: BugHuntr uses AI to automatically classify bug severity as Critical, High, Medium, or Low based on the title and description. Submit bugs via `/submit` and the system analyzes impact level using the `/api/analyzeSeverity` endpoint.
+
+Q: Create a post (code)?
+A: Short snippet:
+```js
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+await addDoc(collection(db, "communityPosts", communityId, "posts"), {
+  authorUid: auth.currentUser.uid, title, content, createdAt: serverTimestamp(), likesCount:0
+});
+```
+
+Remember to be helpful, concise, and accurate. If you don't know something specific about BugHuntr, say so and guide them to check the relevant documentation or settings."""
+
+# -------------------------
 # Strict LLM system prompt
 # -------------------------
 SYSTEM_PROMPT = (
@@ -122,18 +239,21 @@ async def analyze_severity_async(bug: BugReport):
             {"role": "user", "content": f"Title: {title}\nDescription: {desc}"}
         ]
         try:
-            completion = await client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=messages,
-                temperature=0.0,
-                max_completion_tokens=12,
-                top_p=1,
-                stream=False
-            )
-            severity_raw = completion.choices[0].message.content.strip()
-            severity = re.sub(r'[^A-Za-z]', '', severity_raw).capitalize()
-            valid_labels = {"Critical", "High", "Medium", "Low"}
-            label = severity if severity in valid_labels else "Medium"
+            if not GROQ_API_KEY or 'client' not in globals():
+                label = "Medium"
+            else:
+                completion = await client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=messages,
+                    temperature=0.0,
+                    max_completion_tokens=12,
+                    top_p=1,
+                    stream=False
+                )
+                severity_raw = completion.choices[0].message.content.strip()
+                severity = re.sub(r'[^A-Za-z]', '', severity_raw).capitalize()
+                valid_labels = {"Critical", "High", "Medium", "Low"}
+                label = severity if severity in valid_labels else "Medium"
         except Exception:
             logging.exception("Error calling model, falling back to Medium.")
             label = "Medium"
@@ -166,6 +286,9 @@ async def analyze_severity_async(bug: BugReport):
 @app.route("/api/analyzeSeverity", methods=["POST"])
 def analyze_severity():
     try:
+        if not GROQ_API_KEY:
+            return jsonify({"error": "Bug analysis service temporarily unavailable"}), 503
+            
         data = request.json
         bug = BugReport(**data)
 
