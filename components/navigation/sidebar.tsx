@@ -43,7 +43,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const userRanking = user ? getUserRanking(user.id) : null
 
   const navigationItems = [
-    { id: "dashboard", label: "Profile", icon: Home, href: "/dashboard" },
+    { id: "dashboard", label: "Dashboard", icon: Home, href: "/dashboard" },
     { id: "bug-feed", label: "Bug Feed", icon: Bug, href: "/feed" },
     user?.role === "admin"
       ? { id: "create-bug-hunt", label: "Create a Bug Hunt", icon: Target, href: "/admin/bug-hunts" }
