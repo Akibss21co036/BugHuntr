@@ -231,36 +231,67 @@ export default function SignUpPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrors({})
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors({});
 
-    const newErrors = await validateForm()
-
+    const newErrors = await validateForm();
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      setIsLoading(false)
-      return
+      setErrors(newErrors);
+      setIsLoading(false);
+      return;
     }
 
     try {
-      // Encrypt password before saving
-      const hashedPassword = await bcrypt.hash(formData.password, 10)
-      // Store user in users collection
-      await addDoc(collection(db, "users"), {
-        ...formData,
-        password: hashedPassword,
-        userType,
-        adminType,
-        createdAt: new Date().toISOString(),
-      })
-      // Store username and points in userProfiles collection
-      await createUserProfile(formData.username)
-      setEmailSent(true)
+      const formDataToSend = new FormData();
+      // Always send required fields
+      formDataToSend.append('username', formData.username);
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('password', formData.password);
+      formDataToSend.append('userType', userType);
+      formDataToSend.append('adminType', adminType);
+
+      // Admin-specific fields
+      if (adminType === 'company' || adminType === 'firm') {
+        formDataToSend.append('companyName', formData.companyName);
+        formDataToSend.append('registrationNumber', formData.registrationNumber);
+        formDataToSend.append('employeeId', formData.registrationNumber);
+        formDataToSend.append('businessPhone', formData.businessPhone);
+        formDataToSend.append('address', formData.address);
+      } else if (adminType === 'student') {
+        formDataToSend.append('instituteName', formData.instituteName);
+        formDataToSend.append('studentId', formData.studentId);
+        formDataToSend.append('projectName', formData.projectName);
+      } else if (adminType === 'individual') {
+        formDataToSend.append('phone', formData.phone);
+        formDataToSend.append('projectStartupName', formData.projectStartupName);
+      }
+
+      // Optional supporting document
+      if (supportingDoc) {
+        formDataToSend.append('supportingDoc', supportingDoc);
+      }
+
+      const response = await fetch('http://localhost:8000/api/signup', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+      const result = await response.json();
+      if (response.ok) {
+        setEmailSent(true);
+        setErrors({});
+      } else {
+        // Show backend error inline under the form
+        setErrors(prev => ({ ...prev, general: result.error || 'Signup failed.' }));
+        if (result.details && Array.isArray(result.details)) {
+          setErrors(prev => ({ ...prev, details: result.details.join(' ') }));
+        }
+      }
     } catch (error) {
-      setErrors({ general: "An error occurred during signup. Please try again." })
+      setErrors(prev => ({ ...prev, general: 'An error occurred during signup. Please try again.' }));
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -376,7 +407,9 @@ export default function SignUpPage() {
     return (
       <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
         {/* Common fields */}
-        <Input
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-slate-300">Full Name *</Label>
+            <Input
           id="name"
           type="text"
           placeholder="John Doe"
@@ -387,6 +420,7 @@ export default function SignUpPage() {
           }`}
           required
         />
+          </div>
         {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
 
         {/* Company/Firm specific fields */}
@@ -412,12 +446,12 @@ export default function SignUpPage() {
 
             <div className="space-y-2">
               <Label htmlFor="registrationNumber" className="text-slate-300">
-                {adminType === "company" ? "Company" : "Firm"} Registration Number *
+                Employee ID *
               </Label>
               <Input
                 id="registrationNumber"
                 type="text"
-                placeholder="Registration/License number"
+                placeholder="Employee ID"
                 value={formData.registrationNumber}
                 onChange={(e) => handleInputChange("registrationNumber", e.target.value)}
                 className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
