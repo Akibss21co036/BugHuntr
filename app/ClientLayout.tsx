@@ -10,6 +10,7 @@ import { CommunityProvider } from "@/hooks/use-community"
 import { TopNavbar } from "@/components/navigation/top-navbar"
 import { Sidebar } from "@/components/navigation/sidebar"
 import { MobileNavigation } from "@/components/navigation/mobile-navigation"
+import { BugHuntrAssistant } from "@/components/chatbot/bughuntr-assitant"
 import { useAuth } from "@/components/auth/auth-context"
 import { usePathname } from "next/navigation"
 import "./globals.css"
@@ -40,6 +41,9 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {!isLandingPage && isAuthenticated && <MobileNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
+      
+      {/* BugHuntr Assistant - Available on all authenticated pages except landing */}
+      {!isLandingPage && isAuthenticated && <BugHuntrAssistant />}
     </div>
   )
 }

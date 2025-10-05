@@ -187,6 +187,128 @@ def analyze_severity():
         logging.error(f"Error in analyze_severity: {e}", exc_info=True)
         return jsonify({"error": "Error processing request."}), 500
 
+# -------------------------
+# Chat endpoint for BugHuntr Assistant
+# -------------------------
+@app.route("/chat", methods=["POST"])
+def chat():
+    try:
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({"error": "Message is required"}), 400
+        
+        user_message = data['message']
+        session_id = data.get('session_id', 'default')
+        context = data.get('context', '')
+        platform_features = data.get('platform_features', [])
+        
+        # Check if message is BugHuntr-related
+        bughuntr_keywords = [
+            'bug', 'vulnerability', 'security', 'bounty', 'submission', 'hunt', 'platform',
+            'navigate', 'feed', 'dashboard', 'profile', 'firebase', 'code', 'admin',
+            'certificate', 'community', 'leaderboard', 'report', 'submission', 'review',
+            'company', 'severity', 'critical', 'high', 'medium', 'low', 'poc', 'proof',
+            'authentication', 'authorization', 'xss', 'sql', 'injection', 'csrf',
+            'cybersecurity', 'penetration', 'testing', 'endpoint', 'api', 'database'
+        ]
+        
+        message_lower = user_message.lower()
+        is_bughuntr_related = any(keyword in message_lower for keyword in bughuntr_keywords)
+        
+        # If not BugHuntr-related, provide redirect response
+        if not is_bughuntr_related:
+            redirect_response = """🛡️ I'm specifically designed to help with the BugHuntr platform. I can assist you with:
+
+📍 **Navigation**: "Navigate to feed", "Go to dashboard", "Take me to submissions"
+🐛 **Bug Hunting**: Submission process, severity levels, proof of concepts
+🔒 **Security**: Vulnerability types, analysis techniques, best practices  
+⚙️ **Platform Features**: Communities, leaderboards, certificates, admin tools
+💻 **Code Help**: Firebase integration, form submissions, API usage
+
+What would you like to know about BugHuntr?"""
+            
+            return jsonify({
+                "response": redirect_response,
+                "session_id": session_id
+            })
+        
+        # Enhanced system prompt for BugHuntr-specific responses
+        system_prompt = f"""You are the BugHuntr Assistant, an expert AI specialized EXCLUSIVELY in the BugHuntr cybersecurity platform. 
+
+STRICT GUIDELINES:
+- ONLY discuss BugHuntr platform features, cybersecurity, bug bounty hunting, and related technical topics
+- NEVER engage with topics outside cybersecurity/BugHuntr scope (weather, general conversation, etc.)
+- Always redirect off-topic queries back to BugHuntr capabilities
+
+YOUR EXPERTISE AREAS:
+🎯 **Platform Navigation**: Feed, Dashboard, Profile, Submissions, Communities, Leaderboards, Certificates
+🐛 **Bug Hunting Process**: Submission workflow, severity classification (Critical/High/Medium/Low), POC requirements
+🔒 **Security Concepts**: Vulnerability types (XSS, SQL Injection, CSRF, etc.), penetration testing, security analysis
+👥 **User Management**: Admin vs regular users, company-specific access, role-based permissions
+💻 **Technical Integration**: Firebase setup, form submissions, API endpoints, database operations
+🏆 **Gamification**: Points system, certificates, ranking algorithms, community features
+
+RESPONSE FORMAT:
+- Use emojis and clear formatting
+- Provide specific, actionable information
+- Include code examples when relevant
+- Mention relevant platform features
+- Keep responses concise but comprehensive
+
+Current platform features available: {', '.join(platform_features)}
+
+Context: {context}"""
+        
+        # Use the existing Groq client to generate response
+        async def get_chat_response():
+            try:
+                completion = await client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message}
+                    ],
+                    model="llama-3.1-8b-instant",
+                    temperature=0.7,
+                    max_tokens=1000,
+                )
+                return completion.choices[0].message.content
+            except Exception as e:
+                logging.error(f"Error getting chat response: {e}")
+                return """🛡️ **BugHuntr Assistant Ready!**
+
+I'm here to help with:
+• **Navigate**: Type "navigate to [page]" for quick access
+• **Bug Submission**: Guide through the reporting process  
+• **Security Analysis**: Explain vulnerability types and severity
+• **Platform Features**: Communities, leaderboards, certificates
+• **Code Examples**: Firebase integration, form handling
+
+What aspect of BugHuntr would you like to explore?"""
+        
+        # Run the async function
+        response = asyncio.run(get_chat_response())
+        
+        return jsonify({
+            "response": response,
+            "session_id": session_id
+        })
+        
+    except Exception as e:
+        logging.error(f"Error in chat endpoint: {e}", exc_info=True)
+        return jsonify({
+            "response": """🛡️ **BugHuntr Assistant**
+
+I'm your dedicated cybersecurity platform assistant. I can help with:
+
+🎯 **Quick Navigation**: "Navigate to feed", "Go to dashboard"
+🐛 **Bug Hunting**: Submission process, severity analysis
+🔒 **Security Help**: Vulnerability explanations, best practices
+⚙️ **Platform Features**: All BugHuntr capabilities
+
+What would you like to know about BugHuntr?""",
+            "session_id": "bughuntr-session"
+        }), 200
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     app.run(host="0.0.0.0", port=8000)
