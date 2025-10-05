@@ -6,7 +6,8 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Eye, Calendar } from "lucide-react";
+import { ArrowLeft, Eye, Calendar, Shield } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-context";
 
 interface BugReport {
   id: string;
@@ -27,11 +28,13 @@ interface BugReport {
 export default function BugDetailsPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const bugId = params?.id as string;
 
   const [bug, setBug] = useState<BugReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("poc");
+  const [accessDenied, setAccessDenied] = useState(false);
 
   useEffect(() => {
     if (!bugId) return;
@@ -43,7 +46,7 @@ export default function BugDetailsPage() {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setBug({
+          const bugData = {
             id: docSnap.id,
             title: data.title || "Untitled",
             severity: data.severity || "unknown",
@@ -57,7 +60,39 @@ export default function BugDetailsPage() {
             bounty: data.bounty || 0,
             views: data.views || 0,
             proofOfConceptUrl: data.proofOfConceptUrl || "",
-          });
+          };
+
+          console.log("=== BUG DETAILS ACCESS CHECK ===");
+          console.log("Bug severity:", bugData.severity);
+          console.log("Bug company:", bugData.company);
+          console.log("User:", user);
+          console.log("User role:", user?.role);
+          console.log("User company:", user?.companyName);
+
+          // Check access permissions based on user role and company
+          if (user?.role === "admin" && user?.companyName) {
+            console.log("User is admin with company");
+            // Company admins can only access bugs from their own company (all severities)
+            if (bugData.company === user.companyName) {
+              console.log("Company match - access granted");
+              setBug(bugData);
+            } else {
+              console.log("Company mismatch - access denied");
+              // Admin from different company cannot access any bugs
+              setAccessDenied(true);
+            }
+          } else {
+            // For non-admin users, apply severity-based filtering
+            if (bugData.severity === "critical" || bugData.severity === "high") {
+              console.log("Non-admin user accessing critical/high severity - access denied");
+              // Regular users cannot access critical/high severity bugs
+              setAccessDenied(true);
+            } else {
+              console.log("Non-admin user accessing low/medium severity - access granted");
+              // Low and medium severity bugs are accessible to everyone
+              setBug(bugData);
+            }
+          }
         } else {
           setBug(null);
         }
@@ -73,6 +108,33 @@ export default function BugDetailsPage() {
 
   if (loading) {
     return <div className="p-6 text-center">Loading bug details...</div>;
+  }
+
+  if (accessDenied) {
+    return (
+      <div className="p-6 text-center">
+        <div className="max-w-md mx-auto">
+          <div className="mb-4">
+            <Shield className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-foreground mb-2">Access Restricted</h2>
+            <p className="text-muted-foreground mb-2">
+              {user?.role === "admin" && user?.companyName ? 
+                "This bug report is from a different company. You can only access bug reports from your own company." :
+                "This bug report access is restricted. Company administrators can only view bugs from their own company, and critical/high severity bugs require admin access."}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {!user ? "Please log in with a company admin account to view this content." : 
+               user.role !== "admin" ? "Contact your company administrator for access to restricted bug reports." :
+               !user.companyName ? "Please ensure your company information is properly configured." :
+               `You can only view bug reports from ${user.companyName}.`}
+            </p>
+          </div>
+          <Button onClick={() => router.push("/feed")} className="w-full">
+            Return to Bug Feed
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (!bug) {

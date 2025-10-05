@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/components/auth/auth-context"
 import {
   ArrowLeft,
   Shield,
@@ -61,6 +62,7 @@ const getSeverityColor = (severity: string) => {
 
 export function BugDetailsContent({ bug }: BugDetailsContentProps) {
   const router = useRouter()
+  const { isAuthenticated } = useAuth()
   const [isSubscribed, setIsSubscribed] = useState(!bug.isLocked)
 
   const handleSubscribe = () => {
@@ -68,12 +70,23 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
     // In a real app, this would make an API call to subscribe the user
   }
 
+  const handleBackToFeed = () => {
+    console.log("Back button clicked in BugDetailsContent, isAuthenticated:", isAuthenticated);
+    if (isAuthenticated) {
+      console.log("Navigating to /feed");
+      router.push("/feed")
+    } else {
+      console.log("Navigating to /");
+      router.push("/")
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Back button */}
       <Button
         variant="ghost"
-        onClick={() => router.push("/")}
+        onClick={handleBackToFeed}
         className="gap-2 text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />

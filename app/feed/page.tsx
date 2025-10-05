@@ -16,9 +16,11 @@ import { BugHuntCard } from "@/components/bug-hunt/bug-hunt-card";
 import { BugHuntFilterControls } from "@/components/bug-hunt/bug-hunt-filter-controls";
 import { useBugHunt } from "@/hooks/use-bug-hunt";
 import { useSearch } from "@/components/search/search-context";
+import { useAuth } from "@/components/auth/auth-context";
 
 export default function BugFeedPage() {
   const { searchTerm } = useSearch();
+  const { user } = useAuth();
   // Removed static hardcoded bug cards. Only dynamic bugs from Firestore will be shown.
   const [selectedSeverity, setSelectedSeverity] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -44,7 +46,7 @@ export default function BugFeedPage() {
           title: data.title,
           severity: data.severity,
           category: data.category || "Web Application",
-          company: data.huntTitle || "Unknown",
+          company: data.company || "Unknown",
           summary: data.description || data.impact || "No summary provided.",
           postedTime: data.postedTime || data.submittedAt || "",
           date: data.submittedAt,
@@ -61,8 +63,45 @@ export default function BugFeedPage() {
     return () => unsubscribe();
   }, []);
 
+  // Reset severity filter if user loses admin access or company info
+  useEffect(() => {
+    if ((selectedSeverity === "critical" || selectedSeverity === "high") && 
+        (!user || user.role !== "admin" || !user.companyName)) {
+      setSelectedSeverity("all");
+    }
+  }, [user, selectedSeverity]);
+
   const filteredAndSortedBugs = useMemo(() => {
     let filteredBugs = [...allBugs];
+
+    // Debug logging
+    console.log("=== DEBUG FILTERING ===");
+    console.log("User:", user);
+    console.log("All bugs:", allBugs);
+    console.log("User role:", user?.role);
+    console.log("User company:", user?.companyName);
+
+    // Filter bugs based on user role and company
+    filteredBugs = filteredBugs.filter((bug) => {
+      // If user is a company admin, only show bugs from their company
+      if (user?.role === "admin" && user?.companyName) {
+        console.log(`Admin filtering: ${bug.title} (${bug.severity}) - Company: ${bug.company} vs User: ${user.companyName}`);
+        const hasAccess = bug.company?.toLowerCase() === user.companyName?.toLowerCase();
+        console.log(`Company access: ${hasAccess}`);
+        return hasAccess;
+      }
+      
+      // For non-admin users, apply original severity-based filtering
+      if (bug.severity === "critical" || bug.severity === "high") {
+        console.log(`Non-admin checking ${bug.severity} bug:`, bug.title, "- Access denied");
+        // Regular users cannot see critical/high severity bugs
+        return false;
+      }
+      
+      // Show low and medium severity bugs to non-admin users
+      console.log(`Non-admin user sees ${bug.severity} bug:`, bug.title);
+      return true;
+    });
 
     if (searchTerm && searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
@@ -98,7 +137,7 @@ export default function BugFeedPage() {
     }
 
     return filteredBugs;
-  }, [allBugs, selectedSeverity, selectedCategory, sortBy, searchTerm]);
+  }, [allBugs, selectedSeverity, selectedCategory, sortBy, searchTerm, user]);
 
   // Bug hunt filtering logic
   const filteredBugHunts = useMemo(() => {
@@ -178,7 +217,16 @@ export default function BugFeedPage() {
   const handleFilterChange = (filterType: string, value: string) => {
     setIsLoading(true);
     setTimeout(() => {
-      if (filterType === "severity") setSelectedSeverity(value);
+      if (filterType === "severity") {
+        // Check if user is authorized to filter by critical/high severity
+        if ((value === "critical" || value === "high") && 
+            (!user || user.role !== "admin" || !user.companyName)) {
+          // Reset to "all" if unauthorized
+          setSelectedSeverity("all");
+        } else {
+          setSelectedSeverity(value);
+        }
+      }
       if (filterType === "category") setSelectedCategory(value);
       if (filterType === "sort") setSortBy(value);
       setIsLoading(false);
@@ -298,6 +346,28 @@ export default function BugFeedPage() {
 
         {/* Bugs Section */}
         <FadeIn delay={0.3}>
+          {(!user || user.role !== "admin") && (
+            <Card className="mb-6 border-amber-200 bg-amber-50/50">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <Shield className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                  <div>
+                    <h3 className="font-semibold text-amber-900 mb-1">Access Notice</h3>
+                    <p className="text-sm text-amber-800">
+                      {user?.role === "admin" && user?.companyName ? 
+                        `As a company administrator, you can only view bug reports from ${user.companyName}. Critical and high severity bugs from other companies are restricted.` :
+                        user?.role === "admin" ? 
+                          "Please ensure your company information is properly configured to view company-specific bug reports." :
+                          "Company administrators can only view bug reports from their own company. Critical and high severity bugs require admin access."
+                      }
+                      {!user && " Please log in with a company admin account to view company-specific reports."}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent drop-shadow-lg tracking-tight">
             Latest Bugs
           </h2>
@@ -316,6 +386,7 @@ export default function BugFeedPage() {
               onClearFilters={handleClearFilters}
               totalCount={allBugs.length}
               filteredCount={filteredAndSortedBugs.length}
+              user={user}
             />
           </div>
         </FadeIn>

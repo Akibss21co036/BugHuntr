@@ -18,6 +18,7 @@ interface FilterControlsProps {
   totalCount: number
   filteredCount: number
   showRewardFilter?: boolean
+  user?: { role: string; companyName?: string } | null
 }
 
 const severityOptions = [
@@ -65,8 +66,23 @@ export function FilterControls({
   totalCount,
   filteredCount,
   showRewardFilter = false,
+  user,
 }: FilterControlsProps) {
   const hasActiveFilters = selectedSeverity !== "all" || selectedCategory !== "all" || (showRewardFilter && selectedRewardType !== "all")
+
+  // Filter severity options based on user role and company
+  const availableSeverityOptions = severityOptions.filter((option) => {
+    // Show all options to company admins (they're already filtered by company at data level)
+    if (user?.role === "admin" && user?.companyName) {
+      return true;
+    }
+    // For non-admin users, only show "all", "medium", and "low"
+    if (option.value === "all" || option.value === "medium" || option.value === "low") {
+      return true;
+    }
+    // Hide "critical" and "high" from non-admin users
+    return false;
+  });
 
   return (
     <div className="space-y-4">
@@ -82,7 +98,7 @@ export function FilterControls({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {severityOptions.map((option) => (
+              {availableSeverityOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>

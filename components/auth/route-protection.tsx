@@ -23,7 +23,8 @@ const publicRoutes = [
   "/login", 
   "/signup",
   "/docs",
-  "/leaderboard"
+  "/leaderboard",
+  "/bug"
 ]
 
 export function RouteProtection({ children }: { children: React.ReactNode }) {
