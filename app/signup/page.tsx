@@ -1,3 +1,8 @@
+// Firebase auth has been fixed date:26-11-2025
+
+
+
+
 "use client"
 
 import type React from "react"
@@ -243,53 +248,52 @@ export default function SignUpPage() {
     }
 
     try {
-      const formDataToSend = new FormData();
-      // Always send required fields
-      formDataToSend.append('username', formData.username);
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('email', formData.email);
-      formDataToSend.append('password', formData.password);
-      formDataToSend.append('userType', userType);
-      formDataToSend.append('adminType', adminType);
+      // Hash password using bcrypt
+      const hashedPassword = await bcrypt.hash(formData.password, 10);
 
-      // Admin-specific fields
-      if (adminType === 'company' || adminType === 'firm') {
-        formDataToSend.append('companyName', formData.companyName);
-        formDataToSend.append('registrationNumber', formData.registrationNumber);
-        formDataToSend.append('employeeId', formData.registrationNumber);
-        formDataToSend.append('businessPhone', formData.businessPhone);
-        formDataToSend.append('address', formData.address);
-      } else if (adminType === 'student') {
-        formDataToSend.append('instituteName', formData.instituteName);
-        formDataToSend.append('studentId', formData.studentId);
-        formDataToSend.append('projectName', formData.projectName);
-      } else if (adminType === 'individual') {
-        formDataToSend.append('phone', formData.phone);
-        formDataToSend.append('projectStartupName', formData.projectStartupName);
+      // Create user profile in Firestore (Firestore registration only - no Firebase Auth)
+      const userProfile: any = {
+        username: formData.username,
+        name: formData.name,
+        email: formData.email,
+        password: hashedPassword, // Store hashed password in Firestore
+        userType,
+        adminType: adminType || null,
+        phone: formData.phone || null,
+        createdAt: new Date(),
+        verified: false,
+        points: 0,
+      };
+
+      // Add type-specific fields
+      if (adminType === "company" || adminType === "firm") {
+        userProfile.companyName = formData.companyName;
+        userProfile.registrationNumber = formData.registrationNumber;
+        userProfile.businessPhone = formData.businessPhone;
+        userProfile.address = formData.address;
+      } else if (adminType === "student") {
+        userProfile.instituteName = formData.instituteName;
+        userProfile.studentId = formData.studentId;
+        userProfile.projectName = formData.projectName || null;
+      } else if (adminType === "individual") {
+        userProfile.projectStartupName = formData.projectStartupName || null;
       }
 
-      // Optional supporting document
-      if (supportingDoc) {
-        formDataToSend.append('supportingDoc', supportingDoc);
+      // Save profile to Firestore only
+      await addDoc(collection(db, "users"), userProfile);
+
+      // Show success message
+      setEmailSent(true);
+      setErrors({});
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      let errorMessage = "An error occurred during signup. Please try again.";
+
+      if (error.message) {
+        errorMessage = `Error: ${error.message}`;
       }
 
-      const response = await fetch('http://localhost:8000/api/signup', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-      const result = await response.json();
-      if (response.ok) {
-        setEmailSent(true);
-        setErrors({});
-      } else {
-        // Show backend error inline under the form
-        setErrors(prev => ({ ...prev, general: result.error || 'Signup failed.' }));
-        if (result.details && Array.isArray(result.details)) {
-          setErrors(prev => ({ ...prev, details: result.details.join(' ') }));
-        }
-      }
-    } catch (error) {
-      setErrors(prev => ({ ...prev, general: 'An error occurred during signup. Please try again.' }));
+      setErrors(prev => ({ ...prev, general: errorMessage }));
     } finally {
       setIsLoading(false);
     }

@@ -1,3 +1,6 @@
+// Firebase auth has been fixed date:26-11-2025
+
+
 "use client"
 
 import type React from "react"
@@ -96,7 +99,7 @@ export default function LoginPage() {
         setIsLoading(false)
         return
       }
-      // Compare encrypted password
+      // Compare hashed password using bcrypt
       const passwordMatch = await bcrypt.compare(formData.password, userDoc.password)
       if (!passwordMatch) {
         setValidationErrors(["Incorrect password. Please try again."])
