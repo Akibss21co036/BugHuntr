@@ -1,27 +1,35 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Bell, Search, Menu, Shield, User, LogOut, Settings } from "lucide-react"
-import { ThemeToggle } from "./theme-toggle"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Bell,
+  Search,
+  Menu,
+  Shield,
+  User,
+  LogOut,
+  Settings,
+} from "lucide-react";
+import { ThemeToggle } from "./theme-toggle";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useAuth } from "@/components/auth/auth-context"
-import { useState, useEffect } from "react"
-import { useSearch } from "@/components/search/search-context"
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/components/auth/auth-context";
+import { useState, useEffect } from "react";
+import { useSearch } from "@/components/search/search-context";
 
 interface TopNavbarProps {
-  onMenuClick: () => void
+  onMenuClick: () => void;
 }
 
 export function TopNavbar({ onMenuClick }: TopNavbarProps) {
-  const { isAuthenticated, logout } = useAuth()
+  const { isAuthenticated, logout } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -31,7 +39,6 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
     }
   };
 
-
   // Add search state and handler
   const { searchTerm, setSearchTerm } = useSearch();
 
@@ -39,14 +46,19 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
     <header
       className="sticky top-0 z-50 w-full border-b backdrop-blur supports-[backdrop-filter]:bg-background/60"
       style={{
-        background: 'var(--background)',
-        color: 'var(--foreground)',
-        transition: 'background 0.3s, color 0.3s',
+        background: "var(--background)",
+        color: "var(--foreground)",
+        transition: "background 0.3s, color 0.3s",
       }}
     >
       <div className="flex h-16 items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="lg:hidden" onClick={onMenuClick}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden"
+            onClick={onMenuClick}
+          >
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-2">
@@ -65,7 +77,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               placeholder="Search vulnerabilities..."
               className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
@@ -84,7 +96,9 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
                 <DropdownMenuTrigger asChild>
                   <Avatar className="h-6 w-6 sm:h-7 sm:w-7 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
                     <AvatarImage src="/placeholder.svg?height=28&width=28" />
-                    <AvatarFallback className="bg-cyber-blue text-white text-xs">JD</AvatarFallback>
+                    <AvatarFallback className="bg-cyber-blue text-white text-xs">
+                      JD
+                    </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -101,7 +115,10 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-red-600"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </DropdownMenuItem>
@@ -110,10 +127,19 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
+              <Button
+                variant="ghost"
+                size="sm"
+                asChild
+                className="hidden sm:inline-flex"
+              >
                 <Link href="/login">Login</Link>
               </Button>
-              <Button size="sm" asChild className="bg-cyber-blue hover:bg-cyber-blue/90">
+              <Button
+                size="sm"
+                asChild
+                className="bg-cyber-blue hover:bg-cyber-blue/90"
+              >
                 <Link href="/signup">Sign Up</Link>
               </Button>
               {/* Mobile auth buttons */}
@@ -139,5 +165,5 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Home,
   Bug,
@@ -16,38 +16,64 @@ import {
   Users,
   Target,
   ClipboardList,
-} from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { cn } from "@/lib/utils"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { useAuth } from "@/components/auth/auth-context"
-import { useRanking } from "@/hooks/use-ranking"
-import { RankBadge } from "@/components/ranking/rank-badge"
-import { VerificationBadge } from "@/components/ui/verification-badge"
-import { useCommunity } from "@/hooks/use-community"
-import { useState } from "react"
+  Crown,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/auth/auth-context";
+import { useRanking } from "@/hooks/use-ranking";
+import { RankBadge } from "@/components/ranking/rank-badge";
+import { VerificationBadge } from "@/components/ui/verification-badge";
+import { useCommunity } from "@/hooks/use-community";
+import { useState } from "react";
 
 interface SidebarProps {
-  isOpen?: boolean
-  onClose?: () => void
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
-  const pathname = usePathname()
-  const { user } = useAuth()
-  const { getUserRanking } = useRanking()
-  const { joinedCommunities, currentCommunity, setCurrentCommunity } = useCommunity()
-  const [expandedCommunities, setExpandedCommunities] = useState<string[]>([])
+  const pathname = usePathname();
+  const { user } = useAuth();
+  const { getUserRanking } = useRanking();
+  const { joinedCommunities, currentCommunity, setCurrentCommunity } =
+    useCommunity();
+  const [expandedCommunities, setExpandedCommunities] = useState<string[]>([]);
 
-  const userRanking = user ? getUserRanking(user.id) : null
+  const userRanking = user ? getUserRanking(user.id) : null;
+
+  // Check if Pro is enabled
+  const proEnabled = process.env.NEXT_PUBLIC_BUGHUNTR_PRO === "true";
 
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, href: "/dashboard" },
     { id: "bug-feed", label: "Bug Feed", icon: Bug, href: "/feed" },
+    ...(proEnabled
+      ? [
+          {
+            id: "pro",
+            label: "BugHuntr Pro",
+            icon: Crown,
+            href: "/pro",
+            isPro: true,
+          },
+        ]
+      : []),
     user?.role === "admin"
-      ? { id: "create-bug-hunt", label: "Create a Bug Hunt", icon: Target, href: "/admin/bug-hunts" }
-      : { id: "submit-bug", label: "Submit Bug", icon: FileText, href: "/submit" },
+      ? {
+          id: "create-bug-hunt",
+          label: "Create a Bug Hunt",
+          icon: Target,
+          href: "/admin/bug-hunts",
+        }
+      : {
+          id: "submit-bug",
+          label: "Submit Bug",
+          icon: FileText,
+          href: "/submit",
+        },
     ...(user?.role === "admin"
       ? [
           {
@@ -65,18 +91,30 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             href: "/my-submissions",
           },
         ]),
-    { id: "leaderboard", label: "Leaderboard", icon: Award, href: "/leaderboard" },
+    {
+      id: "leaderboard",
+      label: "Leaderboard",
+      icon: Award,
+      href: "/leaderboard",
+    },
     { id: "my-reports", label: "My Reports", icon: FileText, href: "/reports" },
-    { id: "communities", label: "Communities", icon: Users, href: "/communities" },
+    {
+      id: "communities",
+      label: "Communities",
+      icon: Users,
+      href: "/communities",
+    },
     { id: "docs", label: "Docs", icon: FileText, href: "/docs" },
     { id: "settings", label: "Settings", icon: Settings, href: "/settings" },
-  ]
+  ];
 
   const toggleCommunityExpansion = (communityId: string) => {
     setExpandedCommunities((prev) =>
-      prev.includes(communityId) ? prev.filter((id) => id !== communityId) : [...prev, communityId],
-    )
-  }
+      prev.includes(communityId)
+        ? prev.filter((id) => id !== communityId)
+        : [...prev, communityId]
+    );
+  };
 
   return (
     <>
@@ -98,7 +136,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           "w-64 bg-sidebar border-r border-sidebar-border",
           "lg:static lg:block",
           "fixed inset-y-0 left-0 z-40",
-          isOpen ? "block" : "hidden lg:block",
+          isOpen ? "block" : "hidden lg:block"
         )}
       >
         <div className="flex flex-col h-full">
@@ -112,9 +150,13 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <div className="hidden lg:flex items-center px-6 py-4 border-b border-sidebar-border">
             <div className="flex items-center gap-2">
               <Shield className="h-8 w-8 text-cyber-blue" />
-              <span className="text-xl font-bold text-sidebar-foreground">BugHuntr</span>
+              <span className="text-xl font-bold text-sidebar-foreground">
+                BugHuntr
+              </span>
               {user?.role === "admin" && (
-                <span className="px-2 py-1 text-xs bg-orange-600 text-white rounded-full font-medium">ADMIN</span>
+                <span className="px-2 py-1 text-xs bg-orange-600 text-white rounded-full font-medium">
+                  ADMIN
+                </span>
               )}
             </div>
           </div>
@@ -132,8 +174,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
               <div className="space-y-1">
                 {joinedCommunities.map((community) => {
-                  const isExpanded = expandedCommunities.includes(community.id)
-                  const isCurrentCommunity = currentCommunity?.id === community.id
+                  const isExpanded = expandedCommunities.includes(community.id);
+                  const isCurrentCommunity =
+                    currentCommunity?.id === community.id;
 
                   return (
                     <div key={community.id}>
@@ -141,19 +184,27 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         variant="ghost"
                         className={cn(
                           "w-full justify-start gap-2 h-8 text-sm px-2",
-                          isCurrentCommunity && "bg-sidebar-accent",
+                          isCurrentCommunity && "bg-sidebar-accent"
                         )}
                         onClick={() => {
-                          setCurrentCommunity(community)
-                          toggleCommunityExpansion(community.id)
+                          setCurrentCommunity(community);
+                          toggleCommunityExpansion(community.id);
                         }}
                       >
-                        {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                        {isExpanded ? (
+                          <ChevronDown className="h-3 w-3" />
+                        ) : (
+                          <ChevronRight className="h-3 w-3" />
+                        )}
                         <div className="w-4 h-4 rounded bg-gradient-to-br from-cyber-blue to-neon-green flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">{community.name.charAt(0)}</span>
+                          <span className="text-white text-xs font-bold">
+                            {community.name.charAt(0)}
+                          </span>
                         </div>
                         <span className="truncate">{community.name}</span>
-                        {community.isPrivate && <Shield className="h-3 w-3 text-sidebar-foreground/50" />}
+                        {community.isPrivate && (
+                          <Shield className="h-3 w-3 text-sidebar-foreground/50" />
+                        )}
                       </Button>
 
                       <AnimatePresence>
@@ -175,7 +226,9 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                                   className="w-full justify-start gap-2 h-7 text-xs px-2 text-sidebar-foreground/70 hover:text-sidebar-foreground"
                                 >
                                   <Hash className="h-3 w-3" />
-                                  <span className="truncate">{channel.name}</span>
+                                  <span className="truncate">
+                                    {channel.name}
+                                  </span>
                                 </Button>
                               </Link>
                             ))}
@@ -183,7 +236,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                         )}
                       </AnimatePresence>
                     </div>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -193,8 +246,8 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 Navigation
               </h3>
               {navigationItems.map((item, index) => {
-                const Icon = item.icon
-                const isActive = pathname === item.href
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
 
                 return (
                   <motion.div
@@ -211,15 +264,29 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                           isActive
                             ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
                             : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                          user?.role === "admin" && item.id === "submit-bug" && "border-l-2 border-orange-500",
+                          user?.role === "admin" &&
+                            item.id === "submit-bug" &&
+                            "border-l-2 border-orange-500",
+                          (item as any).isPro &&
+                            "bg-gradient-to-r from-amber-500/10 to-purple-500/10 border-l-2 border-amber-500"
                         )}
                       >
-                        <Icon className="h-4 w-4" />
+                        <Icon
+                          className={cn(
+                            "h-4 w-4",
+                            (item as any).isPro && "text-amber-500"
+                          )}
+                        />
                         {item.label}
+                        {(item as any).isPro && (
+                          <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-black rounded-full">
+                            PRO
+                          </span>
+                        )}
                       </Button>
                     </Link>
                   </motion.div>
-                )
+                );
               })}
             </nav>
           </div>
@@ -234,20 +301,34 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 bg-gradient-to-br from-cyber-blue to-neon-green rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-sm">
-                    {user?.username ? user.username.charAt(0).toUpperCase() : "JD"}
+                    {user?.username
+                      ? user.username.charAt(0).toUpperCase()
+                      : "JD"}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1 mb-1">
-                    <p className="text-sm font-medium text-sidebar-foreground truncate flex-1">{user?.username || "John Doe"}</p>
+                    <p className="text-sm font-medium text-sidebar-foreground truncate flex-1">
+                      {user?.username || "John Doe"}
+                    </p>
                     <div className="flex-shrink-0">
-                      <VerificationBadge isAdmin={user?.role === "admin"} companyName={user?.companyName} size="sm" compact={true} />
+                      <VerificationBadge
+                        isAdmin={user?.role === "admin"}
+                        companyName={user?.companyName}
+                        size="sm"
+                        compact={true}
+                      />
                     </div>
                   </div>
                   <div className="flex items-center gap-1 overflow-hidden">
                     {user?.role === "admin" ? (
                       <div className="truncate">
-                        <VerificationBadge isAdmin={true} companyName={user?.companyName} size="sm" className="text-xs" />
+                        <VerificationBadge
+                          isAdmin={true}
+                          companyName={user?.companyName}
+                          size="sm"
+                          className="text-xs"
+                        />
                       </div>
                     ) : (
                       <p className="text-xs text-sidebar-foreground/70 truncate">
@@ -260,17 +341,25 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div className="text-center">
-                  <div className="font-semibold text-cyber-blue">{userRanking ? `#${userRanking.rank}` : "#247"}</div>
+                  <div className="font-semibold text-cyber-blue">
+                    {userRanking ? `#${userRanking.rank}` : "#247"}
+                  </div>
                   <div className="text-sidebar-foreground/70">Rank</div>
                 </div>
                 <div className="text-center">
                   <div className="font-semibold text-neon-green">
-                    ${userRanking ? (userRanking.totalEarnings / 1000).toFixed(1) : "12.4"}K
+                    $
+                    {userRanking
+                      ? (userRanking.totalEarnings / 1000).toFixed(1)
+                      : "12.4"}
+                    K
                   </div>
                   <div className="text-sidebar-foreground/70">Earned</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-cyber-cyan">{userRanking?.bugsFound || 23}</div>
+                  <div className="font-semibold text-cyber-cyan">
+                    {userRanking?.bugsFound || 23}
+                  </div>
                   <div className="text-sidebar-foreground/70">Reports</div>
                 </div>
               </div>
@@ -279,5 +368,5 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         </div>
       </aside>
     </>
-  )
+  );
 }
