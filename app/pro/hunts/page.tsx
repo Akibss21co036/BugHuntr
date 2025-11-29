@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -14,13 +16,21 @@ import { ProHuntCard } from "@/components/pro/pro-hunt-card";
 import { ProEligibilityCard } from "@/components/pro/pro-eligibility-card";
 import { ProApplyModal } from "@/components/pro/pro-apply-modal";
 import { ProNdaModal } from "@/components/pro/pro-nda-modal";
-import { Search, Filter } from "lucide-react";
+import { ProRecommendationsPanel } from "@/components/pro/pro-recommendations-panel";
+import { Search, Filter, ArrowLeft, Plus } from "lucide-react";
 import { useProHunts } from "@/hooks/use-pro-hunts";
 import { useProEligibility } from "@/hooks/use-pro-eligibility";
 import { mockProHunts } from "@/data/mock-pro-data";
 import { type ProHunt } from "@/types/pro";
+import { useAuth } from "@/components/auth/auth-context";
+import { getUserPermissions } from "@/lib/pro-utils";
 
 export default function ProHuntsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const viewParam = searchParams.get("view");
+
+  const { user } = useAuth();
   const { proHunts, loading } = useProHunts();
   const { checkHunterEligibility } = useProEligibility();
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,23 +38,34 @@ export default function ProHuntsPage() {
   const [selectedHunt, setSelectedHunt] = useState<ProHunt | null>(null);
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [ndaModalOpen, setNdaModalOpen] = useState(false);
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
-  // Mock hunter data - in production, this would come from auth/user context
-  const mockHunterData = {
-    id: "hunter_current",
-    name: "CurrentHunter",
-    rank: "B",
-    huntsParticipated: 30,
-    certifications: ["OSCP", "CEH"],
+  // Get user permissions
+  const permissions = user
+    ? getUserPermissions(user.role, user.userType)
+    : null;
+
+  // Determine view mode: 'manage' for companies, 'browse' for hunters
+  const [viewMode, setViewMode] = useState<"browse" | "manage">(
+    viewParam === "manage" && permissions?.isCompany ? "manage" : "browse"
+  );
+
+  // Get hunter data from auth context or use defaults
+  const hunterData = {
+    id: user?.id || "hunter_current",
+    name: user?.username || "CurrentHunter",
+    rank: user?.rank || "B",
+    huntsParticipated: user?.huntsParticipated || 30,
+    certifications: user?.certifications || ["OSCP", "CEH"],
   };
 
   const eligibility = checkHunterEligibility(
-    mockHunterData.rank,
-    mockHunterData.huntsParticipated,
-    mockHunterData.certifications
+    hunterData.rank,
+    hunterData.huntsParticipated,
+    hunterData.certifications
   );
 
-  // Filter hunts
+  // Filter hunts based on view mode
   const filteredHunts = proHunts.filter((hunt) => {
     const matchesSearch =
       hunt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -52,6 +73,14 @@ export default function ProHuntsPage() {
       hunt.companyName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus =
       statusFilter === "all" || hunt.status === statusFilter;
+
+    // In manage mode, only show hunts created by current company
+    if (viewMode === "manage" && user?.companyId) {
+      return (
+        matchesSearch && matchesStatus && hunt.companyId === user.companyId
+      );
+    }
+
     return matchesSearch && matchesStatus;
   });
 
@@ -67,13 +96,17 @@ export default function ProHuntsPage() {
 
   const checkHuntEligibility = (hunt: ProHunt) => {
     return checkHunterEligibility(
-      mockHunterData.rank,
-      mockHunterData.huntsParticipated,
-      mockHunterData.certifications,
+      hunterData.rank,
+      hunterData.huntsParticipated,
+      hunterData.certifications,
       hunt.minRank,
       hunt.minHuntsParticipated,
       hunt.requiredCertifications
     ).isEligible;
+  };
+
+  const handleBackToProDashboard = () => {
+    router.push("/pro");
   };
 
   if (loading) {
@@ -88,12 +121,56 @@ export default function ProHuntsPage() {
     <div className="min-h-screen bg-[#10151c] p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-black mb-2">Browse Pro Hunts</h1>
-          <p className="text-gray-400">
-            Discover elite bug hunting opportunities with premium rewards
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <Button
+              variant="ghost"
+              onClick={handleBackToProDashboard}
+              className="gap-2 text-muted-foreground hover:text-foreground mb-4"
+              data-testid="back-to-pro-btn"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Pro Dashboard
+            </Button>
+            <h1 className="text-3xl font-black mb-2">
+              {viewMode === "manage"
+                ? "Manage My Pro Hunts"
+                : "Browse Pro Hunts"}
+            </h1>
+            <p className="text-gray-400">
+              {viewMode === "manage"
+                ? "View and manage your active Pro hunts"
+                : "Discover elite bug hunting opportunities with premium rewards"}
+            </p>
+          </div>
+          {permissions?.canCreateHunts && viewMode === "manage" && (
+            <Button
+              onClick={() => router.push("/pro/hunts/create")}
+              className="bg-blue-600 hover:bg-blue-700"
+              data-testid="create-new-hunt-btn"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Hunt
+            </Button>
+          )}
         </div>
+
+        {/* View Mode Tabs (only for companies) */}
+        {permissions?.isCompany && (
+          <Tabs
+            value={viewMode}
+            onValueChange={(v) => setViewMode(v as "browse" | "manage")}
+          >
+            <TabsList className="bg-[#181e26]">
+              <TabsTrigger value="browse" data-testid="browse-tab">
+                Browse All Hunts
+              </TabsTrigger>
+              <TabsTrigger value="manage" data-testid="manage-tab">
+                My Hunts
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4">
@@ -104,10 +181,14 @@ export default function ProHuntsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search hunts by title, company, or description..."
               className="pl-10 bg-[#181e26] border-[#23272f]"
+              data-testid="search-hunts-input"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full md:w-48 bg-[#181e26] border-[#23272f]">
+            <SelectTrigger
+              className="w-full md:w-48 bg-[#181e26] border-[#23272f]"
+              data-testid="status-filter"
+            >
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
@@ -121,20 +202,63 @@ export default function ProHuntsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar - Eligibility */}
+          {/* Sidebar - Different for each view mode */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6">
-              <ProEligibilityCard eligibility={eligibility} />
+            <div className="sticky top-6 space-y-4">
+              {/* Hunter Eligibility Card (only in browse mode for hunters) */}
+              {viewMode === "browse" && permissions?.isHunter && (
+                <ProEligibilityCard eligibility={eligibility} />
+              )}
+
+              {/* Company Actions (only in manage mode for companies) */}
+              {viewMode === "manage" && permissions?.isCompany && (
+                <div className="space-y-4">
+                  <Button
+                    onClick={() => setShowRecommendations(!showRecommendations)}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    data-testid="toggle-recommendations-btn"
+                  >
+                    {showRecommendations ? "Hide" : "Show"} AI Recommendations
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Main Content - Hunt Cards */}
           <div className="lg:col-span-3 space-y-4">
+            {/* AI Recommendations Panel (for companies in manage mode) */}
+            {showRecommendations &&
+              viewMode === "manage" &&
+              selectedHunt &&
+              permissions?.isCompany && (
+                <ProRecommendationsPanel
+                  huntId={selectedHunt.id}
+                  minRank={selectedHunt.minRank}
+                  minHunts={selectedHunt.minHuntsParticipated}
+                  requiredCerts={selectedHunt.requiredCertifications}
+                  onInvite={(hunterId) => {
+                    console.log("Invite hunter:", hunterId);
+                  }}
+                />
+              )}
+
             {filteredHunts.length === 0 ? (
-              <div className="text-center py-12">
+              <div className="text-center py-12" data-testid="no-hunts-message">
                 <p className="text-gray-400 text-lg">
-                  No Pro hunts found matching your criteria
+                  {viewMode === "manage"
+                    ? "You haven't created any Pro hunts yet"
+                    : "No Pro hunts found matching your criteria"}
                 </p>
+                {viewMode === "manage" && permissions?.canCreateHunts && (
+                  <Button
+                    onClick={() => router.push("/pro/hunts/create")}
+                    className="mt-4 bg-blue-600 hover:bg-blue-700"
+                    data-testid="create-first-hunt-btn"
+                  >
+                    Create Your First Hunt
+                  </Button>
+                )}
               </div>
             ) : (
               filteredHunts.map((hunt) => (
@@ -142,8 +266,14 @@ export default function ProHuntsPage() {
                   key={hunt.id}
                   hunt={hunt}
                   onApply={() => handleApply(hunt)}
-                  onViewDetails={() => handleViewDetails(hunt)}
+                  onViewDetails={() => {
+                    handleViewDetails(hunt);
+                    if (viewMode === "manage") {
+                      setSelectedHunt(hunt);
+                    }
+                  }}
                   isEligible={checkHuntEligibility(hunt)}
+                  isManageView={viewMode === "manage"}
                 />
               ))
             )}
@@ -151,20 +281,20 @@ export default function ProHuntsPage() {
         </div>
       </div>
 
-      {/* Apply Modal */}
-      {selectedHunt && (
+      {/* Apply Modal (only for hunters) */}
+      {selectedHunt && permissions?.isHunter && (
         <ProApplyModal
           open={applyModalOpen}
           onOpenChange={setApplyModalOpen}
           hunt={selectedHunt}
-          hunterId={mockHunterData.id}
-          hunterName={mockHunterData.name}
-          hunterRank={mockHunterData.rank}
+          hunterId={hunterData.id}
+          hunterName={hunterData.name}
+          hunterRank={hunterData.rank}
         />
       )}
 
-      {/* NDA Modal */}
-      {selectedHunt && (
+      {/* NDA Modal (only for hunters) */}
+      {selectedHunt && permissions?.isHunter && (
         <ProNdaModal
           open={ndaModalOpen}
           onOpenChange={setNdaModalOpen}
@@ -172,8 +302,8 @@ export default function ProHuntsPage() {
           huntTitle={selectedHunt.title}
           companyName={selectedHunt.companyName}
           ndaText={selectedHunt.ndaTemplateText}
-          hunterId={mockHunterData.id}
-          hunterName={mockHunterData.name}
+          hunterId={hunterData.id}
+          hunterName={hunterData.name}
           onSign={(hash) => {
             console.log("NDA signed with hash:", hash);
           }}

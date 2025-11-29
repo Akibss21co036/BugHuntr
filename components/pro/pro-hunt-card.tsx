@@ -26,6 +26,7 @@ interface ProHuntCardProps {
   onViewDetails?: () => void;
   showActions?: boolean;
   isEligible?: boolean;
+  isManageView?: boolean;
 }
 
 export function ProHuntCard({
@@ -34,6 +35,7 @@ export function ProHuntCard({
   onViewDetails,
   showActions = true,
   isEligible = true,
+  isManageView = false,
 }: ProHuntCardProps) {
   const daysRemaining = getDaysRemaining(hunt.endsAt);
   const dateRange = formatDateRange(hunt.startsAt, hunt.endsAt);
@@ -152,35 +154,67 @@ export function ProHuntCard({
           </Badge>
         </div>
 
-        {/* Actions */}
+        {/* Actions - Different for manage vs browse view */}
         {showActions && (
           <div className="flex gap-2 pt-2">
-            <Button
-              onClick={onViewDetails}
-              variant="outline"
-              className="flex-1 border-[#23272f] hover:border-blue-500"
-              size="sm"
-            >
-              View Details
-            </Button>
-            {!hunt.inviteOnly && isEligible && (
-              <Button
-                onClick={onApply}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                size="sm"
-              >
-                Apply Now
-              </Button>
-            )}
-            {hunt.inviteOnly && (
-              <Button disabled className="flex-1" size="sm">
-                Invite Only
-              </Button>
+            {isManageView ? (
+              <>
+                {/* Company Management Actions */}
+                <Button
+                  onClick={onViewDetails}
+                  variant="outline"
+                  className="flex-1 border-[#23272f] hover:border-purple-500"
+                  size="sm"
+                  data-testid="view-details-manage-btn"
+                >
+                  Manage Hunt
+                </Button>
+                <Button
+                  className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  size="sm"
+                  data-testid="view-recommendations-btn"
+                >
+                  Get Recommendations
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Hunter Browse Actions */}
+                <Button
+                  onClick={onViewDetails}
+                  variant="outline"
+                  className="flex-1 border-[#23272f] hover:border-blue-500"
+                  size="sm"
+                  data-testid="view-details-browse-btn"
+                >
+                  View Details
+                </Button>
+                {!hunt.inviteOnly && isEligible && (
+                  <Button
+                    onClick={onApply}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    size="sm"
+                    data-testid="apply-now-btn"
+                  >
+                    Apply Now
+                  </Button>
+                )}
+                {hunt.inviteOnly && (
+                  <Button
+                    disabled
+                    className="flex-1"
+                    size="sm"
+                    data-testid="invite-only-btn"
+                  >
+                    Invite Only
+                  </Button>
+                )}
+              </>
             )}
           </div>
         )}
 
-        {!isEligible && showActions && (
+        {!isEligible && showActions && !isManageView && (
           <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
             <p className="text-sm text-red-400 text-center">
               ⚠️ You don't meet the eligibility requirements for this hunt

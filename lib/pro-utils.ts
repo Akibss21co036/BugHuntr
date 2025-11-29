@@ -246,3 +246,84 @@ export function formatDateRange(startDate: string, endDate: string): string {
     options
   )} - ${end.toLocaleDateString("en-US", options)}`;
 }
+
+// ============================
+// ROLE-BASED PERMISSION CHECKS
+// ============================
+
+export interface UserPermissions {
+  canCreateHunts: boolean;
+  canManageHunts: boolean;
+  canReviewApplications: boolean;
+  canSendInvitations: boolean;
+  canManageSubscriptions: boolean;
+  canViewRecommendations: boolean;
+  canApplyToHunts: boolean;
+  canViewOwnApplications: boolean;
+  canBrowseHunts: boolean;
+  isCompany: boolean;
+  isHunter: boolean;
+  isAdmin: boolean;
+}
+
+export function getUserPermissions(
+  role: "user" | "admin",
+  userType: "company" | "hunter"
+): UserPermissions {
+  const isAdmin = role === "admin";
+  const isCompany = userType === "company";
+  const isHunter = userType === "hunter";
+
+  return {
+    // Company permissions
+    canCreateHunts: isCompany,
+    canManageHunts: isCompany,
+    canReviewApplications: isCompany,
+    canSendInvitations: isCompany,
+    canManageSubscriptions: isCompany,
+    canViewRecommendations: isCompany,
+
+    // Hunter permissions
+    canApplyToHunts: isHunter,
+    canViewOwnApplications: isHunter,
+
+    // Shared permissions
+    canBrowseHunts: true, // Everyone can browse
+
+    // Role flags
+    isCompany,
+    isHunter,
+    isAdmin,
+  };
+}
+
+// Check if user can access Pro features
+export function canAccessProFeatures(
+  role: "user" | "admin",
+  userType: "company" | "hunter",
+  hasSubscription: boolean = false
+): boolean {
+  // Admins always have access
+  if (role === "admin") return true;
+
+  // Companies need subscription
+  if (userType === "company") return hasSubscription;
+
+  // Hunters need to meet eligibility (checked separately)
+  return true;
+}
+
+// Get user type display name
+export function getUserTypeDisplay(userType: "company" | "hunter"): string {
+  return userType === "company" ? "Company" : "Hunter";
+}
+
+// Get role badge color
+export function getRoleBadgeColor(role: "user" | "admin"): string {
+  return role === "admin" ? "bg-purple-600" : "bg-blue-600";
+}
+
+// Get user type badge color
+export function getUserTypeBadgeColor(userType: "company" | "hunter"): string {
+  return userType === "company" ? "bg-amber-600" : "bg-green-600";
+}

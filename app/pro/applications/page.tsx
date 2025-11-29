@@ -1,25 +1,54 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Clock, CheckCircle, XCircle, Mail } from "lucide-react";
+import {
+  FileText,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Mail,
+  ArrowLeft,
+  UserCheck,
+  Send,
+} from "lucide-react";
 import { useProApplications } from "@/hooks/use-pro-applications";
-import { formatDateRange } from "@/lib/pro-utils";
+import { formatDateRange, getUserPermissions } from "@/lib/pro-utils";
+import { useAuth } from "@/components/auth/auth-context";
 
 export default function ProApplicationsPage() {
+  const router = useRouter();
+  const { user } = useAuth();
   const { applications, loading } = useProApplications();
   const [activeTab, setActiveTab] = useState("all");
 
-  // Mock current user ID
-  const currentUserId = "hunter_current";
+  // Get user permissions
+  const permissions = user
+    ? getUserPermissions(user.role, user.userType)
+    : null;
 
-  // Filter applications for current user
-  const myApplications = applications.filter(
-    (app) => app.hunterId === currentUserId
-  );
+  // Filter applications based on user type
+  // Hunters see their own applications
+  // Companies see applications for their hunts
+  const relevantApplications = applications.filter((app) => {
+    if (permissions?.isHunter) {
+      return app.hunterId === user?.id;
+    }
+    if (permissions?.isCompany) {
+      // In production, filter by hunts that belong to this company
+      // For now, we'll show all applications (mock data)
+      return true;
+    }
+    return false;
+  });
+
+  const handleBackToProDashboard = () => {
+    router.push("/pro");
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -49,10 +78,26 @@ export default function ProApplicationsPage() {
     }
   };
 
-  const filteredApplications = myApplications.filter((app) => {
+  const filteredApplications = relevantApplications.filter((app) => {
     if (activeTab === "all") return true;
     return app.status === activeTab;
   });
+
+  // Handler for company actions on applications
+  const handleApproveApplication = (appId: string) => {
+    console.log("Approve application:", appId);
+    // In production: call API to approve
+  };
+
+  const handleRejectApplication = (appId: string) => {
+    console.log("Reject application:", appId);
+    // In production: call API to reject
+  };
+
+  const handleRequestMoreInfo = (appId: string) => {
+    console.log("Request more info:", appId);
+    // In production: call API to request more info
+  };
 
   if (loading) {
     return (
@@ -67,9 +112,24 @@ export default function ProApplicationsPage() {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-black mb-2">My Pro Applications</h1>
+          <Button
+            variant="ghost"
+            onClick={handleBackToProDashboard}
+            className="gap-2 text-muted-foreground hover:text-foreground mb-4"
+            data-testid="back-to-pro-btn"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Pro Dashboard
+          </Button>
+          <h1 className="text-3xl font-black mb-2">
+            {permissions?.isCompany
+              ? "Review Applications"
+              : "My Pro Applications"}
+          </h1>
           <p className="text-gray-400">
-            Track your Pro hunt applications and invitations
+            {permissions?.isCompany
+              ? "Manage hunter applications for your Pro hunts"
+              : "Track your Pro hunt applications and invitations"}
           </p>
         </div>
 
@@ -77,14 +137,23 @@ export default function ProApplicationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="bg-[#181e26] border-[#23272f]">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold">{myApplications.length}</div>
-              <div className="text-sm text-gray-400">Total Applications</div>
+              <div className="text-2xl font-bold">
+                {relevantApplications.length}
+              </div>
+              <div className="text-sm text-gray-400">
+                {permissions?.isCompany
+                  ? "Total Received"
+                  : "Total Applications"}
+              </div>
             </CardContent>
           </Card>
           <Card className="bg-[#181e26] border-[#23272f]">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-yellow-400">
-                {myApplications.filter((a) => a.status === "pending").length}
+                {
+                  relevantApplications.filter((a) => a.status === "pending")
+                    .length
+                }
               </div>
               <div className="text-sm text-gray-400">Pending</div>
             </CardContent>
@@ -92,7 +161,10 @@ export default function ProApplicationsPage() {
           <Card className="bg-[#181e26] border-[#23272f]">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-green-400">
-                {myApplications.filter((a) => a.status === "approved").length}
+                {
+                  relevantApplications.filter((a) => a.status === "approved")
+                    .length
+                }
               </div>
               <div className="text-sm text-gray-400">Approved</div>
             </CardContent>
@@ -100,7 +172,10 @@ export default function ProApplicationsPage() {
           <Card className="bg-[#181e26] border-[#23272f]">
             <CardContent className="p-4">
               <div className="text-2xl font-bold text-red-400">
-                {myApplications.filter((a) => a.status === "rejected").length}
+                {
+                  relevantApplications.filter((a) => a.status === "rejected")
+                    .length
+                }
               </div>
               <div className="text-sm text-gray-400">Rejected</div>
             </CardContent>
@@ -110,18 +185,32 @@ export default function ProApplicationsPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-[#181e26]">
-            <TabsTrigger value="all">All ({myApplications.length})</TabsTrigger>
-            <TabsTrigger value="pending">
+            <TabsTrigger value="all" data-testid="all-tab">
+              All ({relevantApplications.length})
+            </TabsTrigger>
+            <TabsTrigger value="pending" data-testid="pending-tab">
               Pending (
-              {myApplications.filter((a) => a.status === "pending").length})
+              {
+                relevantApplications.filter((a) => a.status === "pending")
+                  .length
+              }
+              )
             </TabsTrigger>
-            <TabsTrigger value="approved">
+            <TabsTrigger value="approved" data-testid="approved-tab">
               Approved (
-              {myApplications.filter((a) => a.status === "approved").length})
+              {
+                relevantApplications.filter((a) => a.status === "approved")
+                  .length
+              }
+              )
             </TabsTrigger>
-            <TabsTrigger value="rejected">
+            <TabsTrigger value="rejected" data-testid="rejected-tab">
               Rejected (
-              {myApplications.filter((a) => a.status === "rejected").length})
+              {
+                relevantApplications.filter((a) => a.status === "rejected")
+                  .length
+              }
+              )
             </TabsTrigger>
           </TabsList>
 
@@ -200,22 +289,84 @@ export default function ProApplicationsPage() {
                       </div>
                     )}
 
-                    {/* Actions */}
-                    {app.status === "approved" && (
-                      <div className="flex gap-2">
-                        <Button className="bg-green-600 hover:bg-green-700">
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Sign NDA & Begin
-                        </Button>
-                        <Button variant="outline">View Hunt Details</Button>
-                      </div>
+                    {/* Actions - Different for hunters vs companies */}
+                    {permissions?.isHunter && (
+                      <>
+                        {app.status === "approved" && (
+                          <div className="flex gap-2">
+                            <Button
+                              className="bg-green-600 hover:bg-green-700"
+                              data-testid="sign-nda-btn"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Sign NDA & Begin
+                            </Button>
+                            <Button
+                              variant="outline"
+                              data-testid="view-hunt-details-btn"
+                            >
+                              View Hunt Details
+                            </Button>
+                          </div>
+                        )}
+
+                        {app.status === "more_info_requested" && (
+                          <Button
+                            className="bg-blue-600 hover:bg-blue-700"
+                            data-testid="provide-info-btn"
+                          >
+                            <Mail className="w-4 h-4 mr-2" />
+                            Provide Additional Info
+                          </Button>
+                        )}
+                      </>
                     )}
 
-                    {app.status === "more_info_requested" && (
-                      <Button className="bg-blue-600 hover:bg-blue-700">
-                        <Mail className="w-4 h-4 mr-2" />
-                        Provide Additional Info
-                      </Button>
+                    {permissions?.isCompany && (
+                      <>
+                        {app.status === "pending" && (
+                          <div className="flex gap-2">
+                            <Button
+                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() => handleApproveApplication(app.id)}
+                              data-testid={`approve-btn-${app.id}`}
+                            >
+                              <UserCheck className="w-4 h-4 mr-2" />
+                              Approve
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
+                              onClick={() => handleRequestMoreInfo(app.id)}
+                              data-testid={`request-info-btn-${app.id}`}
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Request Info
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="border-red-500 text-red-400 hover:bg-red-500/10"
+                              onClick={() => handleRejectApplication(app.id)}
+                              data-testid={`reject-btn-${app.id}`}
+                            >
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+
+                        {app.status === "approved" && (
+                          <div className="flex gap-2">
+                            <Button
+                              className="bg-purple-600 hover:bg-purple-700"
+                              data-testid={`send-invitation-btn-${app.id}`}
+                            >
+                              <Send className="w-4 h-4 mr-2" />
+                              Send Invitation
+                            </Button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </CardContent>
                 </Card>

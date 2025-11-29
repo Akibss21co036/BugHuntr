@@ -1,32 +1,49 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { getDisplayUsername } from "@/lib/extract-username"
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+import { getDisplayUsername } from "@/lib/extract-username";
 
 interface User {
-  id: string
-  username: string
-  email?: string
-  role: "user" | "admin"
-  companyName?: string
-  companyId?: string
-  companyDomain?: string
-  representativeName?: string
-  twoFactorEnabled?: boolean
+  id: string;
+  username: string;
+  email?: string;
+  role: "user" | "admin";
+  userType: "company" | "hunter"; // Business role from Firestore
+  companyName?: string;
+  companyId?: string;
+  companyDomain?: string;
+  representativeName?: string;
+  twoFactorEnabled?: boolean;
+  rank?: "C" | "B" | "A" | "S"; // For hunters
+  huntsParticipated?: number;
+  certifications?: string[];
+  reputation?: number;
 }
 
 interface AuthContextType {
-  isAuthenticated: boolean
-  user: User | null
-  login: (username: string, email?: string, role?: "user" | "admin", companyData?: Partial<User>) => void 
-  logout: () => void
+  isAuthenticated: boolean;
+  user: User | null;
+  login: (
+    username: string,
+    email?: string,
+    role?: "user" | "admin",
+    userType?: "company" | "hunter",
+    additionalData?: Partial<User>
+  ) => void;
+  logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [user, setUser] = useState<User | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -38,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         return;
       }
-      
+
       // In production, check if user is logged in from localStorage
       const authStatus = localStorage.getItem("isAuthenticated");
       const userData = localStorage.getItem("currentUser");
@@ -49,16 +66,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (username: string, email?: string, role: "user" | "admin" = "user", companyData?: Partial<User>) => {
+  const login = (
+    username: string,
+    email?: string,
+    role: "user" | "admin" = "user",
+    userType: "company" | "hunter" = "hunter",
+    additionalData?: Partial<User>
+  ) => {
     // Use provided username or extract from email
-    const displayUsername = getDisplayUsername(username, email)
-    
+    const displayUsername = getDisplayUsername(username, email);
+
     const userData: User = {
       id: displayUsername,
       username: displayUsername,
       email,
       role,
-      ...companyData,
+      userType,
+      ...additionalData,
     };
     setIsAuthenticated(true);
     setUser(userData);
@@ -77,13 +101,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  return <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }

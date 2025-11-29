@@ -7,3 +7,4 @@ export { ProHuntCard } from "./pro-hunt-card";
 export { ProApplyModal } from "./pro-apply-modal";
 export { ProNdaModal } from "./pro-nda-modal";
 export { ProSubscriptionCard } from "./pro-subscription-card";
+export { RoleSwitcherDev } from "./role-switcher-dev";

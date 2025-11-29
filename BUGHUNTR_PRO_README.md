@@ -53,10 +53,19 @@ BugHuntr Pro is a premium, invite-only extension to the BugHuntr platform design
    - Expiration tracking
 
 7. **Access Control**
+
    - Scoped access tokens (JWT-based mock)
    - Target segment restrictions
    - Time-limited access
    - Token revocation support
+
+8. **🆕 Role-Based Views** _(New in v2.0)_
+   - **Dual Role System**: Admin/User + Company/Hunter
+   - **4 Role Combinations**: Each with distinct permissions and UI
+   - **Permission-Based Access**: Granular control over features
+   - **Dynamic Navigation**: Interface adapts to user role
+   - **Development Tools**: Role switcher for easy testing
+   - 📖 **[Full Documentation](./ROLE_BASED_VIEWS_README.md)**
 
 ## Tech Stack
 

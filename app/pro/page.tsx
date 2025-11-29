@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { ProBadge } from "@/components/pro/pro-badge";
 import {
   Crown,
@@ -18,18 +19,30 @@ import {
   TrendingUp,
   Shield,
   ArrowRight,
+  Briefcase,
+  Target,
 } from "lucide-react";
 import { useProSubscription } from "@/hooks/use-pro-subscription";
 import { useProHunts } from "@/hooks/use-pro-hunts";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
+import {
+  getUserPermissions,
+  getRoleBadgeColor,
+  getUserTypeBadgeColor,
+} from "@/lib/pro-utils";
+import { RoleSwitcherDev } from "@/components/pro/role-switcher-dev";
 
 export default function ProDashboardPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { subscription, loading: subLoading } = useProSubscription();
   const { proHunts, loading: huntsLoading } = useProHunts();
-  const [userRole, setUserRole] = useState<"company" | "hunter">("hunter"); // Mock - should come from auth
+
+  // Get user permissions based on role and userType
+  const permissions = user
+    ? getUserPermissions(user.role, user.userType)
+    : null;
 
   // Check if Pro feature is enabled
   useEffect(() => {
@@ -86,6 +99,17 @@ export default function ProDashboardPage() {
             <p className="text-gray-400 text-lg">
               Elite bug hunting for sensitive applications
             </p>
+            {/* User Role Badges */}
+            {user && (
+              <div className="flex gap-2 mt-3">
+                <Badge className={getRoleBadgeColor(user.role)}>
+                  {user.role === "admin" ? "Admin" : "User"}
+                </Badge>
+                <Badge className={getUserTypeBadgeColor(user.userType)}>
+                  {user.userType === "company" ? "Company" : "Hunter"}
+                </Badge>
+              </div>
+            )}
           </div>
           <ProBadge size="lg" />
         </div>
@@ -146,11 +170,12 @@ export default function ProDashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* For Companies */}
-          {userRole === "company" && subscription && (
+          {permissions?.isCompany && (
             <>
               <Card
                 className="bg-[#181e26] border-[#23272f] hover:border-blue-500/50 transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/hunts/create")}
+                data-testid="create-pro-hunt-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -162,7 +187,10 @@ export default function ProDashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    data-testid="create-hunt-btn"
+                  >
                     Get Started
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -172,6 +200,7 @@ export default function ProDashboardPage() {
               <Card
                 className="bg-[#181e26] border-[#23272f] hover:border-purple-500/50 transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/applications")}
+                data-testid="review-applications-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -183,8 +212,61 @@ export default function ProDashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                  <Button
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    data-testid="review-apps-btn"
+                  >
                     View Applications
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="bg-[#181e26] border-[#23272f] hover:border-amber-500/50 transition-colors cursor-pointer"
+                onClick={() => router.push("/pro/hunts?view=manage")}
+                data-testid="manage-hunts-card"
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-amber-400" />
+                    Manage My Hunts
+                  </CardTitle>
+                  <CardDescription>
+                    View and manage your active Pro hunts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    className="w-full bg-amber-600 hover:bg-amber-700"
+                    data-testid="manage-hunts-btn"
+                  >
+                    Manage Hunts
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="bg-[#181e26] border-[#23272f] hover:border-green-500/50 transition-colors cursor-pointer"
+                onClick={() => router.push("/pro/hunts?view=browse")}
+                data-testid="browse-hunters-card"
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-green-400" />
+                    Find Elite Hunters
+                  </CardTitle>
+                  <CardDescription>
+                    Browse and get AI recommendations for hunters
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    data-testid="find-hunters-btn"
+                  >
+                    Get Recommendations
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>
@@ -193,11 +275,12 @@ export default function ProDashboardPage() {
           )}
 
           {/* For Hunters */}
-          {userRole === "hunter" && (
+          {permissions?.isHunter && (
             <>
               <Card
                 className="bg-[#181e26] border-[#23272f] hover:border-blue-500/50 transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/hunts")}
+                data-testid="browse-hunts-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -209,7 +292,10 @@ export default function ProDashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    data-testid="browse-hunts-btn"
+                  >
                     Explore Hunts
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -219,6 +305,7 @@ export default function ProDashboardPage() {
               <Card
                 className="bg-[#181e26] border-[#23272f] hover:border-green-500/50 transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/applications")}
+                data-testid="my-applications-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -230,7 +317,10 @@ export default function ProDashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full bg-green-600 hover:bg-green-700">
+                  <Button
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    data-testid="my-apps-btn"
+                  >
                     View Status
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -282,6 +372,9 @@ export default function ProDashboardPage() {
           </Card>
         </div>
       </div>
+
+      {/* Development Role Switcher */}
+      <RoleSwitcherDev />
     </div>
   );
 }
