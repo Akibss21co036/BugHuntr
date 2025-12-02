@@ -42,6 +42,8 @@ export interface ProHunt {
   createdAt: string;
   updatedAt: string;
   inviteOnly: boolean;
+  // Optional id of the user/admin who created this hunt
+  createdBy?: string;
 }
 
 export interface ProInvitation {

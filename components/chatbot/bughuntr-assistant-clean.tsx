@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import React, { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import React, { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   MessageCircle,
   X,
@@ -20,24 +20,24 @@ import {
   Bug,
   Target,
   Loader2,
-  BookOpen
-} from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/auth/auth-context"
+  BookOpen,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/auth-context";
 
 interface ChatMessage {
-  id: string
-  content: string
-  isUser: boolean
-  timestamp: Date
+  id: string;
+  content: string;
+  isUser: boolean;
+  timestamp: Date;
 }
 
 export function BugHuntrAssistant() {
-  const router = useRouter()
-  const { user } = useAuth()
-  const [isOpen, setIsOpen] = useState(false)
-  const [isMinimized, setIsMinimized] = useState(false)
+  const router = useRouter();
+  const { user } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
@@ -66,85 +66,109 @@ I'm your comprehensive cybersecurity and platform guide. I can help you with:
 **💡 Getting Started**
 Try: "What is a bug bounty?", "Explain XSS", "Navigate to feed", or "How to submit a bug"
 
-${user?.role === 'admin' ? '🔑 **Admin Access Detected** - Full platform access available!' : '👤 **User Mode** - Standard platform features available'}`,
+${
+  user?.role === "admin"
+    ? "🔑 **Admin Access Detected** - Full platform access available!"
+    : "👤 **User Mode** - Standard platform features available"
+}`,
       isUser: false,
       timestamp: new Date(),
     },
-  ])
-  const [inputMessage, setInputMessage] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  ]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   const handleNavigation = (userInput: string) => {
-    const input = userInput.toLowerCase()
-    
+    const input = userInput.toLowerCase();
+
     // Navigation routes for users
     const userRoutes = {
-      'feed': '/feed',
-      'dashboard': '/dashboard', 
-      'profile': '/profile',
-      'submissions': '/my-submissions',
-      'submit': '/submit',
-      'communities': '/communities',
-      'leaderboard': '/leaderboard',
-      'certificates': '/certificates',
-      'settings': '/settings',
-      'bug hunt': '/bug-hunt',
-      'setup profile': '/setup-profile'
-    }
-    
+      feed: "/feed",
+      dashboard: "/dashboard",
+      profile: "/profile",
+      submissions: "/my-submissions",
+      submit: "/submit",
+      communities: "/communities",
+      leaderboard: "/leaderboard",
+      certificates: "/certificates",
+      settings: "/settings",
+      "bug hunt": "/bug-hunt",
+      "setup profile": "/setup-profile",
+    };
+
     // Admin-only routes
     const adminRoutes = {
-      'admin panel': '/admin/submissions',
-      'admin dashboard': '/admin/submissions',
-      'admin submissions': '/admin/submissions',
-      'admin bug hunts': '/admin/bug-hunts',
-      'admin migration': '/admin-migration',
-      'admin utils': '/admin-utils',
-      'admin test': '/admin-test',
-      'manage submissions': '/admin/submissions',
-      'manage bug hunts': '/admin/bug-hunts'
-    }
-    
+      "admin panel": "/admin/submissions",
+      "admin dashboard": "/admin/submissions",
+      "admin submissions": "/admin/submissions",
+      "admin bug hunts": "/admin/bug-hunts",
+      "admin migration": "/admin-migration",
+      "admin utils": "/admin-utils",
+      "admin test": "/admin-test",
+      "manage submissions": "/admin/submissions",
+      "manage bug hunts": "/admin/bug-hunts",
+    };
+
     // Check for admin navigation (admin users only)
-    if (user?.role === 'admin') {
+    if (user?.role === "admin") {
       for (const [key, path] of Object.entries(adminRoutes)) {
-        if (input.includes(key) && (input.includes('navigate') || input.includes('go to') || input.includes('open') || input.includes('show'))) {
-          router.push(path)
-          return `🔑 **Admin Navigation** - Taking you to ${key}...`
+        if (
+          input.includes(key) &&
+          (input.includes("navigate") ||
+            input.includes("go to") ||
+            input.includes("open") ||
+            input.includes("show"))
+        ) {
+          router.push(path);
+          return `🔑 **Admin Navigation** - Taking you to ${key}...`;
         }
       }
     }
-    
+
     // Standard user navigation
     for (const [key, path] of Object.entries(userRoutes)) {
-      if (input.includes(key) && (input.includes('navigate') || input.includes('go to') || input.includes('open') || input.includes('show'))) {
-        router.push(path)
-        return `🚀 **Navigating** to ${key.charAt(0).toUpperCase() + key.slice(1)}...`
+      if (
+        input.includes(key) &&
+        (input.includes("navigate") ||
+          input.includes("go to") ||
+          input.includes("open") ||
+          input.includes("show"))
+      ) {
+        router.push(path);
+        return `🚀 **Navigating** to ${
+          key.charAt(0).toUpperCase() + key.slice(1)
+        }...`;
       }
     }
-    
+
     // Handle admin access requests for non-admin users
-    if (user?.role !== 'admin' && input.includes('admin')) {
-      return `🔒 **Admin Access Required**\n\nOnly administrators can access admin features. Your current role: ${user?.role || 'guest'}\n\nContact an admin for elevated permissions.`
+    if (user?.role !== "admin" && input.includes("admin")) {
+      return `🔒 **Admin Access Required**\n\nOnly administrators can access admin features. Your current role: ${
+        user?.role || "guest"
+      }\n\nContact an admin for elevated permissions.`;
     }
-    
-    return null
-  }
+
+    return null;
+  };
 
   const getPlatformInfo = (userInput: string) => {
-    const input = userInput.toLowerCase()
-    
+    const input = userInput.toLowerCase();
+
     // Bug bounty and security concepts
-    if (input.includes('bug bounty') || input.includes('bugbounty') || input.includes('what is bug bounty')) {
+    if (
+      input.includes("bug bounty") ||
+      input.includes("bugbounty") ||
+      input.includes("what is bug bounty")
+    ) {
       return `🎯 **What is a Bug Bounty?**
 
 **Definition**: A bug bounty is a reward offered by organizations to security researchers who find and responsibly disclose vulnerabilities in their systems.
@@ -169,10 +193,14 @@ ${user?.role === 'admin' ? '🔑 **Admin Access Detected** - Full platform acces
 • Contributing to internet security
 
 **🌍 Industry Impact**:
-Bug bounties have become essential for major tech companies like Google, Microsoft, Facebook, and thousands of others.`
+Bug bounties have become essential for major tech companies like Google, Microsoft, Facebook, and thousands of others.`;
     }
 
-    if (input.includes('vulnerability') || input.includes('vulnerabilities') || input.includes('security flaw')) {
+    if (
+      input.includes("vulnerability") ||
+      input.includes("vulnerabilities") ||
+      input.includes("security flaw")
+    ) {
       return `🔓 **Understanding Vulnerabilities**
 
 **What is a Vulnerability?**
@@ -203,10 +231,14 @@ A weakness in a system that can be exploited to gain unauthorized access or caus
 • **Critical** - Remote code execution, data breach
 • **High** - Privilege escalation, sensitive data access
 • **Medium** - Limited access, information disclosure
-• **Low** - Minor security concerns, limited impact`
+• **Low** - Minor security concerns, limited impact`;
     }
 
-    if (input.includes('responsible disclosure') || input.includes('ethical hacking') || input.includes('white hat')) {
+    if (
+      input.includes("responsible disclosure") ||
+      input.includes("ethical hacking") ||
+      input.includes("white hat")
+    ) {
       return `⚖️ **Responsible Disclosure & Ethical Hacking**
 
 **🤝 Responsible Disclosure**:
@@ -245,10 +277,14 @@ The practice of reporting security vulnerabilities to organizations privately be
 • Follow program rules and scope
 • Document everything thoroughly
 • Respect user privacy and data
-• Report findings promptly`
+• Report findings promptly`;
     }
 
-    if (input.includes('owasp') || input.includes('top 10') || input.includes('security standards')) {
+    if (
+      input.includes("owasp") ||
+      input.includes("top 10") ||
+      input.includes("security standards")
+    ) {
       return `📚 **OWASP & Security Standards**
 
 **🌍 OWASP (Open Web Application Security Project)**:
@@ -281,10 +317,14 @@ The most critical web application security risks:
 • **Metasploit** - Penetration testing framework
 
 **🎓 Learning Resources**:
-Security research requires continuous learning about new attack vectors and defense mechanisms.`
+Security research requires continuous learning about new attack vectors and defense mechanisms.`;
     }
 
-    if (input.includes('penetration testing') || input.includes('pentest') || input.includes('security testing')) {
+    if (
+      input.includes("penetration testing") ||
+      input.includes("pentest") ||
+      input.includes("security testing")
+    ) {
       return `🎯 **Penetration Testing & Security Assessment**
 
 **🔍 What is Penetration Testing?**
@@ -332,10 +372,14 @@ A simulated cyberattack against systems to find vulnerabilities before real atta
 • Technical findings
 • Risk assessment
 • Remediation recommendations
-• Proof of concept demonstrations`
+• Proof of concept demonstrations`;
     }
 
-    if (input.includes('cve') || input.includes('nvd') || input.includes('vulnerability database')) {
+    if (
+      input.includes("cve") ||
+      input.includes("nvd") ||
+      input.includes("vulnerability database")
+    ) {
       return `📊 **CVE & Vulnerability Databases**
 
 **🆔 CVE (Common Vulnerabilities and Exposures)**:
@@ -381,11 +425,14 @@ Standardized method for rating vulnerability severity (0.0-10.0):
 • Risk assessment and prioritization
 • Patch management coordination
 • Security tool integration
-• Industry communication standard`
+• Industry communication standard`;
     }
 
     // Existing platform info...
-    if (input.includes('platform overview') || input.includes('about platform')) {
+    if (
+      input.includes("platform overview") ||
+      input.includes("about platform")
+    ) {
       return `🏆 **BugHuntr Platform Overview**
 
 **🎯 Mission**: Connecting security researchers with organizations to find and fix vulnerabilities
@@ -406,10 +453,10 @@ Standardized method for rating vulnerability severity (0.0-10.0):
 **👥 User Roles**:
 • **Researchers** - Submit bugs, participate in hunts
 • **Admins** - Manage platform, review submissions
-• **Community Leaders** - Guide and mentor researchers`
+• **Community Leaders** - Guide and mentor researchers`;
     }
-    
-    if (input.includes('submit') && input.includes('bug')) {
+
+    if (input.includes("submit") && input.includes("bug")) {
       return `🐛 **Bug Submission Guide**
 
 **📝 Submission Process**:
@@ -432,10 +479,10 @@ Standardized method for rating vulnerability severity (0.0-10.0):
 • **Medium**: $50-$200
 • **Low**: $10-$50
 
-Ready to submit? Say "Navigate to submit"`
+Ready to submit? Say "Navigate to submit"`;
     }
-    
-    if (input.includes('communities') || input.includes('community')) {
+
+    if (input.includes("communities") || input.includes("community")) {
       return `👥 **Community Features**
 
 **🌟 Join Communities**:
@@ -458,10 +505,10 @@ Ready to submit? Say "Navigate to submit"`
 • Vulnerability research sharing
 • Career guidance and tips
 
-Want to explore? Say "Navigate to communities"`
+Want to explore? Say "Navigate to communities"`;
     }
-    
-    if (input.includes('leaderboard') || input.includes('ranking')) {
+
+    if (input.includes("leaderboard") || input.includes("ranking")) {
       return `🏆 **Leaderboard & Rankings**
 
 **📊 Ranking System**:
@@ -484,53 +531,53 @@ Want to explore? Say "Navigate to communities"`
 • Bug hunt champion
 • Consistent performer
 
-Check your rank: Say "Navigate to leaderboard"`
+Check your rank: Say "Navigate to leaderboard"`;
     }
-    
-    return null
-  }
+
+    return null;
+  };
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return
+    if (!inputMessage.trim() || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       content: inputMessage.trim(),
       isUser: true,
       timestamp: new Date(),
-    }
+    };
 
-    setMessages(prev => [...prev, userMessage])
-    const currentInput = inputMessage.trim()
-    setInputMessage("")
-    setIsLoading(true)
+    setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputMessage.trim();
+    setInputMessage("");
+    setIsLoading(true);
 
     // Check for navigation first
-    const navigationResponse = handleNavigation(currentInput)
+    const navigationResponse = handleNavigation(currentInput);
     if (navigationResponse) {
       const navMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         content: navigationResponse,
         isUser: false,
         timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, navMessage])
-      setIsLoading(false)
-      return
+      };
+      setMessages((prev) => [...prev, navMessage]);
+      setIsLoading(false);
+      return;
     }
 
     // Check for platform information
-    const infoResponse = getPlatformInfo(currentInput)
+    const infoResponse = getPlatformInfo(currentInput);
     if (infoResponse) {
       const infoMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         content: infoResponse,
         isUser: false,
         timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, infoMessage])
-      setIsLoading(false)
-      return
+      };
+      setMessages((prev) => [...prev, infoMessage]);
+      setIsLoading(false);
+      return;
     }
 
     // Use API for more complex queries
@@ -542,26 +589,28 @@ Check your rank: Say "Navigate to leaderboard"`
         },
         body: JSON.stringify({
           message: currentInput,
-          session_id: "bughuntr-session"
+          session_id: "bughuntr-session",
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to get response")
+        throw new Error("Failed to get response");
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        content: data.response || "I apologize, but I couldn't process your request. Please try again.",
+        content:
+          data.response ||
+          "I apologize, but I couldn't process your request. Please try again.",
         isUser: false,
         timestamp: new Date(),
-      }
+      };
 
-      setMessages(prev => [...prev, assistantMessage])
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Chat error:", error)
+      console.error("Chat error:", error);
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         content: `🤖 **I'm here to help!**
@@ -582,58 +631,63 @@ I can assist you with:
 What would you like to explore?`,
         isUser: false,
         timestamp: new Date(),
-      }
-      setMessages(prev => [...prev, errorMessage])
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatMessageContent = (content: string) => {
-    const lines = content.split('\n')
-    
+    const lines = content.split("\n");
+
     return lines.map((line, lineIndex) => {
       // Handle bold text **text**
-      if (line.includes('**')) {
-        const parts = line.split(/\*\*(.*?)\*\*/g)
+      if (line.includes("**")) {
+        const parts = line.split(/\*\*(.*?)\*\*/g);
         return (
-          <div key={lineIndex} className={lineIndex > 0 ? 'mt-1' : ''}>
-            {parts.map((part, partIndex) => 
+          <div key={lineIndex} className={lineIndex > 0 ? "mt-1" : ""}>
+            {parts.map((part, partIndex) =>
               partIndex % 2 === 1 ? (
-                <strong key={partIndex} className="font-semibold text-cyan-600 dark:text-cyan-400">{part}</strong>
+                <strong
+                  key={partIndex}
+                  className="font-semibold text-cyan-600 dark:text-cyan-400"
+                >
+                  {part}
+                </strong>
               ) : (
                 <span key={partIndex}>{part}</span>
               )
             )}
           </div>
-        )
+        );
       }
-      
+
       // Handle bullet points
-      if (line.trim().startsWith('•')) {
+      if (line.trim().startsWith("•")) {
         return (
           <div key={lineIndex} className="flex items-start gap-2 my-1 ml-2">
             <span className="text-cyan-500 font-bold mt-0.5 text-sm">•</span>
-            <span className="flex-1 text-sm">{line.replace(/^•\s*/, '')}</span>
+            <span className="flex-1 text-sm">{line.replace(/^•\s*/, "")}</span>
           </div>
-        )
+        );
       }
-      
+
       // Regular text
       return line.trim() ? (
-        <div key={lineIndex} className={lineIndex > 0 ? 'mt-1' : ''}>
+        <div key={lineIndex} className={lineIndex > 0 ? "mt-1" : ""}>
           {line}
         </div>
       ) : (
         <div key={lineIndex} className="h-2"></div>
-      )
-    })
-  }
+      );
+    });
+  };
 
   if (!isOpen) {
     return (
       <motion.div
-        className="fixed bottom-4 right-4 z-50"
+        className="fixed bottom-4 right-5 z-50"
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
@@ -646,7 +700,7 @@ What would you like to explore?`,
           <MessageCircle className="h-6 w-6" />
         </Button>
       </motion.div>
-    )
+    );
   }
 
   return (
@@ -658,7 +712,11 @@ What would you like to explore?`,
         exit={{ scale: 0, opacity: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        <Card className={`w-80 sm:w-96 shadow-2xl border-2 border-cyan-200/50 dark:border-cyan-800/50 ${isMinimized ? 'h-16' : 'h-[min(600px,calc(100vh-8rem))]'} overflow-hidden backdrop-blur-sm bg-white/95 dark:bg-gray-900/95`}>
+        <Card
+          className={`w-80 sm:w-96 shadow-2xl border-2 border-cyan-200/50 dark:border-cyan-800/50 ${
+            isMinimized ? "h-16" : "h-[min(600px,calc(100vh-8rem))]"
+          } overflow-hidden backdrop-blur-sm bg-white/95 dark:bg-gray-900/95`}
+        >
           <CardHeader className="pb-3 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -666,8 +724,12 @@ What would you like to explore?`,
                   <Shield className="h-5 w-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg font-semibold">BugHuntr Assistant</CardTitle>
-                  <p className="text-xs text-white/80">Your Security Platform Guide</p>
+                  <CardTitle className="text-lg font-semibold">
+                    BugHuntr Assistant
+                  </CardTitle>
+                  <p className="text-xs text-white/80">
+                    Your Security Platform Guide
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -677,7 +739,11 @@ What would you like to explore?`,
                   className="h-8 w-8 text-white hover:bg-white/20 transition-colors"
                   onClick={() => setIsMinimized(!isMinimized)}
                 >
-                  {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+                  {isMinimized ? (
+                    <Maximize2 className="h-4 w-4" />
+                  ) : (
+                    <Minimize2 className="h-4 w-4" />
+                  )}
                 </Button>
                 <Button
                   variant="ghost"
@@ -698,7 +764,9 @@ What would you like to explore?`,
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex gap-3 ${message.isUser ? "justify-end" : "justify-start"}`}
+                      className={`flex gap-3 ${
+                        message.isUser ? "justify-end" : "justify-start"
+                      }`}
                     >
                       {!message.isUser && (
                         <Avatar className="h-8 w-8 bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex-shrink-0 mt-0.5 border-2 border-white/20">
@@ -713,12 +781,21 @@ What would you like to explore?`,
                             ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white ml-auto"
                             : "bg-gray-50 dark:bg-gray-800 text-foreground border border-gray-200 dark:border-gray-700"
                         }`}
-                        style={{ wordWrap: 'break-word', overflowWrap: 'anywhere' }}
+                        style={{
+                          wordWrap: "break-word",
+                          overflowWrap: "anywhere",
+                        }}
                       >
-                        <div className="text-sm leading-relaxed">{formatMessageContent(message.content)}</div>
-                        <div className={`text-xs mt-2 opacity-60 font-mono ${
-                          message.isUser ? "text-blue-100 text-right" : "text-muted-foreground"
-                        }`}>
+                        <div className="text-sm leading-relaxed">
+                          {formatMessageContent(message.content)}
+                        </div>
+                        <div
+                          className={`text-xs mt-2 opacity-60 font-mono ${
+                            message.isUser
+                              ? "text-blue-100 text-right"
+                              : "text-muted-foreground"
+                          }`}
+                        >
                           {message.timestamp.toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit",
@@ -728,7 +805,7 @@ What would you like to explore?`,
                       {message.isUser && (
                         <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5 border-2 border-gray-200 dark:border-gray-700">
                           <AvatarFallback className="bg-gradient-to-br from-orange-400 to-pink-500 text-white text-xs font-semibold">
-                            {user?.email?.charAt(0).toUpperCase() || 'U'}
+                            {user?.email?.charAt(0).toUpperCase() || "U"}
                           </AvatarFallback>
                         </Avatar>
                       )}
@@ -744,7 +821,9 @@ What would you like to explore?`,
                       <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 max-w-[200px]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin text-cyan-500" />
-                          <span className="text-sm text-muted-foreground">Analyzing...</span>
+                          <span className="text-sm text-muted-foreground">
+                            Analyzing...
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -762,9 +841,9 @@ What would you like to explore?`,
                     className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
                     onClick={() => {
                       if (!isLoading) {
-                        setInputMessage("Navigate to feed")
+                        setInputMessage("Navigate to feed");
                         // We need to trigger sendMessage after the state update
-                        setTimeout(() => sendMessage(), 0)
+                        setTimeout(() => sendMessage(), 0);
                       }
                     }}
                   >
@@ -777,8 +856,8 @@ What would you like to explore?`,
                     className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
                     onClick={() => {
                       if (!isLoading) {
-                        setInputMessage("How to submit a bug")
-                        setTimeout(() => sendMessage(), 0)
+                        setInputMessage("How to submit a bug");
+                        setTimeout(() => sendMessage(), 0);
                       }
                     }}
                   >
@@ -791,23 +870,23 @@ What would you like to explore?`,
                     className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
                     onClick={() => {
                       if (!isLoading) {
-                        setInputMessage("What is a bug bounty?")
-                        setTimeout(() => sendMessage(), 0)
+                        setInputMessage("What is a bug bounty?");
+                        setTimeout(() => sendMessage(), 0);
                       }
                     }}
                   >
                     <BookOpen className="h-3 w-3 mr-1" />
                     Learn
                   </Button>
-                  {user?.role === 'admin' && (
+                  {user?.role === "admin" && (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
                       onClick={() => {
                         if (!isLoading) {
-                          setInputMessage("Navigate to admin panel")
-                          setTimeout(() => sendMessage(), 0)
+                          setInputMessage("Navigate to admin panel");
+                          setTimeout(() => sendMessage(), 0);
                         }
                       }}
                     >
@@ -823,8 +902,17 @@ What would you like to explore?`,
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && !isLoading && sendMessage()}
-                    placeholder={user?.role === 'admin' ? "Navigate, get info, or manage platform..." : "Navigate, submit bugs, or ask questions..."}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" &&
+                      !e.shiftKey &&
+                      !isLoading &&
+                      sendMessage()
+                    }
+                    placeholder={
+                      user?.role === "admin"
+                        ? "Navigate, get info, or manage platform..."
+                        : "Navigate, submit bugs, or ask questions..."
+                    }
                     disabled={isLoading}
                     className="flex-1 min-w-0 border-gray-300 dark:border-gray-600 focus:border-cyan-500 dark:focus:border-cyan-400"
                   />
@@ -849,7 +937,7 @@ What would you like to explore?`,
                     </span>
                   </p>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    {user?.role === 'admin' && (
+                    {user?.role === "admin" && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
                         <Award className="h-3 w-3" />
                         Admin
@@ -864,5 +952,5 @@ What would you like to explore?`,
         </Card>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

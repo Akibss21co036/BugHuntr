@@ -271,11 +271,13 @@ export function getUserPermissions(
   userType: "company" | "hunter"
 ): UserPermissions {
   const isAdmin = role === "admin";
-  const isCompany = userType === "company";
-  const isHunter = userType === "hunter";
+  // Treat system admins as company-equivalent for permissions
+  const isCompany = userType === "company" || isAdmin;
+  // Admins should not be treated as hunters even if userType === 'hunter'
+  const isHunter = userType === "hunter" && !isAdmin;
 
   return {
-    // Company permissions
+    // Company permissions (admins get company permissions)
     canCreateHunts: isCompany,
     canManageHunts: isCompany,
     canReviewApplications: isCompany,
@@ -283,7 +285,7 @@ export function getUserPermissions(
     canManageSubscriptions: isCompany,
     canViewRecommendations: isCompany,
 
-    // Hunter permissions
+    // Hunter permissions (admins are excluded)
     canApplyToHunts: isHunter,
     canViewOwnApplications: isHunter,
 

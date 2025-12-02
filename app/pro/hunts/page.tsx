@@ -45,9 +45,24 @@ export default function ProHuntsPage() {
     ? getUserPermissions(user.role, user.userType)
     : null;
 
-  // Determine view mode: 'manage' for companies, 'browse' for hunters
+  const isAdmin = user?.role === "admin";
+  const isCompany = Boolean(permissions?.isCompany) || isAdmin;
+  // Company presence indicates company-scoped manage view; admins without a company
+  // should still be able to open 'My Hunts' but only see hunts they created.
+  const hasCompanyAccount = Boolean(user?.companyId);
+  // Fallback: if permissions are missing but the user object contains hunter-specific data
+  // (rank or huntsParticipated), treat them as a hunter for the purposes of showing the
+  // eligibility card. Admins are explicitly excluded from hunter UI.
+  const hasHunterData = Boolean(user?.rank) || Boolean(user?.huntsParticipated);
+  const isHunter =
+    (Boolean(permissions?.isHunter) || hasHunterData) && !isAdmin;
+  const canCreate = Boolean(permissions?.canCreateHunts) || isAdmin;
+
+  // Determine view mode: 'manage' for companies (or admins), 'browse' otherwise
   const [viewMode, setViewMode] = useState<"browse" | "manage">(
-    viewParam === "manage" && permissions?.isCompany ? "manage" : "browse"
+    viewParam === "manage" && (hasCompanyAccount || isAdmin)
+      ? "manage"
+      : "browse"
   );
 
   // Get hunter data from auth context or use defaults
@@ -74,11 +89,19 @@ export default function ProHuntsPage() {
     const matchesStatus =
       statusFilter === "all" || hunt.status === statusFilter;
 
-    // In manage mode, only show hunts created by current company
-    if (viewMode === "manage" && user?.companyId) {
-      return (
-        matchesSearch && matchesStatus && hunt.companyId === user.companyId
-      );
+    // In manage mode, show hunts for the company if the user has a company account,
+    // otherwise if the user is an admin show only hunts they created (createdBy === user.id)
+    if (viewMode === "manage") {
+      if (hasCompanyAccount) {
+        return (
+          matchesSearch && matchesStatus && hunt.companyId === user!.companyId
+        );
+      }
+      if (isAdmin) {
+        return matchesSearch && matchesStatus && hunt.createdBy === user!.id;
+      }
+      // If manage mode but neither company nor admin, fall back to nothing
+      return false;
     }
 
     return matchesSearch && matchesStatus;
@@ -143,7 +166,7 @@ export default function ProHuntsPage() {
                 : "Discover elite bug hunting opportunities with premium rewards"}
             </p>
           </div>
-          {permissions?.canCreateHunts && viewMode === "manage" && (
+          {canCreate && viewMode === "manage" && hasCompanyAccount && (
             <Button
               onClick={() => router.push("/pro/hunts/create")}
               className="bg-blue-600 hover:bg-blue-700"
@@ -156,7 +179,7 @@ export default function ProHuntsPage() {
         </div>
 
         {/* View Mode Tabs (only for companies) */}
-        {permissions?.isCompany && (
+        {(hasCompanyAccount || isAdmin) && (
           <Tabs
             value={viewMode}
             onValueChange={(v) => setViewMode(v as "browse" | "manage")}
@@ -205,13 +228,13 @@ export default function ProHuntsPage() {
           {/* Sidebar - Different for each view mode */}
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-4">
-              {/* Hunter Eligibility Card (only in browse mode for hunters) */}
-              {viewMode === "browse" && permissions?.isHunter && (
+              {/* Hunter Eligibility Card (visible to system 'user' role in browse mode) */}
+              {viewMode === "browse" && user?.role === "user" && (
                 <ProEligibilityCard eligibility={eligibility} />
               )}
 
               {/* Company Actions (only in manage mode for companies) */}
-              {viewMode === "manage" && permissions?.isCompany && (
+              {viewMode === "manage" && isCompany && (
                 <div className="space-y-4">
                   <Button
                     onClick={() => setShowRecommendations(!showRecommendations)}
@@ -231,7 +254,7 @@ export default function ProHuntsPage() {
             {showRecommendations &&
               viewMode === "manage" &&
               selectedHunt &&
-              permissions?.isCompany && (
+              isCompany && (
                 <ProRecommendationsPanel
                   huntId={selectedHunt.id}
                   minRank={selectedHunt.minRank}
@@ -250,7 +273,7 @@ export default function ProHuntsPage() {
                     ? "You haven't created any Pro hunts yet"
                     : "No Pro hunts found matching your criteria"}
                 </p>
-                {viewMode === "manage" && permissions?.canCreateHunts && (
+                {viewMode === "manage" && canCreate && (
                   <Button
                     onClick={() => router.push("/pro/hunts/create")}
                     className="mt-4 bg-blue-600 hover:bg-blue-700"
@@ -282,7 +305,7 @@ export default function ProHuntsPage() {
       </div>
 
       {/* Apply Modal (only for hunters) */}
-      {selectedHunt && permissions?.isHunter && (
+      {selectedHunt && isHunter && (
         <ProApplyModal
           open={applyModalOpen}
           onOpenChange={setApplyModalOpen}
@@ -294,7 +317,7 @@ export default function ProHuntsPage() {
       )}
 
       {/* NDA Modal (only for hunters) */}
-      {selectedHunt && permissions?.isHunter && (
+      {selectedHunt && isHunter && (
         <ProNdaModal
           open={ndaModalOpen}
           onOpenChange={setNdaModalOpen}

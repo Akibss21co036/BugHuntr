@@ -18,12 +18,15 @@ export default function CreateProHuntPage() {
     ? getUserPermissions(user.role, user.userType)
     : null;
 
+  const isAdmin = user?.role === "admin";
+  const canCreate = isAdmin || permissions?.canCreateHunts;
+
   // Redirect if user doesn't have permission
   useEffect(() => {
-    if (user && !permissions?.canCreateHunts) {
+    if (user && !canCreate) {
       router.push("/pro");
     }
-  }, [user, permissions, router]);
+  }, [user, canCreate, router]);
 
   // Get company data from auth context
   const companyData = {
@@ -36,7 +39,7 @@ export default function CreateProHuntPage() {
   };
 
   // Show access denied if not a company
-  if (user && !permissions?.canCreateHunts) {
+  if (user && !canCreate) {
     return (
       <div className="min-h-screen bg-[#10151c] flex items-center justify-center p-6">
         <Card className="max-w-md bg-[#181e26] border-[#23272f]">

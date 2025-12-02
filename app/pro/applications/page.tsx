@@ -31,14 +31,18 @@ export default function ProApplicationsPage() {
     ? getUserPermissions(user.role, user.userType)
     : null;
 
+  const isAdmin = user?.role === "admin";
+  const isCompany = Boolean(permissions?.isCompany) || isAdmin;
+  const isHunter = Boolean(permissions?.isHunter) && !isAdmin;
+
   // Filter applications based on user type
   // Hunters see their own applications
-  // Companies see applications for their hunts
+  // Companies (and admins) see applications for their hunts
   const relevantApplications = applications.filter((app) => {
-    if (permissions?.isHunter) {
+    if (isHunter) {
       return app.hunterId === user?.id;
     }
-    if (permissions?.isCompany) {
+    if (isCompany) {
       // In production, filter by hunts that belong to this company
       // For now, we'll show all applications (mock data)
       return true;
@@ -122,12 +126,10 @@ export default function ProApplicationsPage() {
             Back to Pro Dashboard
           </Button>
           <h1 className="text-3xl font-black mb-2">
-            {permissions?.isCompany
-              ? "Review Applications"
-              : "My Pro Applications"}
+            {isCompany ? "Review Applications" : "My Pro Applications"}
           </h1>
           <p className="text-gray-400">
-            {permissions?.isCompany
+            {isCompany
               ? "Manage hunter applications for your Pro hunts"
               : "Track your Pro hunt applications and invitations"}
           </p>
@@ -141,9 +143,7 @@ export default function ProApplicationsPage() {
                 {relevantApplications.length}
               </div>
               <div className="text-sm text-gray-400">
-                {permissions?.isCompany
-                  ? "Total Received"
-                  : "Total Applications"}
+                {isCompany ? "Total Received" : "Total Applications"}
               </div>
             </CardContent>
           </Card>
@@ -290,7 +290,7 @@ export default function ProApplicationsPage() {
                     )}
 
                     {/* Actions - Different for hunters vs companies */}
-                    {permissions?.isHunter && (
+                    {isHunter && (
                       <>
                         {app.status === "approved" && (
                           <div className="flex gap-2">
@@ -322,7 +322,7 @@ export default function ProApplicationsPage() {
                       </>
                     )}
 
-                    {permissions?.isCompany && (
+                    {isCompany && (
                       <>
                         {app.status === "pending" && (
                           <div className="flex gap-2">

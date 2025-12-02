@@ -47,7 +47,7 @@ export function RoleSwitcherDev() {
     return (
       <Button
         onClick={() => setIsVisible(true)}
-        className="fixed bottom-4 right-4 bg-purple-600 hover:bg-purple-700 z-50"
+        className="fixed bottom-4 right-20 bg-purple-600 hover:bg-purple-700 z-50"
         size="sm"
         data-testid="show-role-switcher-btn"
       >

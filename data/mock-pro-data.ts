@@ -83,6 +83,7 @@ export const mockProHunts: ProHunt[] = [
     createdAt: "2025-01-20T10:00:00Z",
     updatedAt: "2025-01-20T10:00:00Z",
     inviteOnly: true,
+      createdBy: "admin_techcorp_1",
   },
   {
     id: "prohunt_2",
@@ -118,6 +119,7 @@ export const mockProHunts: ProHunt[] = [
     createdAt: "2025-01-25T14:30:00Z",
     updatedAt: "2025-01-25T14:30:00Z",
     inviteOnly: false,
+      createdBy: "admin_finsecure_1",
   },
   {
     id: "prohunt_3",
@@ -153,6 +155,7 @@ export const mockProHunts: ProHunt[] = [
     createdAt: "2025-01-28T09:00:00Z",
     updatedAt: "2025-01-28T09:00:00Z",
     inviteOnly: true,
+      createdBy: "admin_techcorp_1",
   },
 ];
 

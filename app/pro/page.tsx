@@ -26,11 +26,7 @@ import { useProSubscription } from "@/hooks/use-pro-subscription";
 import { useProHunts } from "@/hooks/use-pro-hunts";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-context";
-import {
-  getUserPermissions,
-  getRoleBadgeColor,
-  getUserTypeBadgeColor,
-} from "@/lib/pro-utils";
+import { getRoleBadgeColor } from "@/lib/pro-utils";
 import { RoleSwitcherDev } from "@/components/pro/role-switcher-dev";
 
 export default function ProDashboardPage() {
@@ -39,10 +35,9 @@ export default function ProDashboardPage() {
   const { subscription, loading: subLoading } = useProSubscription();
   const { proHunts, loading: huntsLoading } = useProHunts();
 
-  // Get user permissions based on role and userType
-  const permissions = user
-    ? getUserPermissions(user.role, user.userType)
-    : null;
+  // Simplified role logic: only system roles (admin | user)
+  const isAdmin = user?.role === "admin";
+  const isUser = user?.role === "user";
 
   // Check if Pro feature is enabled
   useEffect(() => {
@@ -76,17 +71,16 @@ export default function ProDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#10151c] p-6">
-      <Button
-        variant="ghost"
-        onClick={handleBackToFeed}
-        className="gap-2 text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="hidden sm:inline">Feed</span>
-        <span className="sm:hidden">Back</span>
-      </Button>
-
       <div className="max-w-7xl mx-auto space-y-8">
+        <Button
+          variant="ghost"
+          onClick={handleBackToFeed}
+          className="gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Back to Feed</span>
+          <span className="sm:hidden">Back</span>
+        </Button>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -99,14 +93,11 @@ export default function ProDashboardPage() {
             <p className="text-gray-400 text-lg">
               Elite bug hunting for sensitive applications
             </p>
-            {/* User Role Badges */}
+            {/* User Role Badge (simplified: Admin | User) */}
             {user && (
               <div className="flex gap-2 mt-3">
                 <Badge className={getRoleBadgeColor(user.role)}>
                   {user.role === "admin" ? "Admin" : "User"}
-                </Badge>
-                <Badge className={getUserTypeBadgeColor(user.userType)}>
-                  {user.userType === "company" ? "Company" : "Hunter"}
                 </Badge>
               </div>
             )}
@@ -169,8 +160,8 @@ export default function ProDashboardPage() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* For Companies */}
-          {permissions?.isCompany && (
+          {/* For Admins */}
+          {isAdmin && (
             <>
               <Card
                 className="bg-[#181e26] border-[#23272f] hover:border-blue-500/50 transition-colors cursor-pointer"
@@ -274,8 +265,8 @@ export default function ProDashboardPage() {
             </>
           )}
 
-          {/* For Hunters */}
-          {permissions?.isHunter && (
+          {/* For Regular Users */}
+          {isUser && (
             <>
               <Card
                 className="bg-[#181e26] border-[#23272f] hover:border-blue-500/50 transition-colors cursor-pointer"
