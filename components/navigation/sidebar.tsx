@@ -28,6 +28,7 @@ import { RankBadge } from "@/components/ranking/rank-badge";
 import { VerificationBadge } from "@/components/ui/verification-badge";
 import { useCommunity } from "@/hooks/use-community";
 import { useState } from "react";
+import { Brain } from "lucide-react";
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -97,7 +98,11 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       icon: Award,
       href: "/leaderboard",
     },
-    { id: "my-reports", label: "My Reports", icon: FileText, href: "/reports" },
+    { id: "learn", label: "Learn", 
+      icon: Brain, 
+      href: "https://maaz.great-site.net/?i=1", 
+      target: "_blank", 
+      rel: "noopener noreferrer" },
     {
       id: "communities",
       label: "Communities",

@@ -34,8 +34,7 @@ THECOMPANIESAPI_KEY=your-companies-api-key
 
 ```bash
 # Install Python dependencies
-pip install flask flask-cors python-dotenv paddleocr pdf2image python-docx requests bcrypt firebase-admin pillow paddlepaddle
-
+pip install flask flask-cors python-dotenv paddleocr pdf2image python-docx requests bcrypt firebase-admin pillow paddlepaddl
 # Run the Flask app
 python Doc-Verification.py
 ```
