@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -24,13 +24,23 @@ import {
   Award,
   Star,
 } from "lucide-react"
+import { useAuth } from "@/components/auth/auth-context"
+import { db } from "@/firebaseConfig"
+import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore"
+import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
+  const { user, isAuthenticated } = useAuth()
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [userDocId, setUserDocId] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+
   const [profile, setProfile] = useState({
-    username: "cybersec_hunter",
-    email: "hunter@example.com",
-    fullName: "Alex Hunter",
-    bio: "Cybersecurity researcher specializing in web application vulnerabilities",
+    username: "",
+    email: "",
+    fullName: "",
+    bio: "",
   })
 
   const [notifications, setNotifications] = useState({
@@ -41,12 +51,119 @@ export default function SettingsPage() {
     weeklyDigest: true,
   })
 
-  const [points] = useState({
-    total: 12450,
-    thisMonth: 850,
-    rank: "Elite Hunter",
-    nextMilestone: 15000,
+  const [points, setPoints] = useState({
+    total: 0,
+    thisMonth: 0,
+    rank: "Beginner",
+    nextMilestone: 5000,
   })
+
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!isAuthenticated || !user?.email) {
+        router.push("/login")
+        return
+      }
+
+      try {
+        // Fetch user from Firestore
+        const q = query(collection(db, "users"), where("email", "==", user.email))
+        const querySnapshot = await getDocs(q)
+
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0]
+          setUserDocId(userDoc.id)
+          const userData = userDoc.data()
+
+          // Set profile data
+          setProfile({
+            username: userData.username || "",
+            email: userData.email || "",
+            fullName: userData.name || "",
+            bio: userData.bio || "",
+          })
+
+          // Set points data
+          setPoints({
+            total: userData.points || 0,
+            thisMonth: userData.thisMonthPoints || 0,
+            rank: userData.rank || "Beginner",
+            nextMilestone: userData.nextMilestone || 5000,
+          })
+
+          // Set notifications
+          if (userData.notifications) {
+            setNotifications(userData.notifications)
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserData()
+  }, [isAuthenticated, user, router])
+
+  // Save profile changes
+  const handleSaveProfile = async () => {
+    if (!userDocId) return
+
+    setIsSaving(true)
+    try {
+      await updateDoc(doc(db, "users", userDocId), {
+        name: profile.fullName,
+        username: profile.username,
+        bio: profile.bio,
+      })
+      alert("Profile updated successfully!")
+    } catch (error) {
+      console.error("Error saving profile:", error)
+      alert("Error saving profile. Please try again.")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  // Save notification preferences
+  const handleSaveNotifications = async () => {
+    if (!userDocId) return
+
+    setIsSaving(true)
+    try {
+      await updateDoc(doc(db, "users", userDocId), {
+        notifications: notifications,
+      })
+      alert("Notification preferences updated!")
+    } catch (error) {
+      console.error("Error saving notifications:", error)
+      alert("Error saving preferences. Please try again.")
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Loading settings...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Please log in to access settings</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -149,9 +266,13 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button className="flex items-center gap-2">
+                <Button 
+                  className="flex items-center gap-2"
+                  onClick={handleSaveProfile}
+                  disabled={isSaving}
+                >
                   <Save className="h-4 w-4" />
-                  Save Changes
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </CardContent>
@@ -264,9 +385,13 @@ export default function SettingsPage() {
               </div>
 
               <div className="flex justify-end">
-                <Button className="flex items-center gap-2">
+                <Button 
+                  className="flex items-center gap-2"
+                  onClick={handleSaveNotifications}
+                  disabled={isSaving}
+                >
                   <Save className="h-4 w-4" />
-                  Save Preferences
+                  {isSaving ? "Saving..." : "Save Preferences"}
                 </Button>
               </div>
             </CardContent>
