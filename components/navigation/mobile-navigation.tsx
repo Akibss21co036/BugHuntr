@@ -15,7 +15,6 @@ interface MobileNavigationProps {
 const navigationItems = [
   { id: "dashboard", label: "Profile", icon: Home, href: "/dashboard" },
   { id: "bug-feed", label: "Bug Feed", icon: Bug, href: "/" },
-  { id: "my-reports", label: "My Reports", icon: FileText, href: "/reports" },
   { id: "certificates", label: "Certificates", icon: Trophy, href: "/certificates" },
   { id: "profile", label: "Profile", icon: User, href: "/profile" },
   { id: "settings", label: "Settings", icon: Settings, href: "/settings" },
