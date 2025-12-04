@@ -191,8 +191,8 @@ export default function LeaderboardPage() {
                       >
                         <div className="text-center space-y-4 p-6 rounded-lg bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                           <div className="text-6xl">🥈</div>
-                          <div className="space-y-2">
-                            <div className="font-bold text-lg">{podiumUsers[1]?.username}</div>
+                          <div className="space-y-2 min-w-0">
+                            <div className="font-bold text-lg truncate">{podiumUsers[1]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[1]?.role === "admin"} companyName={podiumUsers[1]?.companyName} size="sm" />
                             <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[1]?.points} pts</div>
                           </div>
@@ -208,8 +208,8 @@ export default function LeaderboardPage() {
                       >
                         <div className="text-center space-y-4 p-6 rounded-lg bg-gradient-to-b from-yellow-100 to-yellow-200 dark:from-yellow-900/50 dark:to-yellow-800/50 transform md:scale-110">
                           <div className="text-8xl">🏆</div>
-                          <div className="space-y-2">
-                            <div className="font-bold text-xl">{podiumUsers[0]?.username}</div>
+                          <div className="space-y-2 min-w-0">
+                            <div className="font-bold text-xl truncate">{podiumUsers[0]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[0]?.role === "admin"} companyName={podiumUsers[0]?.companyName} size="md" />
                             <div className="text-3xl font-bold text-cyber-blue">{podiumUsers[0]?.points} pts</div>
                           </div>
@@ -225,8 +225,8 @@ export default function LeaderboardPage() {
                       >
                         <div className="text-center space-y-4 p-6 rounded-lg bg-gradient-to-b from-orange-100 to-orange-200 dark:from-orange-900/50 dark:to-orange-800/50">
                           <div className="text-6xl">🥉</div>
-                          <div className="space-y-2">
-                            <div className="font-bold text-lg">{podiumUsers[2]?.username}</div>
+                          <div className="space-y-2 min-w-0">
+                            <div className="font-bold text-lg truncate">{podiumUsers[2]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[2]?.role === "admin"} companyName={podiumUsers[2]?.companyName} size="sm" />
                             <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[2]?.points} pts</div>
                           </div>
@@ -257,13 +257,13 @@ export default function LeaderboardPage() {
                         transition={{ delay: index * 0.05 }}
                         className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold">
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex-shrink-0">
                             {index + 1}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <div className="font-medium">{user.username}</div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="font-medium truncate">{user.username}</div>
                               <VerificationBadge isAdmin={user.role === "admin"} companyName={user.companyName} size="sm" />
                             </div>
                           </div>
