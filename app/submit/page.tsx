@@ -74,7 +74,7 @@ export default function SubmitBugPage() {
     }
     try {
       setDetectingSeverity(true)
-      const response = await fetch("http://localhost:8000/api/analyzeSeverity", {
+      const response = await fetch("https://bughuntr.onrender.com/api/analyzeSeverity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

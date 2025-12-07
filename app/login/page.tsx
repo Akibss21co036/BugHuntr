@@ -134,7 +134,7 @@ export default function LoginPage() {
       }
       
       // Show success message instead of auto-redirect
-      alert("Login successful! Welcome back.")
+      // alert("Login successful! Welcome back.")
       
       // Optional: redirect after user acknowledgment
       setTimeout(() => {
