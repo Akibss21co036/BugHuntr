@@ -312,4 +312,3 @@ What would you like to know about BugHuntr?""",
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     app.run(host="0.0.0.0", port=8000)
-
