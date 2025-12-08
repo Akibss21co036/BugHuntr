@@ -18,6 +18,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean
   user: User | null
+  isLoading: boolean
   login: (username: string, email?: string, role?: "user" | "admin", companyData?: Partial<User>) => void 
   logout: () => void
 }
@@ -27,25 +28,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Clear auth state in development mode to ensure fresh start
-      if (process.env.NODE_ENV === "development") {
-        localStorage.removeItem("isAuthenticated");
-        localStorage.removeItem("currentUser");
-        setIsAuthenticated(false);
-        setUser(null);
-        return;
-      }
-      
-      // In production, check if user is logged in from localStorage
+      // Check if user is logged in from localStorage
       const authStatus = localStorage.getItem("isAuthenticated");
       const userData = localStorage.getItem("currentUser");
       setIsAuthenticated(authStatus === "true");
       if (userData) {
         setUser(JSON.parse(userData));
       }
+      setIsLoading(false);
     }
   }, []);
 
@@ -77,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  return <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

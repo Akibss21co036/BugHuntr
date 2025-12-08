@@ -28,12 +28,12 @@ const publicRoutes = [
 ]
 
 export function RouteProtection({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!pathname) return
+    if (!pathname || isLoading) return
     
     // Check if current route is protected
     const isProtectedRoute = protectedRoutes.some(route => 
@@ -51,7 +51,7 @@ export function RouteProtection({ children }: { children: React.ReactNode }) {
       router.push("/feed")
       return
     }
-  }, [isAuthenticated, pathname, router])
+  }, [isAuthenticated, isLoading, pathname, router])
 
   return <>{children}</>
 }
