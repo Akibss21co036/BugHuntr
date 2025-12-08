@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, make_response, request, jsonify
 from pydantic import BaseModel, ValidationError
 from groq import AsyncGroq
 import asyncio
@@ -13,7 +13,38 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "https://bug-huntr-eight.vercel.app"])
+# CORS(app, origins=["http://localhost:3000", "https://bug-huntr-eight.vercel.app"])
+CORS(
+    app,
+    resources={r"/api/*": {"origins": ["http://localhost:3000", "https://bug-huntr-eight.vercel.app"]}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "OPTIONS"]
+)
+
+@app.before_request
+def handle_options():
+    # Respond to preflight OPTIONS early and with correct headers
+    if request.method == "OPTIONS":
+        resp = make_response()
+        resp.status_code = 204
+        resp.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "https://bug-huntr-eight.vercel.app")
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+        return resp
+
+@app.after_request
+def add_cors(response):
+    # Ensure all responses include the necessary CORS headers
+    origin = request.headers.get("Origin")
+    if origin and origin in ("http://localhost:3000", "https://bug-huntr-eight.vercel.app"):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    return response
+
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
