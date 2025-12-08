@@ -56,6 +56,8 @@ export default function SubmitBugPage() {
   const [uploadingProof, setUploadingProof] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string>("")
   const [isAnchoring, setIsAnchoring] = useState(false)
+  const [txHash, setTxHash] = useState<string>("")
+  const [pdfUrl, setPdfUrl] = useState<string>("")
   const contractAddress = process.env.NEXT_PUBLIC_BUG_CONTRACT_ADDRESS 
   
 
@@ -205,6 +207,7 @@ export default function SubmitBugPage() {
         } else {
           const result = await processRes.json()
           pdfCid = result.pdfCid
+          if (result.pdfUrl) setPdfUrl(result.pdfUrl)
           console.log("PDF generated + uploaded:", result)
         }
       } catch (processingError) {
@@ -266,6 +269,7 @@ export default function SubmitBugPage() {
             )
             await tx.wait()
             console.log("On-chain anchoring tx:", tx.hash)
+            setTxHash(tx.hash)
           } catch (chainErr) {
             console.error("MetaMask / chain tx failed:", chainErr)
           } finally {
@@ -316,7 +320,7 @@ export default function SubmitBugPage() {
         alert("Bug submitted successfully! Your submission is now under review.")
       }
 
-      router.push("/my-submissions")
+      // Stay on page; do not redirect so user can copy tx/PDF links
     } catch (error) {
       console.error("Error submitting bug:", error)
       alert("Error submitting bug report. Please try again.")
@@ -518,6 +522,43 @@ export default function SubmitBugPage() {
                 </CardContent>
               </Card>
             </FadeIn>
+
+            {(txHash || pdfUrl) && (
+              <FadeIn delay={0.35}>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Submission Outputs</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {txHash ? (
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Blockchain transaction</p>
+                        <a
+                          className="text-cyber-blue break-all underline"
+                          href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {txHash}
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No transaction recorded yet.</p>
+                    )}
+                    {pdfUrl ? (
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Proof PDF (Pinata)</p>
+                        <a className="text-cyber-blue break-all underline" href={pdfUrl} target="_blank" rel="noreferrer">
+                          {pdfUrl}
+                        </a>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No PDF link available yet.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            )}
           </div>
         </div>
       </div>
