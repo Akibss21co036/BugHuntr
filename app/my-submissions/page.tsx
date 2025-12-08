@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -35,6 +35,12 @@ export default function MySubmissionsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [severityFilter, setSeverityFilter] = useState("all");
   const [userSubmissions, setUserSubmissions] = useState<BugSubmission[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Defer rendering until mounted
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Fetch submissions from Firestore on mount and when user changes
   React.useEffect(() => {
@@ -91,6 +97,11 @@ export default function MySubmissionsPage() {
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20"
     }
+  }
+
+  // Don't render heavy content until mounted
+  if (!isMounted) {
+    return null
   }
 
   return (

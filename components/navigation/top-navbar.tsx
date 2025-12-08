@@ -13,27 +13,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/components/auth/auth-context"
-import { useState, useEffect } from "react"
+import { useState, useEffect, memo } from "react"
 import { useSearch } from "@/components/search/search-context"
 
 interface TopNavbarProps {
   onMenuClick: () => void
 }
 
-export function TopNavbar({ onMenuClick }: TopNavbarProps) {
+function TopNavbarComponent({ onMenuClick }: TopNavbarProps) {
   const { isAuthenticated, logout } = useAuth()
+  const { searchTerm, setSearchTerm } = useSearch()
+  const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm)
+
+  // Debounce search input to reduce re-renders
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setSearchTerm(localSearchTerm)
+    }, 300)
+
+    return () => clearTimeout(debounceTimer)
+  }, [localSearchTerm, setSearchTerm])
 
   const handleLogout = () => {
     logout();
-    // Redirect to home page
     if (typeof window !== "undefined") {
       window.location.href = "/";
     }
   };
-
-
-  // Add search state and handler
-  const { searchTerm, setSearchTerm } = useSearch();
 
   return (
     <header
@@ -64,8 +70,8 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               type="text"
               placeholder="Search vulnerabilities..."
               className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              value={localSearchTerm}
+              onChange={e => setLocalSearchTerm(e.target.value)}
             />
           </div>
         </div>
@@ -141,3 +147,5 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
     </header>
   )
 }
+
+export const TopNavbar = memo(TopNavbarComponent)
