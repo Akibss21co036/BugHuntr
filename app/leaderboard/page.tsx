@@ -25,6 +25,8 @@ interface LeaderboardUser {
   rank?: RankTier
   role?: "user" | "admin"
   companyName?: string
+  weeklyPoints?: number
+  monthlyPoints?: number
 }
 
 export default function LeaderboardPage() {
@@ -44,16 +46,27 @@ export default function LeaderboardPage() {
           orderBy("points", "desc")
         )
         const snapshot = await getDocs(usersQuery)
-        const users = snapshot.docs.map(doc => ({
-          id: doc.id,
-          username: doc.data().username || "Unknown",
-          points: doc.data().points || 0,
-          bugsSubmitted: doc.data().bugsSubmitted || 0,
-          joinedAt: doc.data().createdAt || new Date().toISOString(),
-          rank: calculateRank(doc.data().points || 0),
-          role: doc.data().role || "user",
-          companyName: doc.data().companyName
-        }))
+        const users = snapshot.docs.map(doc => {
+          const data = doc.data()
+          const allTimePoints = data.points || 0
+          // Calculate weekly points (assume 5% of all-time points for demo)
+          const weeklyPoints = Math.floor(allTimePoints * 0.05)
+          // Calculate monthly points (assume 20% of all-time points for demo)
+          const monthlyPoints = Math.floor(allTimePoints * 0.20)
+          
+          return {
+            id: doc.id,
+            username: data.username || "Unknown",
+            points: allTimePoints,
+            weeklyPoints: weeklyPoints,
+            monthlyPoints: monthlyPoints,
+            bugsSubmitted: data.bugsSubmitted || 0,
+            joinedAt: data.createdAt || new Date().toISOString(),
+            rank: calculateRank(allTimePoints),
+            role: data.role || "user",
+            companyName: data.companyName
+          }
+        })
         setFirestoreUsers(users)
       } catch (error) {
         console.error("Error fetching leaderboard:", error)
@@ -75,11 +88,26 @@ export default function LeaderboardPage() {
     return "E"
   }
 
+  // Get points based on selected timeframe
+  const getPointsByTimeframe = (user: LeaderboardUser): number => {
+    switch (timeframe) {
+      case "weekly":
+        return user.weeklyPoints || 0
+      case "monthly":
+        return user.monthlyPoints || 0
+      case "all":
+      default:
+        return user.points || 0
+    }
+  }
+
   // 🔎 Search + Filter - use Firestore data if available, fallback to mock data
   const usersToFilter = firestoreUsers.length > 0 ? firestoreUsers : userRankings.map(user => ({
     id: user.userId,
     username: user.username,
     points: user.totalPoints || 0,
+    weeklyPoints: Math.floor((user.totalPoints || 0) * 0.05),
+    monthlyPoints: Math.floor((user.totalPoints || 0) * 0.20),
     bugsSubmitted: user.bugsFound || 0,
     joinedAt: user.joinDate || new Date().toISOString(),
     rank: user.rank || "E",
@@ -93,8 +121,8 @@ export default function LeaderboardPage() {
     return matchesSearch && matchesRank
   })
 
-  // ✅ Sort safely by points
-  const topUsers = [...filteredUsers].sort((a, b) => (b.points ?? 0) - (a.points ?? 0))
+  // ✅ Sort safely by points based on timeframe
+  const topUsers = [...filteredUsers].sort((a, b) => getPointsByTimeframe(b) - getPointsByTimeframe(a))
   const podiumUsers = topUsers.slice(0, 3)
   const remainingUsers = topUsers.slice(3)
 
@@ -194,7 +222,7 @@ export default function LeaderboardPage() {
                           <div className="space-y-2 min-w-0">
                             <div className="font-bold text-lg truncate">{podiumUsers[1]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[1]?.role === "admin"} companyName={podiumUsers[1]?.companyName} size="sm" />
-                            <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[1]?.points} pts</div>
+                            <div className="text-2xl font-bold text-cyber-blue">{getPointsByTimeframe(podiumUsers[1])} pts</div>
                           </div>
                         </div>
                       </motion.div>
@@ -211,7 +239,7 @@ export default function LeaderboardPage() {
                           <div className="space-y-2 min-w-0">
                             <div className="font-bold text-xl truncate">{podiumUsers[0]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[0]?.role === "admin"} companyName={podiumUsers[0]?.companyName} size="md" />
-                            <div className="text-3xl font-bold text-cyber-blue">{podiumUsers[0]?.points} pts</div>
+                            <div className="text-3xl font-bold text-cyber-blue">{getPointsByTimeframe(podiumUsers[0])} pts</div>
                           </div>
                         </div>
                       </motion.div>
@@ -228,7 +256,7 @@ export default function LeaderboardPage() {
                           <div className="space-y-2 min-w-0">
                             <div className="font-bold text-lg truncate">{podiumUsers[2]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[2]?.role === "admin"} companyName={podiumUsers[2]?.companyName} size="sm" />
-                            <div className="text-2xl font-bold text-cyber-blue">{podiumUsers[2]?.points} pts</div>
+                            <div className="text-2xl font-bold text-cyber-blue">{getPointsByTimeframe(podiumUsers[2])} pts</div>
                           </div>
                         </div>
                       </motion.div>
@@ -270,7 +298,7 @@ export default function LeaderboardPage() {
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <div className="font-bold text-lg">{user.points ?? 0}</div>
+                            <div className="font-bold text-lg">{getPointsByTimeframe(user) ?? 0}</div>
                             <div className="text-sm text-muted-foreground">points</div>
                           </div>
                           {user.rank && <RankBadge rank={user.rank} size="md" />}
