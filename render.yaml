@@ -1,0 +1,22 @@
+# Render deployment configuration for BugHuntr (backend only)
+# Frontend is hosted on Vercel; this file defines only the chatbot backend service.
+
+services:
+  - type: web
+    name: backend
+    env: python
+    plan: free
+    branch: chatbot-created
+    rootDir: .
+    # Install Python dependencies
+    buildCommand: pip install -r requirements.txt
+    # Start the Python app; expects `app.py` exposing a Flask `app`
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    autoDeploy: true
+    # Add environment variables or secrets below (recommended to configure in Render dashboard)
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FLASK_ENV
+        value: production
+        sync: false

@@ -28,6 +28,7 @@ import {
   query,
   orderBy,
   where,
+  limit,
 } from "firebase/firestore"
 
 export function useRanking() {
@@ -36,46 +37,65 @@ export function useRanking() {
   const [userRewards, setUserRewards] = useState<UserReward[]>([])
   const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([])
 
-  // 📡 Load live data from Firestore
+  // 📡 Load live data from Firestore with pagination
   useEffect(() => {
-  const unsubUsers = onSnapshot(
-  query(collection(db, "userProfiles"), orderBy("points", "desc")),
-  (snapshot) => {
-    setUserRankings(
-      snapshot.docs.map((doc) => {
-        const data = doc.data()
-        return {
-          ...(data as Omit<UserRanking, "userId">),
-          userId: doc.id,
-          totalPoints: data.totalPoints ?? data.points ?? 0, // fallback
-        }
-      })
-    )
-  }
-)
-
-
-
-    const unsubTransactions = onSnapshot(
-      collection(db, "pointsTransactions"),
+    // Only load top 100 users for leaderboard (not all users)
+    const unsubUsers = onSnapshot(
+      query(collection(db, "userProfiles"), orderBy("points", "desc"), limit(100)),
       (snapshot) => {
-        setPointsTransactions(snapshot.docs.map((doc) => doc.data() as PointsTransaction))
+        setUserRankings(
+          snapshot.docs.map((doc) => {
+            const data = doc.data()
+            return {
+              ...(data as Omit<UserRanking, "userId">),
+              userId: doc.id,
+              totalPoints: data.totalPoints ?? data.points ?? 0,
+            }
+          })
+        )
       }
     )
 
-    const unsubRewards = onSnapshot(collection(db, "userRewards"), (snapshot) => {
-      setUserRewards(snapshot.docs.map((doc) => doc.data() as UserReward))
-    })
+    // Load transactions only when needed (use getDocs instead of onSnapshot for non-realtime data)
+    const loadTransactions = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "pointsTransactions"))
+        setPointsTransactions(snapshot.docs.map((doc) => doc.data() as PointsTransaction))
+      } catch (error) {
+        console.error("Error loading transactions:", error)
+      }
+    }
 
-    const unsubAchievements = onSnapshot(collection(db, "userAchievements"), (snapshot) => {
-      setUserAchievements(snapshot.docs.map((doc) => doc.data() as UserAchievement))
-    })
+    // Load rewards only when needed
+    const loadRewards = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "userRewards"))
+        setUserRewards(snapshot.docs.map((doc) => doc.data() as UserReward))
+      } catch (error) {
+        console.error("Error loading rewards:", error)
+      }
+    }
+
+    // Load achievements only when needed
+    const loadAchievements = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, "userAchievements"))
+        setUserAchievements(snapshot.docs.map((doc) => doc.data() as UserAchievement))
+      } catch (error) {
+        console.error("Error loading achievements:", error)
+      }
+    }
+
+    // Load non-critical data after a delay to prioritize rendering
+    const transactionTimer = setTimeout(() => loadTransactions(), 1000)
+    const rewardTimer = setTimeout(() => loadRewards(), 1500)
+    const achievementTimer = setTimeout(() => loadAchievements(), 2000)
 
     return () => {
       unsubUsers()
-      unsubTransactions()
-      unsubRewards()
-      unsubAchievements()
+      clearTimeout(transactionTimer)
+      clearTimeout(rewardTimer)
+      clearTimeout(achievementTimer)
     }
   }, [])
 

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import dynamic from "next/dynamic"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -10,10 +11,12 @@ import { CommunityProvider } from "@/hooks/use-community"
 import { TopNavbar } from "@/components/navigation/top-navbar"
 import { Sidebar } from "@/components/navigation/sidebar"
 import { MobileNavigation } from "@/components/navigation/mobile-navigation"
-import { BugHuntrAssistant } from "@/components/chatbot/bughuntr-assistant-clean"
 import { useAuth } from "@/components/auth/auth-context"
 import { usePathname } from "next/navigation"
 import "./globals.css"
+
+// Lazy-load the chatbot to improve initial page load
+const BugHuntrAssistant = dynamic(() => import("@/components/chatbot/bughuntr-assistant-clean").then(mod => ({ default: mod.BugHuntrAssistant })), { ssr: false })
 
 function InnerLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)

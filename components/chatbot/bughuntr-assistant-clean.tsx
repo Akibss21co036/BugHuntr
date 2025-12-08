@@ -582,7 +582,7 @@ Check your rank: Say "Navigate to leaderboard"`;
 
     // Use API for more complex queries
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("https://bughuntr.onrender.com/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

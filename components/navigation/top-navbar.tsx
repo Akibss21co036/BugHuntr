@@ -21,26 +21,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/components/auth/auth-context";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useSearch } from "@/components/search/search-context";
 
 interface TopNavbarProps {
   onMenuClick: () => void;
 }
 
-export function TopNavbar({ onMenuClick }: TopNavbarProps) {
+function TopNavbarComponent({ onMenuClick }: TopNavbarProps) {
   const { isAuthenticated, logout } = useAuth();
+  const { searchTerm, setSearchTerm } = useSearch();
+  const [localSearchTerm, setLocalSearchTerm] = useState<string>(searchTerm ?? "");
+
+  // Debounce search input to reduce re-renders
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setSearchTerm(localSearchTerm);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [localSearchTerm, setSearchTerm]);
 
   const handleLogout = () => {
     logout();
-    // Redirect to home page
     if (typeof window !== "undefined") {
       window.location.href = "/";
     }
   };
-
-  // Add search state and handler
-  const { searchTerm, setSearchTerm } = useSearch();
 
   return (
     <header
@@ -76,8 +83,8 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
               type="text"
               placeholder="Search vulnerabilities..."
               className="w-full pl-10 pr-4 py-2 bg-muted border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
             />
           </div>
         </div>
@@ -96,9 +103,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
                 <DropdownMenuTrigger asChild>
                   <Avatar className="h-6 w-6 sm:h-7 sm:w-7 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
                     <AvatarImage src="/placeholder.svg?height=28&width=28" />
-                    <AvatarFallback className="bg-cyber-blue text-white text-xs">
-                      JD
-                    </AvatarFallback>
+                    <AvatarFallback className="bg-cyber-blue text-white text-xs">JD</AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -115,10 +120,7 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="text-red-600"
-                  >
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </DropdownMenuItem>
@@ -127,19 +129,10 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
             </>
           ) : (
             <>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="hidden sm:inline-flex"
-              >
+              <Button variant="ghost" size="sm" asChild className="hidden sm:inline-flex">
                 <Link href="/login">Login</Link>
               </Button>
-              <Button
-                size="sm"
-                asChild
-                className="bg-cyber-blue hover:bg-cyber-blue/90"
-              >
+              <Button size="sm" asChild className="bg-cyber-blue hover:bg-cyber-blue/90">
                 <Link href="/signup">Sign Up</Link>
               </Button>
               {/* Mobile auth buttons */}
@@ -167,3 +160,5 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
     </header>
   );
 }
+
+export const TopNavbar = memo(TopNavbarComponent);

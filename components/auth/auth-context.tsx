@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { getDisplayUsername } from "@/lib/extract-username";
 
 interface User {
@@ -14,13 +8,13 @@ interface User {
   username: string;
   email?: string;
   role: "user" | "admin";
-  userType: "company" | "hunter"; // Business role from Firestore
+  userType: "company" | "hunter";
   companyName?: string;
   companyId?: string;
   companyDomain?: string;
   representativeName?: string;
   twoFactorEnabled?: boolean;
-  rank?: "C" | "B" | "A" | "S"; // For hunters
+  rank?: "C" | "B" | "A" | "S";
   huntsParticipated?: number;
   certifications?: string[];
   reputation?: number;
@@ -29,41 +23,33 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (
-    username: string,
-    email?: string,
-    role?: "user" | "admin",
-    userType?: "company" | "hunter",
-    additionalData?: Partial<User>
-  ) => void;
+  isLoading: boolean;
+  login: (username: string, email?: string, role?: "user" | "admin", userType?: "company" | "hunter", additionalData?: Partial<User>) => void;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Clear auth state in development mode to ensure fresh start
-      if (process.env.NODE_ENV === "development") {
-        localStorage.removeItem("isAuthenticated");
-        localStorage.removeItem("currentUser");
-        setIsAuthenticated(false);
-        setUser(null);
-        return;
-      }
+    if (typeof window === "undefined") return;
 
-      // In production, check if user is logged in from localStorage
-      const authStatus = localStorage.getItem("isAuthenticated");
-      const userData = localStorage.getItem("currentUser");
-      setIsAuthenticated(authStatus === "true");
-      if (userData) {
+    // In development we may want a fresh state, but don't forcibly clear stored user here.
+    const authStatus = localStorage.getItem("isAuthenticated");
+    const userData = localStorage.getItem("currentUser");
+    setIsAuthenticated(authStatus === "true");
+    if (userData) {
+      try {
         setUser(JSON.parse(userData));
+      } catch (e) {
+        setUser(null);
       }
     }
+    setIsLoading(false);
   }, []);
 
   const login = (
@@ -73,9 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userType: "company" | "hunter" = "hunter",
     additionalData?: Partial<User>
   ) => {
-    // Use provided username or extract from email
     const displayUsername = getDisplayUsername(username, email);
-
     const userData: User = {
       id: displayUsername,
       username: displayUsername,
@@ -102,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
