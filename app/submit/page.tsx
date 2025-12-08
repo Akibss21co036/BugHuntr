@@ -44,7 +44,7 @@ interface BugSubmission {
 }
 
 const CONTRACT_ABI = [
-  "function storeBug(string bugId,string reporter,string ipfsCid) public returns (bytes32)",
+  "function submitReport(string _title,string _targetOrganization,string _executiveSummary,string _technicalDescription,string _proofOfConceptURI) public returns (uint256)",
 ]
 
 export default function SubmitBugPage() {
@@ -56,7 +56,8 @@ export default function SubmitBugPage() {
   const [uploadingProof, setUploadingProof] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string>("")
   const [isAnchoring, setIsAnchoring] = useState(false)
-  const contractAddress = process.env.NEXT_PUBLIC_BUG_CONTRACT_ADDRESS || "0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47"
+  const contractAddress = process.env.NEXT_PUBLIC_BUG_CONTRACT_ADDRESS 
+  
 
   const [formData, setFormData] = useState<BugSubmission>({
     title: "",
@@ -217,7 +218,7 @@ export default function SubmitBugPage() {
           console.warn("MetaMask not available; install or enable it to anchor on-chain.")
         } else {
           setIsAnchoring(true)
-          const cidForTx = pdfCid ?? "pending-ipfs"
+          const cidForTx = pdfCid ?? uploadedUrl ?? "pending-ipfs"
           try {
             const ethersLib: any = await import("ethers")
             const ProviderCtor =
@@ -241,8 +242,28 @@ export default function SubmitBugPage() {
             const signer = provider.getSigner ? await provider.getSigner() : null
             if (!signer) throw new Error("Unable to get signer from provider")
 
+            // Ensure we are on Sepolia (11155111)
+            const network = provider.getNetwork ? await provider.getNetwork() : null
+            const chainId = (network as any)?.chainId ?? (eth as any)?.chainId
+            if (chainId && BigInt(chainId).toString() !== "11155111") {
+              console.error("Wrong network. Please switch MetaMask to Sepolia (chainId 11155111). Current chainId:", chainId)
+              throw new Error("Wrong network: switch MetaMask to Sepolia")
+            }
+
+            // Verify contract code exists at address
+            const code = provider.getCode ? await provider.getCode(contractAddress) : await provider.send("eth_getCode", [contractAddress, "latest"])
+            if (!code || code === "0x") {
+              throw new Error(`No contract code at ${contractAddress} on current network`)
+            }
+
             const contract = new ContractCtor(contractAddress, CONTRACT_ABI, signer)
-            const tx = await contract.storeBug(bugDocRef.id, user.id, cidForTx)
+            const tx = await contract.submitReport(
+              formData.title,
+              formData.company || "Unknown",
+              formData.summary || "",
+              formData.description || "",
+              cidForTx,
+            )
             await tx.wait()
             console.log("On-chain anchoring tx:", tx.hash)
           } catch (chainErr) {

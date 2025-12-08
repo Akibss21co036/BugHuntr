@@ -124,7 +124,7 @@ const storeBugOnChain = async (payload: BugPayload, ipfsCid: string) => {
   // Default to Sepolia public RPC if none provided
   const rpcUrl = process.env.BLOCKCHAIN_RPC_URL || "https://rpc.sepolia.org"
   const privateKey = process.env.BLOCKCHAIN_PRIVATE_KEY
-  const contractAddress = process.env.BUG_CONTRACT_ADDRESS || "0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47"
+  const contractAddress = process.env.BUG_CONTRACT_ADDRESS 
 
   if (!rpcUrl || !privateKey) {
     return { skipped: true, reason: "Missing blockchain RPC URL or private key" }
