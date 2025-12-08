@@ -7,7 +7,7 @@ import { FilterControls } from "@/components/bug-feed/filter-controls";
 import { BugCardSkeleton } from "@/components/loading/bug-card-skeleton";
 import { FadeIn } from "@/components/animations/fade-in";
 import React, { useState, useMemo, useEffect } from "react";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, onSnapshot, limit, query } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,9 +36,10 @@ export default function BugFeedPage() {
   const { getActiveBugHunts } = useBugHunt();
   const activeBugHunts = getActiveBugHunts() || [];
 
-  // Real-time updates for bugs from Firestore
+  // Real-time updates for bugs from Firestore - limit to 50 bugs initially
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "bugs"), (querySnapshot) => {
+    const bugsQuery = query(collection(db, "bugs"), limit(50));
+    const unsubscribe = onSnapshot(bugsQuery, (querySnapshot) => {
       const bugs = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {

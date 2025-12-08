@@ -33,6 +33,7 @@ import { createUserProfile } from "@/lib/user-profile"
 import bcrypt from "bcryptjs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
+import { Users } from "lucide-react"
 
 type UserType = "user" | "admin"
 type AdminType = "company" | "firm" | "student" | "individual"
@@ -265,6 +266,7 @@ export default function SignUpPage() {
         points: 0,
       };
 
+
       // Add type-specific fields
       if (adminType === "company" || adminType === "firm") {
         userProfile.companyName = formData.companyName;
@@ -281,7 +283,7 @@ export default function SignUpPage() {
 
       // Save profile to Firestore only
       await addDoc(collection(db, "users"), userProfile);
-
+      await addDoc(collection(db, "userProfiles"), userProfile);
       // Show success message
       setEmailSent(true);
       setErrors({});

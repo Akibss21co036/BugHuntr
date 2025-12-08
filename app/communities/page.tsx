@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -25,12 +25,18 @@ export default function CommunitiesPage() {
   const { communities, joinedCommunities, joinCommunity, leaveCommunity, createCommunity } = useCommunity()
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
   const [newCommunity, setNewCommunity] = useState({
     name: "",
     description: "",
     isPrivate: false,
     tags: "",
   })
+
+  // Defer rendering until after mount to prevent hydration issues
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const filteredCommunities = communities.filter(
     (community) =>
@@ -58,6 +64,11 @@ export default function CommunitiesPage() {
 
   const isJoined = (communityId: string) => {
     return joinedCommunities.some((c) => c.id === communityId)
+  }
+
+  // Don't render heavy content until mounted
+  if (!isMounted) {
+    return null
   }
 
   return (

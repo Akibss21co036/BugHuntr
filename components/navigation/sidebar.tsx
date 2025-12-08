@@ -26,14 +26,14 @@ import { useRanking } from "@/hooks/use-ranking"
 import { RankBadge } from "@/components/ranking/rank-badge"
 import { VerificationBadge } from "@/components/ui/verification-badge"
 import { useCommunity } from "@/hooks/use-community"
-import { useState } from "react"
+import { useState, memo } from "react"
 
 interface SidebarProps {
   isOpen?: boolean
   onClose?: () => void
 }
 
-export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
+function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
   const { user } = useAuth()
   const { getUserRanking } = useRanking()
@@ -280,3 +280,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     </>
   )
 }
+
+export const Sidebar = memo(SidebarComponent)
+
