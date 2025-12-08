@@ -41,3 +41,21 @@ python Doc-Verification.py
 ```
 
 The service will be available at `http://localhost:8000`
+
+## Web App: Bug Anchoring + Pinata Upload
+
+Create or update your `.env.local` with the following values (do not commit secrets):
+
+```bash
+# Pinata (JWT preferred)
+PINATA_JWT=your-pinata-jwt
+
+# Blockchain (RPC + signer required to send the transaction)
+BLOCKCHAIN_RPC_URL=https://rpc.example
+BLOCKCHAIN_PRIVATE_KEY=your-private-key
+# Defaults to the provided address if not set
+BUG_CONTRACT_ADDRESS=0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47
+```
+
+- `BLOCKCHAIN_PRIVATE_KEY` must control an account funded for gas on the chosen network.
+- The target contract must expose `storeBug(string bugId,string reporter,string ipfsCid)`.

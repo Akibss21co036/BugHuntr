@@ -43,6 +43,10 @@ interface BugSubmission {
   pocFile: File | null
 }
 
+const CONTRACT_ABI = [
+  "function storeBug(string bugId,string reporter,string ipfsCid) public returns (bytes32)",
+]
+
 export default function SubmitBugPage() {
   const { user } = useAuth()
   const { addPoints } = useRanking()
@@ -51,6 +55,8 @@ export default function SubmitBugPage() {
   const [detectingSeverity, setDetectingSeverity] = useState(false)
   const [uploadingProof, setUploadingProof] = useState(false)
   const [uploadedUrl, setUploadedUrl] = useState<string>("")
+  const [isAnchoring, setIsAnchoring] = useState(false)
+  const contractAddress = process.env.NEXT_PUBLIC_BUG_CONTRACT_ADDRESS || "0x7EF2e0048f5bAeDe046f6BF797943daF4ED8CB47"
 
   const [formData, setFormData] = useState<BugSubmission>({
     title: "",
@@ -178,6 +184,75 @@ export default function SubmitBugPage() {
       // Add bug to Firestore
       const bugDocRef = await addDoc(collection(db, "bugs"), bugData)
 
+      // Send to blockchain + generate PDF on Pinata (server-side)
+      let pdfCid: string | undefined
+      try {
+        const processRes = await fetch("/api/bug-submissions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...bugData,
+            bugId: bugDocRef.id,
+            summary: formData.summary,
+            submittedEmail: user.email,
+          }),
+        })
+
+        if (!processRes.ok) {
+          const errText = await processRes.text()
+          console.error("Bug processing service failed:", errText)
+        } else {
+          const result = await processRes.json()
+          pdfCid = result.pdfCid
+          console.log("PDF generated + uploaded:", result)
+        }
+      } catch (processingError) {
+        console.error("Error calling processing service:", processingError)
+      }
+
+      // Client-side MetaMask transaction to store on chain
+      if (typeof window !== "undefined") {
+        const eth = (window as any).ethereum
+        if (!eth) {
+          console.warn("MetaMask not available; install or enable it to anchor on-chain.")
+        } else {
+          setIsAnchoring(true)
+          const cidForTx = pdfCid ?? "pending-ipfs"
+          try {
+            const ethersLib: any = await import("ethers")
+            const ProviderCtor =
+              ethersLib.BrowserProvider ||
+              ethersLib.ethers?.BrowserProvider ||
+              ethersLib.providers?.Web3Provider
+            const ContractCtor = ethersLib.Contract || ethersLib.ethers?.Contract
+
+            if (!ProviderCtor || !ContractCtor) {
+              throw new Error("No compatible ethers provider found (BrowserProvider/Web3Provider)")
+            }
+
+            const provider = new ProviderCtor(eth)
+            // For Web3Provider (ethers v5) there is no send on provider; request directly if needed
+            if (provider.send) {
+              await provider.send("eth_requestAccounts", [])
+            } else if (eth?.request) {
+              await eth.request({ method: "eth_requestAccounts" })
+            }
+
+            const signer = provider.getSigner ? await provider.getSigner() : null
+            if (!signer) throw new Error("Unable to get signer from provider")
+
+            const contract = new ContractCtor(contractAddress, CONTRACT_ABI, signer)
+            const tx = await contract.storeBug(bugDocRef.id, user.id, cidForTx)
+            await tx.wait()
+            console.log("On-chain anchoring tx:", tx.hash)
+          } catch (chainErr) {
+            console.error("MetaMask / chain tx failed:", chainErr)
+          } finally {
+            setIsAnchoring(false)
+          }
+        }
+      }
+
       // Add points based on severity
       if (formData.severity) {
         const severity = formData.severity as "critical" | "high" | "medium" | "low"
@@ -189,7 +264,7 @@ export default function SubmitBugPage() {
         addPoints(user.id, Date.now(), severity, `Bug report: ${formData.title} (${severity} severity)`)
         
         // Update points and bug count in Firestore userProfiles
-        const statsUpdated = await updateUserStats(user.username, points, 1, user.role, user.companyName)
+        const statsUpdated = await updateUserStats(user.username, points, 1, user.role, user.companyName || "N/A")
         
         if (statsUpdated) {
           console.log("Stats updated successfully")

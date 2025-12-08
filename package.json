@@ -9,6 +9,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "ethers": "^6.13.4",
+    "pdfkit": "^0.13.0",
     "@emotion/is-prop-valid": "latest",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
@@ -65,6 +67,7 @@
     "zod": "3.25.67"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.13.5",
     "@tailwindcss/postcss": "^4.1.9",
     "@types/firebase": "^2.4.32",
     "@types/node": "^22.18.0",

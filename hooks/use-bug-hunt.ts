@@ -151,7 +151,29 @@ export function useBugHunt() {
       submittedAt: new Date().toISOString(),
       status: "pending",
     };
-    await addDoc(collection(db, "bugs"), bugData);
+    const bugDocRef = await addDoc(collection(db, "bugs"), bugData);
+
+    // Anchor to blockchain + generate PDF on Pinata (server-side)
+    try {
+      await fetch("/api/bug-submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bugId: bugDocRef.id,
+          title: submission.title,
+          company: "",
+          category: submission.category,
+          severity: submission.severity,
+          description: submission.description,
+          summary: "",
+          proofOfConceptUrl: submission.proofOfConcept,
+          submittedBy: submission.userId,
+          submittedAt: newSubmission.submittedAt,
+        }),
+      })
+    } catch (processingError) {
+      console.error("Failed to anchor bug hunt submission:", processingError)
+    }
 
     // Update hunt's current participants count
     const hunt = bugHunts.find((h) => h.id === submission.huntId)
