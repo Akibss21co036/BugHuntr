@@ -170,13 +170,8 @@ export default function LoginPage() {
       }
 
       // Show success message instead of auto-redirect
-<<<<<<< HEAD
       alert("Login successful! Welcome back.");
 
-=======
-      // alert("Login successful! Welcome back.")
-      
->>>>>>> chatbot-created
       // Optional: redirect after user acknowledgment
       setTimeout(() => {
         router.push("/feed");

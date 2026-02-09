@@ -16,7 +16,7 @@ app = Flask(__name__)
 # CORS(app, origins=["http://localhost:3000", "https://bug-huntr-eight.vercel.app"])
 CORS(
     app,
-    resources={r"/api/*": {"origins": ["http://localhost:3000", "https://bug-huntr-eight.vercel.app"]}},
+    resources={r"/api/*": {"origins": ["http://localhost:3000","http://localhost:3001", "https://bug-huntr-eight.vercel.app"]}},
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "OPTIONS"]
@@ -38,7 +38,7 @@ def handle_options():
 def add_cors(response):
     # Ensure all responses include the necessary CORS headers
     origin = request.headers.get("Origin")
-    if origin and origin in ("http://localhost:3000", "https://bug-huntr-eight.vercel.app"):
+    if origin and origin in ("http://localhost:3000", "http://localhost:3001", "https://bug-huntr-eight.vercel.app"):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"

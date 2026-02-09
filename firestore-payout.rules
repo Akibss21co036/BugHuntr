@@ -1,0 +1,175 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ========================================================================
+    // HELPER FUNCTIONS
+    // ========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.userType == 'admin';
+    }
+    
+    // Check if user is company admin
+    function isCompanyAdmin() {
+      return isAdmin() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.adminType == 'company';
+    }
+    
+    // Check if user owns a resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // ========================================================================
+    // ORGANIZATION WALLETS
+    // ========================================================================
+    
+    match /org_wallets/{orgId} {
+      // Admins can read wallet data
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can write (no direct writes allowed)
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PAYOUTS
+    // ========================================================================
+    
+    match /payouts/{orderId} {
+      // Hunters can read their own payouts
+      // Admins can read all payouts for their organization
+      allow read: if isAuthenticated() && (
+        resource.data.hunterUid == request.auth.uid ||
+        (isAdmin() && resource.data.orgId == getOrgId())
+      );
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+      
+      // Helper to get org ID for current admin
+      function getOrgId() {
+        return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId;
+      }
+    }
+    
+    // ========================================================================
+    // PAYOUT LOGS (Audit Trail)
+    // ========================================================================
+    
+    match /payout_logs/{logId} {
+      // Only admins can read logs
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // ORPHANED WEBHOOKS
+    // ========================================================================
+    
+    match /payout_webhook_orphan/{id} {
+      // Only platform admins can view orphaned webhooks
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // BATCH PAYOUT JOBS
+    // ========================================================================
+    
+    match /batch_payout_jobs/{batchId} {
+      // Admins who created the batch can read it
+      allow read: if isAuthenticated() && resource.data.createdBy == request.auth.uid;
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // PAYOUT QUEUE
+    // ========================================================================
+    
+    match /payout_queue/{queueId} {
+      // Admins can read queue items for their organization
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // RECONCILIATION REPORTS
+    // ========================================================================
+    
+    match /payout_reconciliation_reports/{reportId} {
+      // Only platform admins can view reconciliation reports
+      allow read: if isAdmin();
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ========================================================================
+    // USERS (Existing collection - payout-specific rules)
+    // ========================================================================
+    
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId || isAdmin()
+      );
+      
+      // Users can update their wallet address
+      allow update: if isAuthenticated() && 
+        request.auth.uid == userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['walletAddress', 'updatedAt']);
+      
+      // Other writes handled by existing rules or Cloud Functions
+    }
+    
+    // ========================================================================
+    // BUG SUBMISSIONS (Payout-related rules)
+    // ========================================================================
+    
+    match /submissions/{submissionId} {
+      // Allow reading submission to check payout eligibility
+      allow read: if isAuthenticated();
+      
+      // Existing write rules remain
+      // Cloud Functions update submission status when payout completes
+    }
+    
+    // ========================================================================
+    // SECURITY NOTES
+    // ========================================================================
+    
+    // 1. All write operations for payout-related collections are restricted
+    //    to Cloud Functions only (allow write: if false)
+    
+    // 2. This prevents direct manipulation of balances, payout statuses,
+    //    and other critical data
+    
+    // 3. Read access is granted based on user role and resource ownership
+    
+    // 4. Hunters can only see their own payouts
+    
+    // 5. Company admins can see payouts for their organization
+    
+    // 6. Platform admins have broader read access for monitoring
+    
+    // 7. Wallet addresses can be updated by users (for receiving payouts)
+    //    but only their own address
+  }
+}

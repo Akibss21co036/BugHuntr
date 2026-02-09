@@ -42,10 +42,9 @@ export default function ProApplicationsPage() {
     if (isHunter) {
       return app.hunterId === user?.id;
     }
-    if (isCompany) {
-      // In production, filter by hunts that belong to this company
-      // For now, we'll show all applications (mock data)
-      return true;
+    if (isCompany && user?.userType === "company" && user?.companyName) {
+      // Companies see applications for hunts they created (matching their company name)
+      return app.companyName === user.companyName;
     }
     return false;
   });
