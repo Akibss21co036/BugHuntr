@@ -65,6 +65,7 @@ export interface ProApplication {
   id: string;
   huntId: string;
   huntTitle: string;
+  companyName?: string;
   hunterId: string;
   hunterName: string;
   hunterRank: string;

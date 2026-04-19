@@ -1,0 +1,196 @@
+{
+  "info": {
+    "name": "BugHuntr Crypto Payout System",
+    "description": "API endpoints for testing the automated crypto payout system",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "firebase_project_id",
+      "value": "your-project-id",
+      "type": "string"
+    },
+    {
+      "key": "region",
+      "value": "us-central1",
+      "type": "string"
+    },
+    {
+      "key": "base_url",
+      "value": "https://{{region}}-{{firebase_project_id}}.cloudfunctions.net",
+      "type": "string"
+    },
+    {
+      "key": "local_base_url",
+      "value": "http://localhost:5001/{{firebase_project_id}}/{{region}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Cryptomus Webhook",
+      "item": [
+        {
+          "name": "Webhook - Payment Success",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"BH-PAYOUT-hunt_123-sub_456\",\n  \"uuid\": \"cryptomus-uuid-abc123\",\n  \"status\": \"paid\",\n  \"txid\": \"0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef\",\n  \"amount\": \"1.000000\",\n  \"currency\": \"USDC\",\n  \"network\": \"POLYGON\",\n  \"sign\": \"REPLACE_WITH_VALID_SIGNATURE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cryptomusWebhook",
+              "host": ["{{base_url}}"],
+              "path": ["cryptomusWebhook"]
+            },
+            "description": "Simulate Cryptomus webhook for successful payout"
+          }
+        },
+        {
+          "name": "Webhook - Payment Processing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"BH-PAYOUT-hunt_123-sub_456\",\n  \"uuid\": \"cryptomus-uuid-abc123\",\n  \"status\": \"process\",\n  \"amount\": \"1.000000\",\n  \"currency\": \"USDC\",\n  \"network\": \"POLYGON\",\n  \"sign\": \"REPLACE_WITH_VALID_SIGNATURE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cryptomusWebhook",
+              "host": ["{{base_url}}"],
+              "path": ["cryptomusWebhook"]
+            },
+            "description": "Simulate webhook for payout in processing state"
+          }
+        },
+        {
+          "name": "Webhook - Payment Failed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"BH-PAYOUT-hunt_123-sub_456\",\n  \"uuid\": \"cryptomus-uuid-abc123\",\n  \"status\": \"fail\",\n  \"amount\": \"1.000000\",\n  \"currency\": \"USDC\",\n  \"network\": \"POLYGON\",\n  \"error\": \"Insufficient balance\",\n  \"sign\": \"REPLACE_WITH_VALID_SIGNATURE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cryptomusWebhook",
+              "host": ["{{base_url}}"],
+              "path": ["cryptomusWebhook"]
+            },
+            "description": "Simulate webhook for failed payout"
+          }
+        },
+        {
+          "name": "Webhook - Invalid Signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"BH-PAYOUT-hunt_123-sub_456\",\n  \"uuid\": \"cryptomus-uuid-abc123\",\n  \"status\": \"paid\",\n  \"txid\": \"0x1234567890abcdef\",\n  \"amount\": \"1.000000\",\n  \"currency\": \"USDC\",\n  \"network\": \"POLYGON\",\n  \"sign\": \"invalid_signature_12345\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cryptomusWebhook",
+              "host": ["{{base_url}}"],
+              "path": ["cryptomusWebhook"]
+            },
+            "description": "Test webhook signature verification with invalid signature (should return 403)"
+          }
+        }
+      ],
+      "description": "Test Cryptomus webhook endpoints"
+    },
+    {
+      "name": "Local Testing (Emulator)",
+      "item": [
+        {
+          "name": "Webhook - Local Emulator",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order_id\": \"BH-PAYOUT-test-local-001\",\n  \"uuid\": \"test-uuid-local\",\n  \"status\": \"paid\",\n  \"txid\": \"0xtest1234567890abcdef\",\n  \"amount\": \"5.000000\",\n  \"currency\": \"USDC\",\n  \"network\": \"POLYGON\",\n  \"sign\": \"REPLACE_WITH_VALID_SIGNATURE\"\n}"
+            },
+            "url": {
+              "raw": "{{local_base_url}}/cryptomusWebhook",
+              "host": ["{{local_base_url}}"],
+              "path": ["cryptomusWebhook"]
+            },
+            "description": "Test webhook on local Firebase emulator"
+          }
+        }
+      ],
+      "description": "Test endpoints on local Firebase Functions emulator"
+    },
+    {
+      "name": "Documentation",
+      "item": [
+        {
+          "name": "Generate Test Signature",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// HOW TO GENERATE TEST SIGNATURE:\n//\n// 1. Create payload object (without 'sign' field)\n// 2. Convert to JSON string\n// 3. Base64 encode the JSON string\n// 4. Append your API key to the base64 string\n// 5. Calculate MD5 hash\n//\n// Example in Node.js:\n//\nconst crypto = require('crypto');\n\nconst payload = {\n  order_id: 'BH-PAYOUT-test-001',\n  uuid: 'test-uuid',\n  status: 'paid',\n  txid: '0xabc123',\n  amount: '1.000000',\n  currency: 'USDC',\n  network: 'POLYGON'\n};\n\nconst jsonString = JSON.stringify(payload);\nconst base64 = Buffer.from(jsonString).toString('base64');\nconst apiKey = 'YOUR_PAYOUT_API_KEY';\nconst signatureInput = base64 + apiKey;\n\nconst signature = crypto\n  .createHash('md5')\n  .update(signatureInput)\n  .digest('hex');\n\nconsole.log('Signature:', signature);\n\n// Add this signature to your webhook payload:\n// { ...payload, sign: signature }\n\n// TODO: Verify exact signing method with Cryptomus documentation\n// https://doc.cryptomus.com/business/authentication\n",
+              "options": {
+                "raw": {
+                  "language": "javascript"
+                }
+              }
+            },
+            "url": {
+              "raw": "",
+              "host": [""]
+            },
+            "description": "Instructions for generating test webhook signatures"
+          },
+          "response": []
+        }
+      ],
+      "description": "Documentation and helper requests"
+    }
+  ],
+  "auth": {
+    "type": "noauth"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-generate timestamp for testing",
+          "pm.environment.set('timestamp', new Date().toISOString());"
+        ]
+      }
+    }
+  ]
+}
