@@ -16,7 +16,7 @@ app = Flask(__name__)
 # CORS(app, origins=["http://localhost:3000", "https://bug-huntr-eight.vercel.app"])
 CORS(
     app,
-    resources={r"/api/*": {"origins": ["http://localhost:3000", "https://bug-huntr-eight.vercel.app"]}},
+    resources={r"/api/*": {"origins": ["http://localhost:3000","http://localhost:3001", "https://bug-huntr-eight.vercel.app"]}},
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "OPTIONS"]
@@ -38,7 +38,7 @@ def handle_options():
 def add_cors(response):
     # Ensure all responses include the necessary CORS headers
     origin = request.headers.get("Origin")
-    if origin and origin in ("http://localhost:3000", "https://bug-huntr-eight.vercel.app"):
+    if origin and origin in ("http://localhost:3000", "http://localhost:3001", "https://bug-huntr-eight.vercel.app"):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
@@ -63,42 +63,80 @@ def root():
 # -------------------------
 # Deterministic rule classifier
 # -------------------------
+def _tokenize(text: str) -> list:
+    # Normalize to alphanumeric tokens to avoid substring false-positives (e.g., "rce" in "force").
+    return re.findall(r"[a-z0-9]+", text.lower())
+
+
+def _contains_phrase(text: str, phrase: str) -> bool:
+    # Phrase-level match with word boundaries when possible.
+    pattern = r"\b" + re.escape(phrase.lower()) + r"\b"
+    return re.search(pattern, text) is not None
+
+
+def _has_negated_phrase(text: str, phrase: str, negations: list) -> bool:
+    # Detect nearby negations like "no", "not", "without" within a small window before phrase.
+    window = 32
+    for match in re.finditer(re.escape(phrase.lower()), text):
+        start = max(0, match.start() - window)
+        prefix = text[start:match.start()]
+        if any(re.search(r"\b" + re.escape(n) + r"\b", prefix) for n in negations):
+            return True
+    return False
+
+
 def classify_with_rules(title: str, desc: str) -> Tuple[str, str]:
     s = (title + " " + desc).lower()
+    tokens = set(_tokenize(s))
 
-    # CRITICAL indicators
+    # Negation terms used to suppress catastrophic matches when explicitly denied.
+    negations = ["no", "not", "without", "never", "none", "denies", "denied", "lack", "lacks"]
+
+    # CRITICAL indicators (explicit catastrophic impact only).
     critical_phrases = [
         "full database dump", "full db dump", "database dump",
-        "data exfiltrat", "remote code execution", "rce",
-        "full system takeover", "root shell", "credentials leaked",
-        "credentials leak", "credentials stolen", "data leaked"
+        "data exfiltration", "remote code execution", "full system takeover",
+        "root shell", "credentials leaked", "credentials leak", "credentials stolen",
+        "data leaked"
     ]
     for p in critical_phrases:
-        if p in s:
+        # Skip negated catastrophic claims like "no data leak".
+        if _contains_phrase(s, p) and not _has_negated_phrase(s, p, negations):
             return "Critical", "explicit_critical_phrase"
+
+    # Match keyword-only critical indicators with negation guard.
+    if "rce" in tokens and not _has_negated_phrase(s, "rce", negations):
+        return "Critical", "explicit_critical_keyword"
+    # Prefix match for "exfiltrat..." to capture exfiltration variants without substrings.
+    if any(t.startswith("exfiltrat") for t in tokens) and not _has_negated_phrase(s, "exfiltration", negations):
+        return "Critical", "explicit_critical_keyword"
 
     # HIGH indicators
     high_phrases = [
         "privilege escalation", "auth bypass", "authentication bypass",
-        "gain admin", "become admin", "elevat", "write access to sensitive",
+        "gain admin", "become admin", "write access to sensitive",
         "access sensitive data", "modify users", "create admin",
         "unauthenticated access to", "access to sensitive"
     ]
     for p in high_phrases:
-        if p in s:
+        if _contains_phrase(s, p):
             return "High", "explicit_high_phrase"
+    # Prefix keyword match for escalation while avoiding substring matches.
+    if any(t.startswith("elevat") for t in tokens):
+        return "High", "explicit_high_keyword"
 
     # MEDIUM indicators (info disclosure, schema leaks, etc.)
     medium_phrases = [
         "table", "column", "schema", "schema info", "verbose error",
         "error message", "stack trace", "information disclosure",
         "reveals", "revealed", "expose", "exposes", "sql error",
-        "sql exception", "helps attackers", "reconnaiss", "reconnaissance",
+        "sql exception", "helps attackers", "reconnaissance",
         "no direct data", "no data compromised", "no data leak"
     ]
-    medium_count = sum(1 for p in medium_phrases if p in s)
+    medium_count = sum(1 for p in medium_phrases if _contains_phrase(s, p))
     if medium_count >= 1:
-        if any(k in s for k in ["no direct data", "no data compromised", "no data leak"]):
+        # Explicit non-compromise statements stay Medium and should not escalate.
+        if any(_contains_phrase(s, k) for k in ["no direct data", "no data compromised", "no data leak"]):
             return "Medium", "info_disclosure_no_data"
         return "Medium", "info_disclosure"
 
@@ -110,7 +148,7 @@ def classify_with_rules(title: str, desc: str) -> Tuple[str, str]:
         "cosmetic", "ui-only"
     ]
     for p in low_phrases:
-        if p in s:
+        if _contains_phrase(s, p):
             return "Low", "low_best_practice"
 
     return None, "inconclusive"
