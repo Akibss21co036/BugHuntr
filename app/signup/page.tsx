@@ -1,8 +1,5 @@
 // Firebase auth has been fixed date:26-11-2025
 
-
-
-
 "use client"
 
 import type React from "react"
@@ -21,6 +18,11 @@ import {
   Building,
   GraduationCap,
   Briefcase,
+  Bug,
+  Terminal,
+  ShieldCheck,
+  Code2,
+  Lock,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,7 +35,7 @@ import { createUserProfile } from "@/lib/user-profile"
 import bcrypt from "bcryptjs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Textarea } from "@/components/ui/textarea"
-import { Users } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 
 type UserType = "user" | "admin"
 type AdminType = "company" | "firm" | "student" | "individual"
@@ -304,61 +306,88 @@ export default function SignUpPage() {
   // Add username field to the form UI
   const renderUsernameField = () => (
     <div className="space-y-2">
-      <Label htmlFor="username" className="text-slate-300">Username *</Label>
-      <Input
-        id="username"
-        name="username"
-        type="text"
-        autoComplete="username"
-        value={formData.username}
-        onChange={e => {
-          setFormData({ ...formData, username: e.target.value });
-          setUsernameChecked(false);
-        }}
-        onBlur={async (e) => {
-          const username = e.target.value.trim();
-          if (!username) return;
-          if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) return;
-          setErrors((prev) => ({ ...prev, username: "" }));
-          setIsCheckingUsername(true);
-          const isUnique = await checkUsernameUnique(username);
-          setIsCheckingUsername(false);
-          if (!isUnique) {
-            setErrors((prev) => ({ ...prev, username: "Username already exists" }));
-          }
-        }}
-        placeholder="Choose a username"
-        className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${errors.username ? "border-red-500" : ""}`}
-        required
-      />
-      {isCheckingUsername && <div className="text-blue-400 text-xs mt-1">Checking username...</div>}
-      {errors.username && <div className="text-red-400 text-xs mt-1">{errors.username}</div>}
-      {usernameChecked && !errors.username && <div className="text-green-400 text-xs mt-1">Username available</div>}
+      <Label htmlFor="username" className="text-primary font-medium text-sm flex items-center gap-2">
+        <User className="h-4 w-4" />
+        Username
+      </Label>
+      <div className="relative group">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-hover)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+        <Input
+          id="username"
+          name="username"
+          type="text"
+          autoComplete="username"
+          value={formData.username}
+          onChange={e => {
+            setFormData({ ...formData, username: e.target.value });
+            setUsernameChecked(false);
+          }}
+          onBlur={async (e) => {
+            const username = e.target.value.trim();
+            if (!username) return;
+            if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) return;
+            setErrors((prev) => ({ ...prev, username: "" }));
+            setIsCheckingUsername(true);
+            const isUnique = await checkUsernameUnique(username);
+            setIsCheckingUsername(false);
+            if (!isUnique) {
+              setErrors((prev) => ({ ...prev, username: "Username already exists" }));
+            }
+          }}
+          placeholder="choose_username"
+          className={`relative bg-secondary/70 border-border text-primary placeholder:text-gray-600 focus:border-primary focus:ring-2 focus:ring-primary/20 h-12 transition-all font-mono font-medium ${errors.username ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+          required
+        />
+      </div>
+      {isCheckingUsername && <div className="text-primary text-xs mt-1 font-medium">// Checking availability...</div>}
+      {errors.username && <div className="text-[var(--critical)] text-xs mt-1 font-medium">// Error: {errors.username}</div>}
+      {usernameChecked && !errors.username && <div className="text-primary text-xs mt-1 font-medium">// Username available ✓</div>}
     </div>
   )
 
   const renderUserTypeSelection = () => (
     <div className="space-y-8">
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-white mb-2 tracking-tight drop-shadow-lg">Choose Your Role</h3>
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <Terminal className="h-5 w-5 text-primary" />
+          <h3 className="text-2xl font-black text-white tracking-tight">select_role</h3>
+        </div>
         <div className="flex justify-center gap-6 mt-6">
           <button
             type="button"
-            className={`w-40 h-32 rounded-2xl bg-gradient-to-br from-blue-800/60 to-slate-800/60 border border-blue-500/30 shadow-lg backdrop-blur-lg flex flex-col items-center justify-center space-y-2 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${userType === "user" ? "ring-2 ring-blue-400 scale-105" : ""}`}
+            className={`group relative w-44 h-36 rounded-lg transition-all duration-300 ${
+              userType === "user" 
+                ? "bg-card/90 border-2 border-border shadow-lg shadow-primary/15" 
+                : "bg-card/80 border-2 border-gray-700/50 hover:border-border"
+            }`}
             onClick={() => handleUserTypeSelect("user")}
           >
-            <User className="h-8 w-8 text-blue-400 mb-1" />
-            <span className="text-lg font-semibold text-white">User</span>
-            <span className="text-xs text-blue-200">Bug Hunter</span>
+            <div className={`absolute -inset-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-hover)] rounded-lg opacity-0 group-hover:opacity-30 blur transition duration-300 ${userType === "user" ? "opacity-30" : ""}`} />
+            <div className="relative h-full flex flex-col items-center justify-center space-y-3 p-4">
+              <div className="p-3 rounded-lg bg-[var(--accent-soft)] border border-border">
+                <Bug className="h-8 w-8 text-primary" />
+              </div>
+              <span className="text-lg font-bold text-white">Hunter</span>
+              <span className="text-xs text-primary/80 font-medium">Bug Bounty Hunter</span>
+            </div>
           </button>
           <button
             type="button"
-            className={`w-40 h-32 rounded-2xl bg-gradient-to-br from-blue-800/60 to-slate-800/60 border border-blue-500/30 shadow-lg backdrop-blur-lg flex flex-col items-center justify-center space-y-2 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${userType === "admin" ? "ring-2 ring-blue-400 scale-105" : ""}`}
+            className={`group relative w-44 h-36 rounded-lg transition-all duration-300 ${
+              userType === "admin" 
+                ? "bg-card/90 border-2 border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] shadow-lg shadow-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]" 
+                : "bg-card/80 border-2 border-gray-700/50 hover:border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]"
+            }`}
             onClick={() => handleUserTypeSelect("admin")}
           >
-            <Shield className="h-8 w-8 text-blue-400 mb-1" />
-            <span className="text-lg font-semibold text-white">Admin</span>
-            <span className="text-xs text-blue-200">Organization</span>
+            <div className={`absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-0 group-hover:opacity-15 blur transition duration-300 ${userType === "admin" ? "opacity-15" : ""}`} />
+            <div className="relative h-full flex flex-col items-center justify-center space-y-3 p-4">
+              <div className="p-3 rounded-lg bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] border border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)]">
+                <ShieldCheck className="h-8 w-8 text-[var(--critical)]" />
+              </div>
+              <span className="text-lg font-bold text-white">Admin</span>
+              <span className="text-xs text-[var(--critical)]/80 font-medium">Organization</span>
+            </div>
           </button>
         </div>
       </div>
@@ -366,39 +395,67 @@ export default function SignUpPage() {
       {userType === "admin" && (
         <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
           <div className="text-center">
-            <h4 className="text-md font-semibold text-blue-200 mb-3">Select Admin Type</h4>
-            <div className="flex justify-center gap-4 flex-wrap">
+            <h4 className="text-sm font-bold text-primary mb-3">Admin Type</h4>
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "student" ? "ring-2 ring-blue-400 scale-105" : ""}`}
+                className={`group relative h-24 rounded-lg transition-all duration-300 ${
+                  adminType === "student" 
+                    ? "bg-card/90 border-2 border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] shadow-lg shadow-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]" 
+                    : "bg-card/80 border-2 border-gray-700/50 hover:border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]"
+                }`}
                 onClick={() => handleAdminTypeSelect("student")}
               >
-                <GraduationCap className="h-6 w-6 text-blue-300 mb-1" />
-                <span className="text-xs font-semibold text-white">Student</span>
+                <div className={`absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-0 group-hover:opacity-15 blur transition duration-300 ${adminType === "student" ? "opacity-15" : ""}`} />
+                <div className="relative h-full flex flex-col items-center justify-center space-y-2">
+                  <GraduationCap className="h-6 w-6 text-[var(--critical)]" />
+                  <span className="text-xs font-bold text-white">Student</span>
+                </div>
               </button>
               <button
                 type="button"
-                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "company" ? "ring-2 ring-blue-400 scale-105" : ""}`}
+                className={`group relative h-24 rounded-lg transition-all duration-300 ${
+                  adminType === "company" 
+                    ? "bg-card/90 border-2 border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] shadow-lg shadow-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]" 
+                    : "bg-card/80 border-2 border-gray-700/50 hover:border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]"
+                }`}
                 onClick={() => handleAdminTypeSelect("company")}
               >
-                <Building className="h-6 w-6 text-blue-300 mb-1" />
-                <span className="text-xs font-semibold text-white">Company Rep</span>
+                <div className={`absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-0 group-hover:opacity-15 blur transition duration-300 ${adminType === "company" ? "opacity-15" : ""}`} />
+                <div className="relative h-full flex flex-col items-center justify-center space-y-2">
+                  <Building className="h-6 w-6 text-[var(--critical)]" />
+                  <span className="text-xs font-bold text-white">Company</span>
+                </div>
               </button>
               <button
                 type="button"
-                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "firm" ? "ring-2 ring-blue-400 scale-105" : ""}`}
+                className={`group relative h-24 rounded-lg transition-all duration-300 ${
+                  adminType === "firm" 
+                    ? "bg-card/90 border-2 border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] shadow-lg shadow-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]" 
+                    : "bg-card/80 border-2 border-gray-700/50 hover:border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]"
+                }`}
                 onClick={() => handleAdminTypeSelect("firm")}
               >
-                <Building className="h-6 w-6 text-blue-300 mb-1" />
-                <span className="text-xs font-semibold text-white">Firm Rep</span>
+                <div className={`absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-0 group-hover:opacity-15 blur transition duration-300 ${adminType === "firm" ? "opacity-15" : ""}`} />
+                <div className="relative h-full flex flex-col items-center justify-center space-y-2">
+                  <Building className="h-6 w-6 text-[var(--critical)]" />
+                  <span className="text-xs font-bold text-white">Firm</span>
+                </div>
               </button>
               <button
                 type="button"
-                className={`w-32 h-20 rounded-xl bg-gradient-to-br from-blue-700/50 to-slate-700/50 border border-blue-400/20 shadow-md flex flex-col items-center justify-center space-y-1 transition-all duration-200 hover:scale-105 hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 ${adminType === "individual" ? "ring-2 ring-blue-400 scale-105" : ""}`}
+                className={`group relative h-24 rounded-lg transition-all duration-300 ${
+                  adminType === "individual" 
+                    ? "bg-card/90 border-2 border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] shadow-lg shadow-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]" 
+                    : "bg-card/80 border-2 border-gray-700/50 hover:border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]"
+                }`}
                 onClick={() => handleAdminTypeSelect("individual")}
               >
-                <Briefcase className="h-6 w-6 text-blue-300 mb-1" />
-                <span className="text-xs font-semibold text-white">Individual</span>
+                <div className={`absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-0 group-hover:opacity-15 blur transition duration-300 ${adminType === "individual" ? "opacity-15" : ""}`} />
+                <div className="relative h-full flex flex-col items-center justify-center space-y-2">
+                  <Briefcase className="h-6 w-6 text-[var(--critical)]" />
+                  <span className="text-xs font-bold text-white">Individual</span>
+                </div>
               </button>
             </div>
           </div>
@@ -410,98 +467,105 @@ export default function SignUpPage() {
   const renderFormFields = () => {
     if (!userType || (userType === "admin" && !adminType)) return null
 
+    const labelColor = userType === "admin" ? "text-[var(--critical)]" : "text-primary";
+
     return (
       <div className="space-y-4 animate-in slide-in-from-bottom-2 duration-300">
         {/* Common fields */}
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-slate-300">Full Name *</Label>
+        <div className="space-y-2">
+          <Label htmlFor="name" className={`${labelColor} font-medium text-sm`}>Full Name *</Label>
+          <div className="relative group">
+            <div className={`absolute -inset-0.5 bg-gradient-to-r ${userType === "admin" ? "from-[var(--critical)] to-[var(--high)]" : "from-[var(--accent-primary)] to-[var(--accent-hover)]"} rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300`} />
             <Input
-          id="name"
-          type="text"
-          placeholder="John Doe"
-          value={formData.name}
-          onChange={(e) => handleInputChange("name", e.target.value)}
-          className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-            errors.name ? "border-red-500" : ""
-          }`}
-          required
-        />
+              id="name"
+              type="text"
+              placeholder="John Doe"
+              value={formData.name}
+              onChange={(e) => handleInputChange("name", e.target.value)}
+              className={`relative bg-secondary/70 ${userType === "admin" ? "border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] focus:border-[var(--critical)] focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)]" : "border-border text-primary focus:border-primary focus:ring-primary/20"} placeholder:text-gray-600 focus:ring-2 h-12 transition-all font-mono font-medium ${errors.name ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+              required
+            />
           </div>
-        {errors.name && <p className="text-red-400 text-sm">{errors.name}</p>}
+          {errors.name && <p className="text-[var(--critical)] text-xs font-medium">// Error: {errors.name}</p>}
+        </div>
 
         {/* Company/Firm specific fields */}
         {userType === "admin" && (adminType === "company" || adminType === "firm") && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="companyName" className="text-slate-300">
-                {adminType === "company" ? "Company" : "Firm"} Name *
+              <Label htmlFor="companyName" className="text-[var(--critical)] font-medium text-sm">
+                {adminType === "company" ? "company_name" : "firm_name"} *
               </Label>
-              <Input
-                id="companyName"
-                type="text"
-                placeholder={`Enter ${adminType} name`}
-                value={formData.companyName}
-                onChange={(e) => handleInputChange("companyName", e.target.value)}
-                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-                  errors.companyName ? "border-red-500" : ""
-                }`}
-                required
-              />
-              {errors.companyName && <p className="text-red-400 text-sm">{errors.companyName}</p>}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+                <Input
+                  id="companyName"
+                  type="text"
+                  placeholder={`Enter ${adminType} name`}
+                  value={formData.companyName}
+                  onChange={(e) => handleInputChange("companyName", e.target.value)}
+                  className={`relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] h-12 transition-all font-mono font-medium ${errors.companyName ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+                  required
+                />
+              </div>
+              {errors.companyName && <p className="text-[var(--critical)] text-xs font-medium">// Error: {errors.companyName}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="registrationNumber" className="text-slate-300">
-                Employee ID *
+              <Label htmlFor="registrationNumber" className="text-[var(--critical)] font-medium text-sm">
+                Employee id *
               </Label>
-              <Input
-                id="registrationNumber"
-                type="text"
-                placeholder="Employee ID"
-                value={formData.registrationNumber}
-                onChange={(e) => handleInputChange("registrationNumber", e.target.value)}
-                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-                  errors.registrationNumber ? "border-red-500" : ""
-                }`}
-                required
-              />
-              {errors.registrationNumber && <p className="text-red-400 text-sm">{errors.registrationNumber}</p>}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+                <Input
+                  id="registrationNumber"
+                  type="text"
+                  placeholder="Employee ID"
+                  value={formData.registrationNumber}
+                  onChange={(e) => handleInputChange("registrationNumber", e.target.value)}
+                  className={`relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] h-12 transition-all font-mono font-medium ${errors.registrationNumber ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+                  required
+                />
+              </div>
+              {errors.registrationNumber && <p className="text-[var(--critical)] text-xs font-mono font-medium">// Error: {errors.registrationNumber}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="businessPhone" className="text-slate-300">
-                Business Phone Number *
+              <Label htmlFor="businessPhone" className="text-[var(--critical)] font-medium text-sm">
+                Business Phone *
               </Label>
-              <Input
-                id="businessPhone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-                value={formData.businessPhone}
-                onChange={(e) => handleInputChange("businessPhone", e.target.value)}
-                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-                  errors.businessPhone ? "border-red-500" : ""
-                }`}
-                required
-              />
-              {errors.businessPhone && <p className="text-red-400 text-sm">{errors.businessPhone}</p>}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+                <Input
+                  id="businessPhone"
+                  type="tel"
+                  placeholder="+1 (555) 123-4567"
+                  value={formData.businessPhone}
+                  onChange={(e) => handleInputChange("businessPhone", e.target.value)}
+                  className={`relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] h-12 transition-all font-mono font-medium ${errors.businessPhone ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+                  required
+                />
+              </div>
+              {errors.businessPhone && <p className="text-[var(--critical)] text-xs font-medium">// Error: {errors.businessPhone}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address" className="text-slate-300">
-                {adminType === "company" ? "Company" : "Firm"} Address *
+              <Label htmlFor="address" className="text-[var(--critical)] font-medium text-sm">
+                {adminType === "company" ? "company_address" : "firm_address"} *
               </Label>
-              <Textarea
-                id="address"
-                placeholder="Enter complete address"
-                value={formData.address}
-                onChange={(e) => handleInputChange("address", e.target.value)}
-                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-                  errors.address ? "border-red-500" : ""
-                }`}
-                rows={3}
-                required
-              />
-              {errors.address && <p className="text-red-400 text-sm">{errors.address}</p>}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+                <Textarea
+                  id="address"
+                  placeholder="Enter complete address"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  className={`relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] transition-all font-mono font-medium ${errors.address ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+                  rows={3}
+                  required
+                />
+              </div>
+              {errors.address && <p className="text-[var(--critical)] text-xs font-medium">// Error: {errors.address}</p>}
             </div>
           </>
         )}
@@ -510,53 +574,58 @@ export default function SignUpPage() {
         {userType === "admin" && adminType === "student" && (
           <>
             <div className="space-y-2">
-              <Label htmlFor="instituteName" className="text-slate-300">
-                Institute/College Name *
+              <Label htmlFor="instituteName" className="text-[var(--critical)] font-medium text-sm">
+                Institute Name *
               </Label>
-              <Input
-                id="instituteName"
-                type="text"
-                placeholder="University/College name"
-                value={formData.instituteName}
-                onChange={(e) => handleInputChange("instituteName", e.target.value)}
-                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-                  errors.instituteName ? "border-red-500" : ""
-                }`}
-                required
-              />
-              {errors.instituteName && <p className="text-red-400 text-sm">{errors.instituteName}</p>}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+                <Input
+                  id="instituteName"
+                  type="text"
+                  placeholder="University/College name"
+                  value={formData.instituteName}
+                  onChange={(e) => handleInputChange("instituteName", e.target.value)}
+                  className={`relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] h-12 transition-all font-mono font-medium ${errors.instituteName ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+                  required
+                />
+              </div>
+              {errors.instituteName && <p className="text-[var(--critical)] text-xs font-medium">// Error: {errors.instituteName}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="studentId" className="text-slate-300">
-                Student ID / Enrollment Number *
+              <Label htmlFor="studentId" className="text-[var(--critical)] font-medium text-sm">
+                Student id *
               </Label>
-              <Input
-                id="studentId"
-                type="text"
-                placeholder="Student ID or enrollment number"
-                value={formData.studentId}
-                onChange={(e) => handleInputChange("studentId", e.target.value)}
-                className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-                  errors.studentId ? "border-red-500" : ""
-                }`}
-                required
-              />
-              {errors.studentId && <p className="text-red-400 text-sm">{errors.studentId}</p>}
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+                <Input
+                  id="studentId"
+                  type="text"
+                  placeholder="Student ID or enrollment number"
+                  value={formData.studentId}
+                  onChange={(e) => handleInputChange("studentId", e.target.value)}
+                  className={`relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] h-12 transition-all font-mono font-medium ${errors.studentId ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+                  required
+                />
+              </div>
+              {errors.studentId && <p className="text-[var(--critical)] text-xs font-medium">// Error: {errors.studentId}</p>}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="projectName" className="text-slate-300">
-                Academic Project Name (Optional)
+              <Label htmlFor="projectName" className="text-[var(--critical)] font-medium text-sm">
+                project name <span className="text-gray-600">[optional]</span>
               </Label>
-              <Input
-                id="projectName"
-                type="text"
-                placeholder="Project or research name"
-                value={formData.projectName}
-                onChange={(e) => handleInputChange("projectName", e.target.value)}
-                className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500"
-              />
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+                <Input
+                  id="projectName"
+                  type="text"
+                  placeholder="Project or research name"
+                  value={formData.projectName}
+                  onChange={(e) => handleInputChange("projectName", e.target.value)}
+                  className="relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] h-12 transition-all font-mono font-medium"
+                />
+              </div>
             </div>
           </>
         )}
@@ -564,47 +633,52 @@ export default function SignUpPage() {
         {/* Individual specific fields */}
         {userType === "admin" && adminType === "individual" && (
           <div className="space-y-2">
-            <Label htmlFor="projectStartupName" className="text-slate-300">
-              Project/Startup Name (Optional)
+            <Label htmlFor="projectStartupName" className="text-[var(--critical)] font-mono font-medium text-sm">
+              project_name <span className="text-gray-600">[optional]</span>
             </Label>
-            <Input
-              id="projectStartupName"
-              type="text"
-              placeholder="Project or startup name"
-              value={formData.projectStartupName}
-              onChange={(e) => handleInputChange("projectStartupName", e.target.value)}
-              className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500"
-            />
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+              <Input
+                id="projectStartupName"
+                type="text"
+                placeholder="Project or startup name"
+                value={formData.projectStartupName}
+                onChange={(e) => handleInputChange("projectStartupName", e.target.value)}
+                className="relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] placeholder:text-gray-600 focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] h-12 transition-all font-mono font-medium"
+              />
+            </div>
           </div>
         )}
 
         {/* Email field */}
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-slate-300">
+          <Label htmlFor="email" className={`${labelColor} font-mono font-medium text-sm flex items-center gap-2`}>
+            <Mail className="h-4 w-4" />
             {userType === "admin" && (adminType === "company" || adminType === "firm")
-              ? "Official Email Address *"
+              ? "official_email"
               : userType === "admin" && adminType === "student"
-                ? "Student Email Address *"
-                : "Email Address *"}
+                ? "student_email"
+                : "email_address"} *
           </Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder={
-              userType === "admin" && (adminType === "company" || adminType === "firm")
-                ? "john.doe@company.com"
-                : userType === "admin" && adminType === "student"
-                  ? "student@university.edu"
-                  : "john.doe@example.com"
-            }
-            value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-              errors.email ? "border-red-500" : ""
-            }`}
-            required
-          />
-          {errors.email && <p className="text-red-400 text-sm">{errors.email}</p>}
+          <div className="relative group">
+            <div className={`absolute -inset-0.5 bg-gradient-to-r ${userType === "admin" ? "from-[var(--critical)] to-[var(--high)]" : "from-[var(--accent-primary)] to-[var(--accent-hover)]"} rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300`} />
+            <Input
+              id="email"
+              type="email"
+              placeholder={
+                userType === "admin" && (adminType === "company" || adminType === "firm")
+                  ? "john.doe@company.com"
+                  : userType === "admin" && adminType === "student"
+                    ? "student@university.edu"
+                    : "john.doe@example.com"
+              }
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              className={`relative bg-secondary/70 ${userType === "admin" ? "border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] focus:border-[var(--critical)] focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)]" : "border-border text-primary focus:border-primary focus:ring-primary/20"} placeholder:text-gray-600 focus:ring-2 h-12 transition-all font-mono font-medium ${errors.email ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+              required
+            />
+          </div>
+          {errors.email && <p className="text-[var(--critical)] text-xs font-mono font-medium">// Error: {errors.email}</p>}
         </div>
 
         {/* Username field (moved below email) */}
@@ -613,107 +687,111 @@ export default function SignUpPage() {
         {/* Phone field for user and individual admin */}
         {(userType === "user" || (userType === "admin" && adminType === "individual")) && (
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-slate-300">
-              Phone Number {userType === "admin" && adminType === "individual" ? "*" : "(Optional)"}
+            <Label htmlFor="phone" className={`${labelColor} font-mono font-medium text-sm`}>
+              phone_number {userType === "admin" && adminType === "individual" ? "*" : "[optional]"}
             </Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+1 (555) 123-4567"
-              value={formData.phone}
-              onChange={(e) => handleInputChange("phone", e.target.value)}
-              className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 ${
-                errors.phone ? "border-red-500" : ""
-              }`}
-              required={userType === "admin" && adminType === "individual"}
-            />
-            {errors.phone && <p className="text-red-400 text-sm">{errors.phone}</p>}
+            <div className="relative group">
+              <div className={`absolute -inset-0.5 bg-gradient-to-r ${userType === "admin" ? "from-[var(--critical)] to-[var(--high)]" : "from-[var(--accent-primary)] to-[var(--accent-hover)]"} rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300`} />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1 (555) 123-4567"
+                value={formData.phone}
+                onChange={(e) => handleInputChange("phone", e.target.value)}
+                className={`relative bg-secondary/70 ${userType === "admin" ? "border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] focus:border-[var(--critical)] focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)]" : "border-border text-primary focus:border-primary focus:ring-primary/20"} placeholder:text-gray-600 focus:ring-2 h-12 transition-all font-mono font-medium ${errors.phone ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
+                required={userType === "admin" && adminType === "individual"}
+              />
+            </div>
+            {errors.phone && <p className="text-[var(--critical)] text-xs font-mono font-medium">// Error: {errors.phone}</p>}
           </div>
         )}
         
 
         {/* Password fields */}
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-slate-300">
-            Password *
+          <Label htmlFor="password" className={`${labelColor} font-mono font-medium text-sm flex items-center gap-2`}>
+            <Lock className="h-4 w-4" />
+            password_hash *
           </Label>
-          <div className="relative">
+          <div className="relative group">
+            <div className={`absolute -inset-0.5 bg-gradient-to-r ${userType === "admin" ? "from-[var(--critical)] to-[var(--high)]" : "from-[var(--accent-primary)] to-[var(--accent-hover)]"} rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300`} />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Create a strong password"
+              placeholder="••••••••••••"
               value={formData.password}
               onChange={(e) => handleInputChange("password", e.target.value)}
-              className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 pr-10 ${
-                errors.password ? "border-red-500" : ""
-              }`}
+              className={`relative bg-secondary/70 ${userType === "admin" ? "border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] focus:border-[var(--critical)] focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)]" : "border-border text-primary focus:border-primary focus:ring-primary/20"} placeholder:text-gray-600 focus:ring-2 pr-12 h-12 transition-all font-mono font-medium ${errors.password ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
               required
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 hover:bg-gray-900/50 rounded-lg"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4 text-slate-400" />
+                <EyeOff className={`h-5 w-5 ${userType === "admin" ? "text-[var(--critical)]" : "text-primary"}`} />
               ) : (
-                <Eye className="h-4 w-4 text-slate-400" />
+                <Eye className={`h-5 w-5 ${userType === "admin" ? "text-[var(--critical)]" : "text-primary"}`} />
               )}
             </Button>
           </div>
-          {errors.password && <p className="text-red-400 text-sm">{errors.password}</p>}
-          <p className="text-slate-500 text-xs">Min 8 chars, uppercase, lowercase, number, special character</p>
+          {errors.password && <p className="text-[var(--critical)] text-xs font-mono font-medium">// Error: {errors.password}</p>}
+          <p className="text-gray-500 text-xs font-mono font-medium">// 8+ chars, A-Z, a-z, 0-9, special chars</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-slate-300">
-            Confirm Password *
+          <Label htmlFor="confirmPassword" className={`${labelColor} font-mono font-medium text-sm flex items-center gap-2`}>
+            <Lock className="h-4 w-4" />
+            confirm_password *
           </Label>
-          <div className="relative">
+          <div className="relative group">
+            <div className={`absolute -inset-0.5 bg-gradient-to-r ${userType === "admin" ? "from-[var(--critical)] to-[var(--high)]" : "from-[var(--accent-primary)] to-[var(--accent-hover)]"} rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300`} />
             <Input
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm your password"
+              placeholder="••••••••••••"
               value={formData.confirmPassword}
               onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-              className={`bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 pr-10 ${
-                errors.confirmPassword ? "border-red-500" : ""
-              }`}
+              className={`relative bg-secondary/70 ${userType === "admin" ? "border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] focus:border-[var(--critical)] focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)]" : "border-border text-primary focus:border-primary focus:ring-primary/20"} placeholder:text-gray-600 focus:ring-2 pr-12 h-12 transition-all font-mono font-medium ${errors.confirmPassword ? "border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)]" : ""}`}
               required
             />
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10 hover:bg-gray-900/50 rounded-lg"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
               {showConfirmPassword ? (
-                <EyeOff className="h-4 w-4 text-slate-400" />
+                <EyeOff className={`h-5 w-5 ${userType === "admin" ? "text-[var(--critical)]" : "text-primary"}`} />
               ) : (
-                <Eye className="h-4 w-4 text-slate-400" />
+                <Eye className={`h-5 w-5 ${userType === "admin" ? "text-[var(--critical)]" : "text-primary"}`} />
               )}
             </Button>
           </div>
-          {errors.confirmPassword && <p className="text-red-400 text-sm">{errors.confirmPassword}</p>}
+          {errors.confirmPassword && <p className="text-[var(--critical)] text-xs font-mono font-medium">// Error: {errors.confirmPassword}</p>}
         </div>
 
         {/* Supporting documents for company/firm */}
         {userType === "admin" && (adminType === "company" || adminType === "firm") && (
           <div className="space-y-2">
-            <Label htmlFor="supportingDoc" className="text-slate-300">
-              Supporting Business Documents (Optional)
+            <Label htmlFor="supportingDoc" className="text-[var(--critical)] font-mono font-medium text-sm">
+              documents <span className="text-gray-600">[optional]</span>
             </Label>
-            <Input
-              id="supportingDoc"
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-              onChange={handleFileChange}
-              className="bg-slate-700/50 border-slate-600 text-white file:bg-slate-600 file:text-white file:border-0 file:rounded-md file:px-3 file:py-1"
-            />
-            <p className="text-slate-500 text-xs">Upload GST/Tax ID, certificate, or other business documents</p>
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-[var(--critical)] to-[var(--high)] rounded-lg opacity-20 group-hover:opacity-40 blur transition duration-300" />
+              <Input
+                id="supportingDoc"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={handleFileChange}
+                className="relative bg-secondary/70 border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] text-[var(--critical)] file:bg-gray-800 file:text-[var(--critical)] file:border-0 file:rounded-md file:px-3 file:py-1 file:font-mono file:font-medium focus:border-[var(--critical)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--critical)_20%,transparent)]"
+              />
+            </div>
+            <p className="text-gray-500 text-xs font-mono font-medium">// Upload GST/Tax ID, certificate, or business docs</p>
           </div>
         )}
       </div>
@@ -722,33 +800,61 @@ export default function SignUpPage() {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-            <CardHeader className="space-y-1 text-center">
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+        {/* Background effects */}
+        <div className="fixed inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--border)_35%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--border)_35%,transparent)_1px,transparent_1px)] bg-[size:50px_50px]" />
+          <div className="absolute top-20 left-10 w-96 h-96 bg-[var(--accent-soft)] rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-[var(--accent-soft)] rounded-full blur-[120px] animate-pulse" />
+        </div>
+
+        <div className="w-full max-w-md relative z-10">
+          <Card className="border-border bg-background/90 backdrop-blur-xl shadow-2xl shadow-primary/10">
+            {/* Terminal header */}
+            <div className="h-8 bg-gradient-to-r from-gray-900 to-black border-b border-border flex items-center px-4 gap-2 rounded-t-lg">
+              <div className="w-3 h-3 rounded-full bg-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]0/80" />
+              <div className="w-3 h-3 rounded-full bg-[var(--medium)]/80" />
+              <div className="w-3 h-3 rounded-full bg-primary/80" />
+              <span className="ml-2 text-xs text-primary/60 font-mono">
+                system@bughuntr:~$ ./verify_email.sh
+              </span>
+            </div>
+
+            <CardHeader className="space-y-1 text-center pt-8">
               <div className="flex items-center justify-center mb-4">
                 <div className="relative">
-                  <Mail className="h-12 w-12 text-green-400" />
-                  <CheckCircle className="h-6 w-6 text-green-400 absolute -top-1 -right-1" />
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse" />
+                  <div className="relative p-4 rounded-full bg-[var(--accent-soft)] border-2 border-border">
+                    <CheckCircle className="h-10 w-10 text-primary" />
+                  </div>
                 </div>
               </div>
-              <CardTitle className="text-2xl font-bold text-white">Check Your Email</CardTitle>
-              <CardDescription className="text-slate-400">
-                We've sent a verification link to {formData.email}
+              <CardTitle className="text-3xl font-black text-white font-mono">
+                registration_<span className="text-primary">success</span>
+              </CardTitle>
+              <CardDescription className="text-gray-400 font-mono font-medium">
+                Verification email sent to:
+                <br />
+                <span className="text-primary">{formData.email}</span>
                 {userType === "admin" && (adminType === "company" || adminType === "firm") && supportingDoc && (
-                  <span className="block mt-2 text-slate-400">
-                    Your supporting documents will be reviewed within 24-48 hours.
+                  <span className="block mt-3 text-gray-400">
+                    // Documents will be reviewed within 24-48 hours
                   </span>
                 )}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 text-center">
-              <p className="text-slate-300 text-sm">
-                Please check your email and click the verification link to activate your account.
+            <CardContent className="space-y-4 text-center pb-8">
+              <p className="text-gray-400 text-sm font-mono font-medium">
+                Check your inbox and click the verification link
               </p>
               <div className="pt-4">
-                <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
-                  Return to Sign In
+                <Link 
+                  href="/login" 
+                  className="inline-flex items-center gap-2 text-primary hover:text-primary/85 font-mono font-bold transition-colors"
+                >
+                  <Terminal className="h-4 w-4" />
+                  [return_to_login]
                 </Link>
               </div>
             </CardContent>
@@ -759,72 +865,148 @@ export default function SignUpPage() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 relative"
-      style={{
-        backgroundImage: 'url(/signup-bg.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      <div className="w-full max-w-md">
-        <Card className="border-slate-700 bg-slate-800/60 backdrop-blur-md shadow-2xl">
-          <CardHeader className="space-y-1 text-center">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      {/* Matrix-style cyber background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-950 to-black" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--border)_35%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--border)_35%,transparent)_1px,transparent_1px)] bg-[size:50px_50px]" />
+        
+        {/* Glowing corners */}
+        <div className="absolute top-0 left-0 w-96 h-96 bg-[var(--accent-soft)] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[var(--accent-soft)] rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] rounded-full blur-[150px]" />
+        
+        {/* Floating bugs */}
+        {[...Array(10)].map((_, i) => (
+          <Bug
+            key={i}
+            className="absolute text-primary/10 animate-float"
+            style={{
+              width: Math.random() * 25 + 15 + "px",
+              height: Math.random() * 25 + 15 + "px",
+              left: Math.random() * 100 + "%",
+              top: Math.random() * 100 + "%",
+              animationDelay: Math.random() * 10 + "s",
+              animationDuration: Math.random() * 15 + 10 + "s",
+            }}
+          />
+        ))}
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translate(0, 0) rotate(0deg);
+            opacity: 0.2;
+          }
+          50% {
+            transform: translate(80px, -80px) rotate(180deg);
+            opacity: 0.4;
+          }
+        }
+        .animate-float {
+          animation: float linear infinite;
+        }
+      `}</style>
+
+      <div className="w-full max-w-md relative z-10">
+        <Card className="border-border bg-background/90 backdrop-blur-xl shadow-2xl shadow-primary/10">
+          {/* Terminal window header */}
+          <div className="h-8 bg-gradient-to-r from-gray-900 to-black border-b border-border flex items-center px-4 gap-2 rounded-t-lg">
+            <div className="w-3 h-3 rounded-full bg-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]0/80" />
+            <div className="w-3 h-3 rounded-full bg-[var(--medium)]/80" />
+            <div className="w-3 h-3 rounded-full bg-primary/80" />
+            <span className="ml-2 text-xs text-primary/60 font-mono">
+          
+            </span>
+          </div>
+
+          <CardHeader className="space-y-1 text-center pt-8">
             <div className="flex items-center justify-center mb-4">
               <div className="relative">
-                <Shield className="h-12 w-12 text-blue-400" />
-                <div className="absolute inset-0 bg-blue-400/20 rounded-full blur-lg" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-hover)] rounded-2xl blur-xl opacity-50 animate-pulse" />
+                <div className="relative p-4 rounded-2xl bg-gradient-to-br from-[var(--accent-soft)] to-secondary border-2 border-border backdrop-blur-sm">
+                  <Bug className="h-10 w-10 text-primary" />
+                </div>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-white">Join BugHuntr</CardTitle>
-            <CardDescription className="text-slate-400">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Terminal className="h-4 w-4 text-primary" />
+              <CardTitle className="text-3xl font-black text-white font-mono">
+                 Register<span className="text-primary">New User</span>
+              </CardTitle>
+            </div>
+            <CardDescription className="text-gray-400 font-mono font-medium">
               {userType === "user"
-                ? "Create your account to start hunting bugs and earning rewards"
+                ? "Initialize hunter profile to start earning"
                 : userType === "admin" && adminType === "company"
-                  ? "Register your company to manage bug bounty programs"
+                  ? "Register company admin credentials"
                   : userType === "admin" && adminType === "firm"
-                    ? "Register your firm to manage security assessments"
+                    ? "Register firm admin credentials"
                     : userType === "admin" && adminType === "student"
-                      ? "Register for academic projects and research"
+                      ? "Register student research profile"
                       : userType === "admin" && adminType === "individual"
-                        ? "Register your personal project or startup"
-                        : "Choose your role to get started"}
+                        ? "Register individual project profile"
+                        : "Select your role to continue"}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6 pb-8">
             {errors.general && (
-              <Alert className="border-red-500/50 bg-red-500/10">
-                <AlertDescription className="text-red-400">{errors.general}</AlertDescription>
+              <Alert className="border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] backdrop-blur-sm">
+                <AlertCircle className="h-4 w-4 text-[var(--critical)]" />
+                <AlertDescription className="text-[var(--critical)] font-mono font-medium">
+                  // Error: {errors.general}
+                </AlertDescription>
               </Alert>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {renderUserTypeSelection()}
               {renderFormFields()}
 
               {userType && (userType === "user" || (userType === "admin" && adminType)) && (
-                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white" disabled={isLoading}>
-                  {isLoading ? "Creating Account..." : "Create Account"}
+                <Button 
+                  type="submit" 
+                  className={`w-full text-black h-12 text-sm font-bold shadow-lg transition-all duration-300 font-mono relative overflow-hidden group ${
+                    userType === "admin"
+                      ? "bg-[var(--critical)] hover:bg-[color:color-mix(in_srgb,var(--critical)_85%,black)] shadow-[color:color-mix(in_srgb,var(--critical)_10%,transparent)] hover:shadow-[color:color-mix(in_srgb,var(--critical)_20%,transparent)] border border-[color:color-mix(in_srgb,var(--critical)_20%,transparent)]"
+                      : "bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-hover)] hover:from-[var(--accent-hover)] hover:to-[var(--accent-primary)] shadow-primary/10 hover:shadow-primary/15 border border-border"
+                  }`}
+                  disabled={isLoading}
+                >
+                  <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                  <span className="relative flex items-center justify-center gap-2">
+                    {isLoading ? (
+                      <>
+                        <div className="h-5 w-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        creating_account...
+                      </>
+                    ) : (
+                      <>
+                        <Terminal className="h-5 w-5" />
+                        create_account
+                      </>
+                    )}
+                  </span>
                 </Button>
               )}
             </form>
 
-            <div className="text-center">
-              <p className="text-slate-400 text-sm">
-                Already have an account?{" "}
-                <Link href="/login" className="text-blue-400 hover:text-blue-300 font-medium">
-                  Sign in
+            <div className="text-center border-t border-gray-800 pt-6">
+              <p className="text-gray-500 text-sm font-mono font-medium">
+                Already registered?{" "}
+                <Link href="/login" className="text-primary hover:text-primary/85 font-bold transition-colors">
+                  [login]
                 </Link>
               </p>
             </div>
           </CardContent>
         </Card>
 
-        <div className="mt-4 text-center">
-          <Link href="/" className="inline-flex items-center text-slate-400 hover:text-white transition-colors">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+        <div className="mt-6 text-center">
+          <Link href="/" className="inline-flex items-center text-gray-500 hover:text-primary transition-colors group font-mono font-medium text-sm">
+            <ArrowLeft className="h-4 w-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            exit
           </Link>
         </div>
       </div>

@@ -17,6 +17,7 @@ export interface ProHunt {
   id: string;
   companyId: string;
   companyName: string;
+  missingRequirements?: string[];
   title: string;
   description: string;
   allowedTargetSegments: string[];
@@ -52,6 +53,8 @@ export interface ProInvitation {
   huntTitle: string;
   companyName: string;
   hunterId?: string;
+  hunterName?: string;
+  hunterUsername?: string;
   email?: string;
   token: string;
   invitedBy: string;
@@ -81,6 +84,7 @@ export interface ProApplication {
 export interface ProRecommendation {
   hunterId: string;
   hunterName: string;
+  hunterUsername?: string;
   score: number;
   rank: string;
   reputation: number;

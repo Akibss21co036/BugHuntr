@@ -11,6 +11,7 @@ import type { BugHunt } from "@/types/bug-hunt"
 import { BugHuntSubmissionModal } from "./bug-hunt-submission-modal"
 import { useBugHunt } from "@/hooks/use-bug-hunt"
 import { useAuth } from "@/components/auth/auth-context"
+import { formatCurrency } from "@/lib/pro-utils"
 
 interface BugHuntCardProps {
   hunt: BugHunt
@@ -26,6 +27,9 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
 
   const isAdmin = user?.role === "admin"
   const isCreatorAdmin = isAdmin && user?.id === hunt.createdBy
+  const hasCashRewards = hunt.rewardTypes?.includes("cash")
+  const formatRewardValue = (value: number) =>
+    hasCashRewards ? formatCurrency(value) : `${value} pts`
 
   const daysRemaining = Math.ceil((new Date(hunt.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
 
@@ -35,9 +39,9 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-neon-green text-black"
+        return "bg-[var(--low)] text-black"
       case "upcoming":
-        return "bg-cyber-blue text-white"
+        return "bg-primary text-white"
       case "ended":
         return "bg-muted text-muted-foreground"
       default:
@@ -72,7 +76,7 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.1 }}
       >
-        <Card className="h-full hover:shadow-lg transition-all duration-300 border-cyber-blue/20 hover:border-cyber-blue/40 bg-card/50 backdrop-blur-sm">
+        <Card className="h-full hover:shadow-lg transition-all duration-300 border-[var(--border-light)] hover:border-[var(--border-light)] bg-card/50 backdrop-blur-sm">
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
@@ -86,19 +90,19 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
               <div className="text-right space-y-1">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <DollarSign className="h-3 w-3" />
-                  <span>Critical: {hunt.rewards?.critical || 0} pts</span>
+                  <span>Critical: {formatRewardValue(hunt.rewards?.critical || 0)}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <DollarSign className="h-3 w-3" />
-                  <span>High: {hunt.rewards?.high || 0} pts</span>
+                  <span>High: {formatRewardValue(hunt.rewards?.high || 0)}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <DollarSign className="h-3 w-3" />
-                  <span>Medium: {hunt.rewards?.medium || 0} pts</span>
+                  <span>Medium: {formatRewardValue(hunt.rewards?.medium || 0)}</span>
                 </div>
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <DollarSign className="h-3 w-3" />
-                  <span>Low: {hunt.rewards?.low || 0} pts</span>
+                  <span>Low: {formatRewardValue(hunt.rewards?.low || 0)}</span>
                 </div>
                 {isCreatorAdmin && (
                   <Button
@@ -120,7 +124,7 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
 
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="flex items-center gap-2">
-                <Target className="h-4 w-4 text-cyber-blue" />
+                <Target className="h-4 w-4 text-primary" />
                 <span className="text-muted-foreground">Scope</span>
               </div>
               <div className="text-right">
@@ -128,17 +132,17 @@ export function BugHuntCard({ hunt, index }: BugHuntCardProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-cyber-orange" />
+                <Clock className="h-4 w-4 text-[var(--high)]" />
                 <span className="text-muted-foreground">Time left</span>
               </div>
               <div className="text-right">
-                <span className="font-medium text-cyber-orange">
+                <span className="font-medium text-[var(--high)]">
                   {daysRemaining > 0 ? `${daysRemaining} days` : "Ended"}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-cyber-purple" />
+                <Users className="h-4 w-4 text-secondary" />
                 <span className="text-muted-foreground">Participants</span>
               </div>
               <div className="text-right">

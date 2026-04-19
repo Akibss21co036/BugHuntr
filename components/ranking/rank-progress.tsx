@@ -24,7 +24,7 @@ export function RankProgress({ user }: RankProgressProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-cyber-blue" />
+            <Trophy className="w-5 h-5 text-primary" />
             Rank Progress
           </CardTitle>
         </CardHeader>
@@ -59,7 +59,7 @@ export function RankProgress({ user }: RankProgressProps) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Weekly requirement</span>
-                <span className={user.weeklyPoints >= weeklyReq ? "text-green-500" : "text-orange-500"}>
+                <span className={user.weeklyPoints >= weeklyReq ? "text-[var(--low)]" : "text-[var(--high)]"}>
                   {user.weeklyPoints}/{weeklyReq} points
                 </span>
               </div>
@@ -73,7 +73,7 @@ export function RankProgress({ user }: RankProgressProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-cyber-blue" />
+            <TrendingUp className="w-5 h-5 text-primary" />
             Performance Metrics
           </CardTitle>
         </CardHeader>
@@ -99,7 +99,7 @@ export function RankProgress({ user }: RankProgressProps) {
           <div className="pt-2 border-t">
             <div className="flex justify-between font-semibold">
               <span>Total Score</span>
-              <span className="text-cyber-blue">{Math.round(metrics.totalScore)}</span>
+              <span className="text-primary">{Math.round(metrics.totalScore)}</span>
             </div>
           </div>
         </CardContent>
@@ -114,7 +114,7 @@ export function RankProgress({ user }: RankProgressProps) {
           <div className="space-y-2">
             {benefits.map((benefit, index) => (
               <div key={index} className="flex items-center gap-2 text-sm">
-                <div className="w-1.5 h-1.5 bg-cyber-blue rounded-full flex-shrink-0" />
+                <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
                 <span>{benefit}</span>
               </div>
             ))}

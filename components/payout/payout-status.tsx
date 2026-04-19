@@ -96,30 +96,30 @@ export function PayoutStatus({ submissionId, huntId }: PayoutStatusProps) {
     const configs: Record<string, any> = {
       pending_created: {
         icon: Clock,
-        color: "text-yellow-600",
-        bg: "bg-yellow-100",
+        color: "text-[var(--medium)]",
+        bg: "bg-secondary",
         label: "Payout Pending",
         description: "Your payout is being prepared...",
       },
       processing: {
         icon: RefreshCw,
-        color: "text-blue-600",
-        bg: "bg-blue-100",
+        color: "text-primary",
+        bg: "bg-secondary",
         label: "Processing",
         description: "Your payout is being processed on the blockchain...",
         animate: true,
       },
       completed: {
         icon: CheckCircle2,
-        color: "text-green-600",
-        bg: "bg-green-100",
+        color: "text-[var(--low)]",
+        bg: "bg-secondary",
         label: "Completed",
         description: "Your payout has been successfully sent!",
       },
       failed: {
         icon: XCircle,
-        color: "text-red-600",
-        bg: "bg-red-100",
+        color: "text-[var(--critical)]",
+        bg: "bg-secondary",
         label: "Failed",
         description: "Payout failed. Our team will retry shortly.",
       },
@@ -156,6 +156,14 @@ export function PayoutStatus({ submissionId, huntId }: PayoutStatusProps) {
 
   const statusConfig = getStatusConfig(payout.status);
   const StatusIcon = statusConfig.icon;
+  const method = payout.method || "crypto";
+  const bankDestination =
+    payout.destination && payout.destination.type === "bank"
+      ? payout.destination
+      : null;
+  const displayDestination = bankDestination
+    ? `${bankDestination.bankName} • ${bankDestination.accountNumber.slice(-4)}`
+    : payout.hunterWallet;
 
   return (
     <Card className={statusConfig.bg}>
@@ -168,7 +176,9 @@ export function PayoutStatus({ submissionId, huntId }: PayoutStatusProps) {
             </CardTitle>
           </div>
           <Badge variant="outline">
-            {payout.currency} on {payout.network}
+            {method === "crypto"
+              ? `${payout.currency} on ${payout.network}`
+              : "Bank Transfer"}
           </Badge>
         </div>
         <CardDescription>{statusConfig.description}</CardDescription>
@@ -205,11 +215,11 @@ export function PayoutStatus({ submissionId, huntId }: PayoutStatusProps) {
         {/* Wallet Address */}
         <div className="space-y-1">
           <p className="text-xs text-muted-foreground">Recipient Address</p>
-          <p className="font-mono text-sm break-all">{payout.hunterWallet}</p>
+          <p className="font-mono text-sm break-all">{displayDestination}</p>
         </div>
 
         {/* Transaction Hash (if completed) */}
-        {payout.tx_hash && (
+        {payout.tx_hash && method === "crypto" && (
           <div className="space-y-2">
             <p className="text-xs text-muted-foreground">Transaction Hash</p>
             <Button variant="outline" size="sm" asChild className="w-full">
@@ -231,11 +241,11 @@ export function PayoutStatus({ submissionId, huntId }: PayoutStatusProps) {
 
         {/* Error Message (if failed) */}
         {payout.status === "failed" && payout.error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-800">
+          <div className="p-3 bg-[color:color-mix(in_srgb,var(--critical)_10%,transparent)] border border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] rounded-md">
+            <p className="text-sm text-[var(--critical)]">
               <strong>Error:</strong> {payout.error.message}
             </p>
-            <p className="text-xs text-red-600 mt-1">
+            <p className="text-xs text-[var(--critical)] mt-1">
               Our team has been notified and will retry the payout.
             </p>
           </div>
@@ -290,10 +300,10 @@ export function PayoutStatusBadge({ submissionId, huntId }: PayoutStatusProps) {
   };
 
   const statusColors: Record<string, string> = {
-    pending_created: "bg-yellow-100 text-yellow-800",
-    processing: "bg-blue-100 text-blue-800",
-    completed: "bg-green-100 text-green-800",
-    failed: "bg-red-100 text-red-800",
+    pending_created: "bg-secondary text-[var(--medium)]",
+    processing: "bg-secondary text-primary",
+    completed: "bg-secondary text-[var(--low)]",
+    failed: "bg-secondary text-[var(--critical)]",
     cancelled: "bg-gray-100 text-gray-800",
   };
 

@@ -200,11 +200,11 @@ export default function PayoutDemoPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+        return <CheckCircle2 className="h-5 w-5 text-[var(--low)]" />;
       case "failed":
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return <XCircle className="h-5 w-5 text-[var(--critical)]" />;
       case "processing":
-        return <Clock className="h-5 w-5 text-yellow-500" />;
+        return <Clock className="h-5 w-5 text-[var(--medium)]" />;
       default:
         return <AlertCircle className="h-5 w-5 text-gray-500" />;
     }
@@ -212,10 +212,10 @@ export default function PayoutDemoPage() {
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, string> = {
-      completed: "bg-green-500/10 text-green-500 border-green-500/20",
-      failed: "bg-red-500/10 text-red-500 border-red-500/20",
-      processing: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-      pending_created: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+      completed: "bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]",
+      failed: "bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] text-[var(--critical)] border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)]",
+      processing: "bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--medium)] border-[color:color-mix(in_srgb,var(--medium)_25%,transparent)]",
+      pending_created: "bg-[var(--accent-soft)] text-primary border-[var(--border-light)]",
     };
 
     return (
@@ -236,14 +236,14 @@ export default function PayoutDemoPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold flex items-center gap-3">
-              <Zap className="h-10 w-10 text-cyber-blue" />
+              <Zap className="h-10 w-10 text-primary" />
               Crypto Payout Demo
             </h1>
             <p className="text-muted-foreground mt-2">
               Test the automated payout system with simulated transactions
             </p>
           </div>
-          <Badge className="bg-orange-500 text-white text-lg px-4 py-2">
+          <Badge className="bg-[var(--high)] text-black text-lg px-4 py-2">
             DEMO MODE
           </Badge>
         </div>
@@ -261,7 +261,7 @@ export default function PayoutDemoPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Wallet className="h-6 w-6 text-cyber-blue" />
+              <Wallet className="h-6 w-6 text-primary" />
               Demo Organization Wallet
             </CardTitle>
             <CardDescription>
@@ -272,21 +272,21 @@ export default function PayoutDemoPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">Total Balance</p>
-                <p className="text-2xl font-bold text-cyber-blue">
+                <p className="text-2xl font-bold text-primary">
                   ${formatUSDC(demoWallet.balance)}
                 </p>
                 <p className="text-xs text-muted-foreground">USDC</p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">Reserved</p>
-                <p className="text-2xl font-bold text-yellow-500">
+                <p className="text-2xl font-bold text-[var(--medium)]">
                   ${formatUSDC(demoWallet.reserved)}
                 </p>
                 <p className="text-xs text-muted-foreground">USDC</p>
               </div>
               <div className="p-4 rounded-lg bg-muted">
                 <p className="text-sm text-muted-foreground">Available</p>
-                <p className="text-2xl font-bold text-green-500">
+                <p className="text-2xl font-bold text-[var(--low)]">
                   ${formatUSDC(demoWallet.balance - demoWallet.reserved)}
                 </p>
                 <p className="text-xs text-muted-foreground">USDC</p>
@@ -342,7 +342,7 @@ export default function PayoutDemoPage() {
               <Button
                 onClick={() => createDemoPayout("success")}
                 disabled={loading || demoWallet.balance === 0}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)] text-black"
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Simulate Success
@@ -350,7 +350,7 @@ export default function PayoutDemoPage() {
               <Button
                 onClick={() => createDemoPayout("processing")}
                 disabled={loading || demoWallet.balance === 0}
-                className="bg-yellow-600 hover:bg-yellow-700"
+                className="bg-[var(--medium)] hover:bg-[color:color-mix(in_srgb,var(--medium)_85%,black)]"
               >
                 <Clock className="h-4 w-4 mr-2" />
                 Simulate Processing

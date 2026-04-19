@@ -56,11 +56,11 @@ export default function ProApplicationsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "approved":
-        return <CheckCircle className="w-5 h-5 text-green-400" />;
+        return <CheckCircle className="w-5 h-5 text-[var(--low)]" />;
       case "rejected":
-        return <XCircle className="w-5 h-5 text-red-400" />;
+        return <XCircle className="w-5 h-5 text-[var(--critical)]" />;
       case "pending":
-        return <Clock className="w-5 h-5 text-yellow-400" />;
+        return <Clock className="w-5 h-5 text-[var(--medium)]" />;
       default:
         return <FileText className="w-5 h-5 text-gray-400" />;
     }
@@ -69,13 +69,13 @@ export default function ProApplicationsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-green-600";
+        return "bg-[var(--low)]";
       case "rejected":
-        return "bg-red-600";
+        return "bg-[var(--critical)]";
       case "pending":
-        return "bg-yellow-600";
+        return "bg-[var(--medium)]";
       case "more_info_requested":
-        return "bg-blue-600";
+        return "bg-primary";
       default:
         return "bg-gray-600";
     }
@@ -105,7 +105,7 @@ export default function ProApplicationsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--border-light)]" />
       </div>
     );
   }
@@ -148,7 +148,7 @@ export default function ProApplicationsPage() {
           </Card>
           <Card className="bg-[#181e26] border-[#23272f]">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-yellow-400">
+              <div className="text-2xl font-bold text-[var(--medium)]">
                 {
                   relevantApplications.filter((a) => a.status === "pending")
                     .length
@@ -159,7 +159,7 @@ export default function ProApplicationsPage() {
           </Card>
           <Card className="bg-[#181e26] border-[#23272f]">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-green-400">
+              <div className="text-2xl font-bold text-[var(--low)]">
                 {
                   relevantApplications.filter((a) => a.status === "approved")
                     .length
@@ -170,7 +170,7 @@ export default function ProApplicationsPage() {
           </Card>
           <Card className="bg-[#181e26] border-[#23272f]">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-red-400">
+              <div className="text-2xl font-bold text-[var(--critical)]">
                 {
                   relevantApplications.filter((a) => a.status === "rejected")
                     .length
@@ -226,7 +226,7 @@ export default function ProApplicationsPage() {
                   </p>
                   <Button
                     onClick={() => (window.location.href = "/pro/hunts")}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-primary hover:bg-[var(--accent-hover)]"
                   >
                     Browse Pro Hunts
                   </Button>
@@ -236,7 +236,7 @@ export default function ProApplicationsPage() {
               filteredApplications.map((app) => (
                 <Card
                   key={app.id}
-                  className="bg-[#181e26] border-[#23272f] hover:border-blue-500/30 transition-colors"
+                  className="bg-[#181e26] border-[#23272f] hover:border-[var(--border-light)] transition-colors"
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -272,8 +272,8 @@ export default function ProApplicationsPage() {
 
                     {/* Review Notes */}
                     {app.reviewNotes && (
-                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                        <p className="text-sm font-semibold text-blue-400 mb-1">
+                      <div className="bg-[var(--accent-soft)] border border-[var(--border-light)] rounded-lg p-4">
+                        <p className="text-sm font-semibold text-primary mb-1">
                           Company Response:
                         </p>
                         <p className="text-sm text-gray-300">
@@ -294,7 +294,7 @@ export default function ProApplicationsPage() {
                         {app.status === "approved" && (
                           <div className="flex gap-2">
                             <Button
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
                               data-testid="sign-nda-btn"
                             >
                               <CheckCircle className="w-4 h-4 mr-2" />
@@ -311,7 +311,7 @@ export default function ProApplicationsPage() {
 
                         {app.status === "more_info_requested" && (
                           <Button
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="bg-primary hover:bg-[var(--accent-hover)]"
                             data-testid="provide-info-btn"
                           >
                             <Mail className="w-4 h-4 mr-2" />
@@ -326,7 +326,7 @@ export default function ProApplicationsPage() {
                         {app.status === "pending" && (
                           <div className="flex gap-2">
                             <Button
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
                               onClick={() => handleApproveApplication(app.id)}
                               data-testid={`approve-btn-${app.id}`}
                             >
@@ -335,7 +335,7 @@ export default function ProApplicationsPage() {
                             </Button>
                             <Button
                               variant="outline"
-                              className="border-blue-500 text-blue-400 hover:bg-blue-500/10"
+                              className="border-[var(--border-light)] text-primary hover:bg-[var(--accent-soft)]"
                               onClick={() => handleRequestMoreInfo(app.id)}
                               data-testid={`request-info-btn-${app.id}`}
                             >
@@ -344,7 +344,7 @@ export default function ProApplicationsPage() {
                             </Button>
                             <Button
                               variant="outline"
-                              className="border-red-500 text-red-400 hover:bg-red-500/10"
+                              className="border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] text-[var(--critical)] hover:bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)]"
                               onClick={() => handleRejectApplication(app.id)}
                               data-testid={`reject-btn-${app.id}`}
                             >
@@ -357,7 +357,7 @@ export default function ProApplicationsPage() {
                         {app.status === "approved" && (
                           <div className="flex gap-2">
                             <Button
-                              className="bg-purple-600 hover:bg-purple-700"
+                              className="bg-secondary hover:bg-secondary/80"
                               data-testid={`send-invitation-btn-${app.id}`}
                             >
                               <Send className="w-4 h-4 mr-2" />

@@ -429,7 +429,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-neon-green border-neon-green">
+                    <Badge variant="outline" className="text-[var(--low)] border-[var(--border-light)]">
                       Enabled
                     </Badge>
                     <Button variant="outline">Manage</Button>
@@ -473,17 +473,17 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-cyber-blue">{points.total.toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-primary">{points.total.toLocaleString()}</div>
                   <p className="text-muted-foreground">Total Points</p>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">This Month</span>
-                  <span className="font-semibold text-neon-green">+{points.thisMonth}</span>
+                  <span className="font-semibold text-[var(--low)]">+{points.thisMonth}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Current Rank</span>
-                  <Badge variant="secondary" className="bg-cyber-purple text-white">
+                  <Badge variant="secondary" className="bg-secondary text-white">
                     <Award className="h-3 w-3 mr-1" />
                     {points.rank}
                   </Badge>
@@ -495,7 +495,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
-                      className="bg-cyber-blue h-2 rounded-full transition-all duration-300"
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
                       style={{ width: `${(points.total / points.nextMilestone) * 100}%` }}
                     />
                   </div>
@@ -513,21 +513,21 @@ export default function SettingsPage() {
                     <p className="font-medium">XSS Vulnerability Found</p>
                     <p className="text-sm text-muted-foreground">2 days ago</p>
                   </div>
-                  <Badge className="bg-neon-green text-black">+500</Badge>
+                  <Badge className="bg-[var(--low)] text-black">+500</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div>
                     <p className="font-medium">SQL Injection Report</p>
                     <p className="text-sm text-muted-foreground">1 week ago</p>
                   </div>
-                  <Badge className="bg-neon-orange text-black">+750</Badge>
+                  <Badge className="bg-[var(--high)] text-black">+750</Badge>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                   <div>
                     <p className="font-medium">Community Contribution</p>
                     <p className="text-sm text-muted-foreground">2 weeks ago</p>
                   </div>
-                  <Badge className="bg-cyber-cyan text-black">+100</Badge>
+                  <Badge className="bg-secondary text-black">+100</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -541,7 +541,7 @@ export default function SettingsPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 border rounded-lg text-center">
-                  <Trophy className="h-8 w-8 mx-auto mb-2 text-neon-orange" />
+                  <Trophy className="h-8 w-8 mx-auto mb-2 text-[var(--high)]" />
                   <h4 className="font-medium">Premium Badge</h4>
                   <p className="text-sm text-muted-foreground mb-3">5,000 points</p>
                   <Button size="sm" variant="outline">
@@ -549,7 +549,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
                 <div className="p-4 border rounded-lg text-center">
-                  <Award className="h-8 w-8 mx-auto mb-2 text-cyber-purple" />
+                  <Award className="h-8 w-8 mx-auto mb-2 text-secondary" />
                   <h4 className="font-medium">Hall of Fame Entry</h4>
                   <p className="text-sm text-muted-foreground mb-3">10,000 points</p>
                   <Button size="sm" variant="outline">
@@ -557,7 +557,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
                 <div className="p-4 border rounded-lg text-center">
-                  <Star className="h-8 w-8 mx-auto mb-2 text-neon-green" />
+                  <Star className="h-8 w-8 mx-auto mb-2 text-[var(--low)]" />
                   <h4 className="font-medium">Elite Status</h4>
                   <p className="text-sm text-muted-foreground mb-3">15,000 points</p>
                   <Button size="sm" disabled>

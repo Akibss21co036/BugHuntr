@@ -1,225 +1,155 @@
-"use client"
+"use client";
 
-import { useParams } from "next/navigation"
-import { useCommunity } from "@/hooks/use-community"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
-import { Users, Calendar, Target, TrendingUp, MessageSquare, Hash } from "lucide-react"
-import { motion } from "framer-motion"
-import Link from "next/link"
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import { addDoc, collection, doc, onSnapshot, orderBy, query, serverTimestamp, limit } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
+import { useAuth } from "@/components/auth/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
-export default function CommunityPage() {
-  const params = useParams()
-  const communityId = params.id as string
-  const { communities, setCurrentCommunity } = useCommunity()
+export default function CommunityChatPage() {
+  const params = useParams<{ id: string }>();
+  const id = useMemo(() => String(params?.id ?? ""), [params?.id]);
+  const { user, isLoading: authLoading } = useAuth();
+  const [communityName, setCommunityName] = useState(id);
+  const [messages, setMessages] = useState<Array<{ id: string; text: string; senderId: string }>>([]);
+  const [messageText, setMessageText] = useState("");
+  const [isMember, setIsMember] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  const community = communities.find((c) => c.id === communityId)
+  useEffect(() => {
+    console.log(params?.id);
+  }, [params?.id]);
 
-  if (!community) {
-    return (
-      <div className="container mx-auto px-6 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Community not found</h1>
-          <Link href="/communities">
-            <Button>Browse Communities</Button>
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!id) {
+      setIsLoading(false);
+      return;
+    }
 
-  // Set as current community when viewing
-  if (community) {
-    setCurrentCommunity(community)
-  }
+    const communityRef = doc(db, "communities", id);
+    const unsubscribe = onSnapshot(communityRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        setCommunityName(id);
+        setIsLoading(false);
+        return;
+      }
+
+      const data = snapshot.data() as { name?: string };
+      setCommunityName(data.name ?? id);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [id]);
+
+  useEffect(() => {
+    if (!id || !user?.id) {
+      setIsMember(false);
+      return;
+    }
+
+    const memberRef = doc(db, "communities", id, "members", user.id);
+    const unsubscribe = onSnapshot(memberRef, (snapshot) => {
+      setIsMember(snapshot.exists());
+    });
+
+    return () => unsubscribe();
+  }, [id, user?.id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const messagesQuery = query(
+      collection(db, "communities", id, "messages"),
+      orderBy("createdAt", "asc"),
+      limit(50),
+    );
+
+    const unsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+      setMessages(
+        snapshot.docs.map((messageDoc) => ({
+          id: messageDoc.id,
+          ...(messageDoc.data() as { text: string; senderId: string }),
+        })),
+      );
+    });
+
+    return () => unsubscribe();
+  }, [id]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSend = async () => {
+    const text = messageText.trim();
+    if (!text || !id || !user?.id || !isMember) return;
+
+    await addDoc(collection(db, "communities", id, "messages"), {
+      text,
+      senderId: user.id,
+      createdAt: serverTimestamp(),
+    });
+
+    setMessageText("");
+  };
+
+  const isDisabled = authLoading || isLoading || !isMember || !messageText.trim();
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      <div className="space-y-6">
-        {/* Community Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="relative">
-          {community.banner && <div className="h-48 rounded-lg bg-gradient-to-r from-cyber-blue to-neon-green mb-6" />}
-          <div className="flex flex-col sm:flex-row items-start gap-6">
-            <Avatar className="h-24 w-24 border-4 border-background">
-              <AvatarImage src={community.avatar || "/placeholder.svg"} />
-              <AvatarFallback className="bg-gradient-to-br from-cyber-blue to-neon-green text-white text-2xl font-bold">
-                {community.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{community.name}</h1>
-              <p className="text-muted-foreground mb-4">{community.description}</p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {community.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  {community.memberCount} members
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  Created {new Date(community.createdAt).toLocaleDateString()}
+    <div className="flex flex-col h-[calc(100dvh-3.5rem)] md:h-[calc(100dvh-4rem)] bg-background">
+      <div className="border-b border-border px-4 md:px-6 py-3">
+        <h1 className="text-base md:text-lg font-semibold truncate">{communityName}</h1>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 space-y-3 overscroll-contain">
+        {!isLoading && messages.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No messages yet. Start the conversation.</p>
+        ) : (
+          messages.map((message) => {
+            const isOwnMessage = message.senderId === user?.id;
+
+            return (
+              <div key={message.id} className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[90%] sm:max-w-[80%] lg:max-w-[72%] rounded-lg border px-3 py-2 text-sm md:text-base ${isOwnMessage ? "bg-primary text-primary-foreground border-primary" : "bg-card text-foreground border-border"}`}>
+                  <p className="break-words whitespace-pre-wrap">{message.text}</p>
+                  <p className={`mt-1 text-xs ${isOwnMessage ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                    {isOwnMessage ? "You" : message.senderId}
+                  </p>
                 </div>
               </div>
-            </div>
+            );
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="sticky bottom-0 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90 p-3 md:p-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+        {!isMember ? (
+          <p className="text-sm text-muted-foreground">Join community to chat</p>
+        ) : (
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Input
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Type a message"
+              className="flex-1"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  void handleSend();
+                }
+              }}
+            />
+            <Button onClick={() => void handleSend()} disabled={isDisabled} className="w-full sm:w-auto">
+              Send
+            </Button>
           </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Active Projects */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Active Projects
-                </CardTitle>
-                <CardDescription>Current security research projects in this community</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {community.projects.map((project, index) => (
-                  <motion.div
-                    key={project.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="border rounded-lg p-4 space-y-3"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold">{project.name}</h3>
-                        <p className="text-sm text-muted-foreground">{project.description}</p>
-                      </div>
-                      <Badge
-                        variant={
-                          project.priority === "critical"
-                            ? "destructive"
-                            : project.priority === "high"
-                              ? "default"
-                              : "secondary"
-                        }
-                      >
-                        {project.priority}
-                      </Badge>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Progress</span>
-                        <span>{project.progress}%</span>
-                      </div>
-                      <Progress value={project.progress} className="h-2" />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-wrap gap-1">
-                        {project.tags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Users className="h-3 w-3" />
-                        {project.assignedMembers.length}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Recent Activity */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Recent Activity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>SE</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm">
-                        <span className="font-medium">SecurityExpert</span> updated project progress
-                      </p>
-                      <p className="text-xs text-muted-foreground">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>WH</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="text-sm">
-                        <span className="font-medium">WebHacker</span> shared a new vulnerability
-                      </p>
-                      <p className="text-xs text-muted-foreground">5 hours ago</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Channels */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Channels
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {community.channels.map((channel) => (
-                  <Link key={channel.id} href={`/community/${community.id}/channel/${channel.id}`}>
-                    <Button variant="ghost" className="w-full justify-start gap-2 h-8">
-                      <Hash className="h-3 w-3" />
-                      {channel.name}
-                    </Button>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Community Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Community Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total Members</span>
-                  <span className="font-medium">{community.memberCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Active Projects</span>
-                  <span className="font-medium">{community.projects.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Channels</span>
-                  <span className="font-medium">{community.channels.length}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        )}
       </div>
     </div>
-  )
+  );
 }

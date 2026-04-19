@@ -1,7 +1,7 @@
 // Import Firebase SDKs
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from "firebase/firestore";
+import { getApp, getApps, initializeApp } from "firebase/app";
+import { getAnalytics, isSupported as isAnalyticsSupported } from "firebase/analytics";
+import { getFirestore, initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage"; // 👈 Added for file uploads
 import { getAuth } from "firebase/auth"; // 👈 Added for authentication
 
@@ -17,16 +17,26 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 // Initialize Analytics (only on client-side)
 let analytics;
 if (typeof window !== "undefined") {
-  analytics = getAnalytics(app);
+  isAnalyticsSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
 }
 
-// Initialize Firestore, Storage, and Auth
-const db = getFirestore(app);
+// Initialize Firestore with long polling in browser environments where WebChannel is blocked.
+const db =
+  typeof window !== "undefined"
+    ? initializeFirestore(app, {
+        experimentalAutoDetectLongPolling: true,
+        useFetchStreams: false,
+      })
+    : getFirestore(app);
 const storage = getStorage(app); // 👈 Add this
 const auth = getAuth(app); // 👈 Add this
 

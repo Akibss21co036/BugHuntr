@@ -47,7 +47,7 @@ export default function CertificatesPage() {
     <main className="p-6 pb-20 md:pb-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold mb-2 text-primary">
             My Certificates
           </h1>
           <p className="text-muted-foreground">View and download your security certifications</p>

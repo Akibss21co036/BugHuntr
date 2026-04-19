@@ -21,9 +21,9 @@ interface CertificateCardProps {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "active":
-      return "bg-neon-green/10 text-neon-green border-neon-green/30"
+      return "bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_35%,transparent)]"
     case "expiring":
-      return "bg-neon-orange/10 text-neon-orange border-neon-orange/30"
+      return "bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_35%,transparent)]"
     case "expired":
       return "bg-severity-high/10 text-severity-high border-severity-high/30"
     default:
@@ -49,7 +49,7 @@ export function CertificateCard({ certificate, isSelected, onClick }: Certificat
     <Card
       className={cn(
         "cursor-pointer transition-all duration-200 hover:shadow-md",
-        isSelected && "ring-2 ring-cyber-blue border-cyber-blue/50",
+        isSelected && "ring-2 ring-cyber-blue border-[var(--border-light)]",
       )}
       onClick={onClick}
     >

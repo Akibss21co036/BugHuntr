@@ -30,11 +30,11 @@ const getActivityIcon = (type: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case "accepted":
-      return "bg-neon-green/10 text-neon-green border-neon-green/30"
+      return "bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_35%,transparent)]"
     case "issued":
-      return "bg-cyber-blue/10 text-cyber-blue border-cyber-blue/30"
+      return "bg-[var(--accent-soft)] text-primary border-[var(--border-light)]"
     case "pending":
-      return "bg-neon-orange/10 text-neon-orange border-neon-orange/30"
+      return "bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_35%,transparent)]"
     default:
       return "bg-muted text-muted-foreground border-border"
   }
@@ -53,7 +53,7 @@ export function ProfileActivity({ activities }: ProfileActivityProps) {
               key={activity.id}
               className="flex items-center gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors"
             >
-              <div className="flex items-center justify-center w-10 h-10 bg-cyber-blue/10 rounded-full text-cyber-blue">
+              <div className="flex items-center justify-center w-10 h-10 bg-[var(--accent-soft)] rounded-full text-primary">
                 {getActivityIcon(activity.type)}
               </div>
 
@@ -64,7 +64,7 @@ export function ProfileActivity({ activities }: ProfileActivityProps) {
                   {activity.bounty && (
                     <>
                       <span>•</span>
-                      <div className="flex items-center gap-1 text-neon-green">
+                      <div className="flex items-center gap-1 text-[var(--low)]">
                         <DollarSign className="h-3 w-3" />
                         <span className="font-semibold">{activity.bounty.toLocaleString()}</span>
                       </div>

@@ -7,7 +7,13 @@ import { FilterControls } from "@/components/bug-feed/filter-controls";
 import { BugCardSkeleton } from "@/components/loading/bug-card-skeleton";
 import { FadeIn } from "@/components/animations/fade-in";
 import React, { useState, useMemo, useEffect } from "react";
-import { collection, getDocs, onSnapshot, limit, query } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  onSnapshot,
+  limit,
+  query,
+} from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +25,7 @@ import { useSearch } from "@/components/search/search-context";
 import { useAuth } from "@/components/auth/auth-context";
 
 export default function BugFeedPage() {
-  const { searchTerm } = useSearch();
+  const { searchTerm, setSuggestions } = useSearch();
   const { user } = useAuth();
   // Removed static hardcoded bug cards. Only dynamic bugs from Firestore will be shown.
   const [selectedSeverity, setSelectedSeverity] = useState("all");
@@ -66,8 +72,10 @@ export default function BugFeedPage() {
 
   // Reset severity filter if user loses admin access or company info
   useEffect(() => {
-    if ((selectedSeverity === "critical" || selectedSeverity === "high") && 
-        (!user || user.role !== "admin" || !user.companyName)) {
+    if (
+      (selectedSeverity === "critical" || selectedSeverity === "high") &&
+      (!user || user.role !== "admin" || !user.companyName)
+    ) {
       setSelectedSeverity("all");
     }
   }, [user, selectedSeverity]);
@@ -86,19 +94,26 @@ export default function BugFeedPage() {
     filteredBugs = filteredBugs.filter((bug) => {
       // If user is a company admin, only show bugs from their company
       if (user?.role === "admin" && user?.companyName) {
-        console.log(`Admin filtering: ${bug.title} (${bug.severity}) - Company: ${bug.company} vs User: ${user.companyName}`);
-        const hasAccess = bug.company?.toLowerCase() === user.companyName?.toLowerCase();
+        console.log(
+          `Admin filtering: ${bug.title} (${bug.severity}) - Company: ${bug.company} vs User: ${user.companyName}`,
+        );
+        const hasAccess =
+          bug.company?.toLowerCase() === user.companyName?.toLowerCase();
         console.log(`Company access: ${hasAccess}`);
         return hasAccess;
       }
-      
+
       // For non-admin users, apply original severity-based filtering
       if (bug.severity === "critical" || bug.severity === "high") {
-        console.log(`Non-admin checking ${bug.severity} bug:`, bug.title, "- Access denied");
+        console.log(
+          `Non-admin checking ${bug.severity} bug:`,
+          bug.title,
+          "- Access denied",
+        );
         // Regular users cannot see critical/high severity bugs
         return false;
       }
-      
+
       // Show low and medium severity bugs to non-admin users
       console.log(`Non-admin user sees ${bug.severity} bug:`, bug.title);
       return true;
@@ -111,34 +126,49 @@ export default function BugFeedPage() {
           bug.title?.toLowerCase().includes(term) ||
           bug.summary?.toLowerCase().includes(term) ||
           bug.company?.toLowerCase().includes(term) ||
-          bug.category?.toLowerCase().includes(term)
+          bug.category?.toLowerCase().includes(term),
       );
     }
 
     if (selectedSeverity !== "all") {
       filteredBugs = filteredBugs.filter(
-        (bug) => bug.severity === selectedSeverity
+        (bug) => bug.severity === selectedSeverity,
       );
     }
 
     if (selectedCategory !== "all") {
       filteredBugs = filteredBugs.filter(
-        (bug) => bug.category === selectedCategory
+        (bug) => bug.category === selectedCategory,
       );
     }
 
     if (sortBy === "oldest") {
       filteredBugs = [...filteredBugs].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
       );
     } else {
       filteredBugs = [...filteredBugs].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
     }
 
     return filteredBugs;
   }, [allBugs, selectedSeverity, selectedCategory, sortBy, searchTerm, user]);
+
+  useEffect(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) {
+      setSuggestions([]);
+      return;
+    }
+
+    const nextSuggestions = filteredAndSortedBugs
+      .filter((bug) => bug.title?.toLowerCase().includes(term))
+      .slice(0, 6)
+      .map((bug) => ({ id: String(bug.id), title: bug.title }));
+
+    setSuggestions(nextSuggestions);
+  }, [searchTerm, filteredAndSortedBugs, setSuggestions]);
 
   // Bug hunt filtering logic
   const filteredBugHunts = useMemo(() => {
@@ -146,13 +176,13 @@ export default function BugFeedPage() {
 
     if (selectedHuntDifficulty !== "all") {
       filtered = filtered.filter(
-        (hunt) => hunt.difficulty === selectedHuntDifficulty
+        (hunt) => hunt.difficulty === selectedHuntDifficulty,
       );
     }
 
     if (selectedHuntRewardType !== "all") {
       filtered = filtered.filter((hunt) =>
-        hunt.rewardTypes?.includes(selectedHuntRewardType as any)
+        hunt.rewardTypes?.includes(selectedHuntRewardType as any),
       );
     }
 
@@ -164,16 +194,16 @@ export default function BugFeedPage() {
     if (huntSortBy === "oldest") {
       filtered = [...filtered].sort(
         (a, b) =>
-          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
       );
     } else if (huntSortBy === "deadline") {
       filtered = [...filtered].sort(
-        (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime()
+        (a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime(),
       );
     } else {
       filtered = [...filtered].sort(
         (a, b) =>
-          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
       );
     }
 
@@ -189,10 +219,10 @@ export default function BugFeedPage() {
   const stats = useMemo(() => {
     const totalBugs = allBugs.length;
     const criticalCount = allBugs.filter(
-      (bug) => bug.severity === "critical"
+      (bug) => bug.severity === "critical",
     ).length;
     const resolvedCount = allBugs.filter(
-      (bug) => bug.status === "resolved"
+      (bug) => bug.status === "resolved",
     ).length;
     const activeHunters = new Set(allBugs.map((bug) => bug.author)).size;
 
@@ -220,8 +250,10 @@ export default function BugFeedPage() {
     setTimeout(() => {
       if (filterType === "severity") {
         // Check if user is authorized to filter by critical/high severity
-        if ((value === "critical" || value === "high") && 
-            (!user || user.role !== "admin" || !user.companyName)) {
+        if (
+          (value === "critical" || value === "high") &&
+          (!user || user.role !== "admin" || !user.companyName)
+        ) {
           // Reset to "all" if unauthorized
           setSelectedSeverity("all");
         } else {
@@ -239,7 +271,7 @@ export default function BugFeedPage() {
       <div className="max-w-6xl mx-auto">
         <FadeIn>
           <div className="mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-primary">
               Security Intelligence Feed
             </h1>
             <p className="text-muted-foreground">
@@ -254,12 +286,12 @@ export default function BugFeedPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-cyber-blue" />
+                  <TrendingUp className="h-4 w-4 text-primary" />
                   <span className="text-sm text-muted-foreground">
                     Total Reports
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-cyber-blue mt-1">
+                <div className="text-2xl font-bold text-primary mt-1">
                   {stats.total}
                 </div>
               </CardContent>
@@ -280,12 +312,12 @@ export default function BugFeedPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-neon-green" />
+                  <Award className="h-4 w-4 text-[var(--low)]" />
                   <span className="text-sm text-muted-foreground">
                     Resolved
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-neon-green mt-1">
+                <div className="text-2xl font-bold text-[var(--low)] mt-1">
                   {stats.resolved}
                 </div>
               </CardContent>
@@ -293,12 +325,12 @@ export default function BugFeedPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-cyber-purple" />
+                  <Users className="h-4 w-4 text-secondary" />
                   <span className="text-sm text-muted-foreground">
                     Active Hunters
                   </span>
                 </div>
-                <div className="text-2xl font-bold text-cyber-purple mt-1">
+                <div className="text-2xl font-bold text-secondary mt-1">
                   {stats.hunters}
                 </div>
               </CardContent>
@@ -309,7 +341,7 @@ export default function BugFeedPage() {
         {/* Bug Hunt Section */}
         <FadeIn delay={0.25}>
           <div className="mb-8">
-            <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent drop-shadow-lg tracking-tight">
+            <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 text-primary tracking-tight">
               Active Bug Hunts
             </h2>
             <div className="mb-6">
@@ -348,28 +380,30 @@ export default function BugFeedPage() {
         {/* Bugs Section */}
         <FadeIn delay={0.3}>
           {(!user || user.role !== "admin") && (
-            <Card className="mb-6 border-amber-200 bg-amber-50/50">
+            <Card className="mb-6 border-[color:color-mix(in_srgb,var(--medium)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--medium)_10%,transparent)]">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
-                  <Shield className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                  <Shield className="h-5 w-5 text-[var(--medium)] mt-0.5 shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-amber-900 mb-1">Access Notice</h3>
-                    <p className="text-sm text-amber-800">
-                      {user?.role === "admin" && user?.companyName ? 
-                        `As a company administrator, you can only view bug reports from ${user.companyName}. Critical and high severity bugs from other companies are restricted.` :
-                        user?.role === "admin" ? 
-                          "Please ensure your company information is properly configured to view company-specific bug reports." :
-                          "Company administrators can only view bug reports from their own company. Critical and high severity bugs require admin access."
-                      }
-                      {!user && " Please log in with a company admin account to view company-specific reports."}
+                    <h3 className="font-semibold text-[var(--text-primary)] mb-1">
+                      Access Notice
+                    </h3>
+                    <p className="text-sm text-[var(--text-secondary)]">
+                      {user?.role === "admin" && user?.companyName
+                        ? `As a company administrator, you can only view bug reports from ${user.companyName}. Critical and high severity bugs from other companies are restricted.`
+                        : user?.role === "admin"
+                          ? "Please ensure your company information is properly configured to view company-specific bug reports."
+                          : "Company administrators can only view bug reports from their own company. Critical and high severity bugs require admin access."}
+                      {!user &&
+                        " Please log in with a company admin account to view company-specific reports."}
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
           )}
-          
-          <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 bg-gradient-to-r from-cyber-blue via-cyber-cyan to-cyber-purple bg-clip-text text-transparent drop-shadow-lg tracking-tight">
+
+          <h2 className="text-3xl lg:text-4xl font-extrabold mb-6 text-primary tracking-tight">
             Latest Bugs
           </h2>
           <div className="mb-6 lg:mb-8">
@@ -413,7 +447,11 @@ export default function BugFeedPage() {
               className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6 auto-rows-max"
             >
               {filteredAndSortedBugs.map((bug, index) => (
-                <div key={bug.id} onClick={() => router.push(`/bug/${bug.id}`)}>
+                <div
+                  key={bug.id}
+                  id={`bug-${bug.id}`}
+                  onClick={() => router.push(`/bug/${bug.id}`)}
+                >
                   <BugCard bug={bug} index={index} />
                 </div>
               ))}

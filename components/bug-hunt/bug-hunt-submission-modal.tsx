@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Shield, Upload, Eye, AlertTriangle, CheckCircle, X } from "lucide-react"
 import type { BugHunt } from "@/types/bug-hunt"
 import { useAuth } from "@/components/auth/auth-context"
@@ -27,13 +26,13 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
   const [formData, setFormData] = useState({
     title: "",
     severity: "",
-    description: "",
-    stepsToReproduce: "",
-    impact: "",
+    summary: "",
+    technicalDescription: "",
     proofOfConcept: "",
     attachments: [] as File[],
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [detectingSeverity, setDetectingSeverity] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const { user } = useAuth()
   const { submitToBugHunt } = useBugHunt()
@@ -42,12 +41,16 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
     e.preventDefault()
     setIsSubmitting(true)
     try {
+      const combinedDescription = formData.summary
+        ? `Executive Summary:\n${formData.summary}\n\nTechnical Description:\n${formData.technicalDescription}`
+        : formData.technicalDescription
+
       await submitToBugHunt({
         huntId: hunt.id,
         userId: user?.id || "anonymous",
         username: user?.username || "anonymous",
         title: formData.title,
-        description: formData.description,
+        description: combinedDescription,
         severity: formData.severity as any,
         category: hunt.categories[0] || "General",
         proofOfConcept: formData.proofOfConcept,
@@ -62,9 +65,8 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
         setFormData({
           title: "",
           severity: "",
-          description: "",
-          stepsToReproduce: "",
-          impact: "",
+          summary: "",
+          technicalDescription: "",
           proofOfConcept: "",
           attachments: [],
         })
@@ -84,6 +86,44 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
     }))
   }
 
+  const detectSeverity = async () => {
+    if (!formData.title || !formData.technicalDescription) {
+      alert("Please fill in Title and Technical Description before detecting severity.")
+      return
+    }
+
+    try {
+      setDetectingSeverity(true)
+      const response = await fetch("https://bughuntr.onrender.com/api/analyzeSeverity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.technicalDescription,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      if (data.severity) {
+        setFormData((prev) => ({
+          ...prev,
+          severity: String(data.severity).toLowerCase(),
+        }))
+      } else {
+        alert("Failed to detect severity. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error detecting severity:", error)
+      alert("Error connecting to severity detection service.")
+    } finally {
+      setDetectingSeverity(false)
+    }
+  }
+
   const removeFile = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -96,7 +136,7 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-cyber-blue" />
+            <Shield className="h-5 w-5 text-primary" />
             Submit Vulnerability Report
           </DialogTitle>
         </DialogHeader>
@@ -109,12 +149,12 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
               exit={{ opacity: 0, scale: 0.95 }}
               className="text-center py-8"
             >
-              <CheckCircle className="h-16 w-16 text-neon-green mx-auto mb-4" />
+              <CheckCircle className="h-16 w-16 text-[var(--low)] mx-auto mb-4" />
               <h3 className="text-xl font-semibold mb-2">Submission Received!</h3>
               <p className="text-muted-foreground mb-4">
                 Your vulnerability report has been submitted privately to the admin team for review.
               </p>
-              <Badge className="bg-cyber-blue text-white">Status: Pending Review</Badge>
+              <Badge className="bg-primary text-white">Status: Pending Review</Badge>
             </motion.div>
           ) : (
             <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -128,69 +168,37 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
                 </Alert>
               </div>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="title">Vulnerability Title *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                      placeholder="e.g., SQL Injection in login form"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="severity">Severity *</Label>
-                    <Select
-                      value={formData.severity}
-                      onValueChange={(value) => setFormData((prev) => ({ ...prev, severity: value }))}
-                      required
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select severity" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <Label htmlFor="title">Vulnerability Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
+                    placeholder="e.g., SQL Injection in login form"
+                    required
+                  />
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="summary">Executive Summary *</Label>
                   <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-                    placeholder="Describe the vulnerability in detail..."
+                    id="summary"
+                    value={formData.summary}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, summary: e.target.value }))}
+                    placeholder="Brief overview of the vulnerability and its potential impact..."
                     rows={3}
                     required
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="steps">Steps to Reproduce *</Label>
+                  <Label htmlFor="technicalDescription">Technical Description *</Label>
                   <Textarea
-                    id="steps"
-                    value={formData.stepsToReproduce}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, stepsToReproduce: e.target.value }))}
-                    placeholder="1. Navigate to...&#10;2. Enter...&#10;3. Click..."
-                    rows={4}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="impact">Impact Assessment *</Label>
-                  <Textarea
-                    id="impact"
-                    value={formData.impact}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, impact: e.target.value }))}
-                    placeholder="Explain the potential impact of this vulnerability..."
-                    rows={3}
+                    id="technicalDescription"
+                    value={formData.technicalDescription}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, technicalDescription: e.target.value }))}
+                    placeholder="Detailed technical analysis..."
+                    rows={5}
                     required
                   />
                 </div>
@@ -239,11 +247,36 @@ export function BugHuntSubmissionModal({ hunt, isOpen, onClose }: BugHuntSubmiss
                   </AlertDescription>
                 </Alert>
 
+                {formData.severity && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Detected severity:</span>
+                    <Badge className="bg-primary text-white">
+                      {formData.severity.charAt(0).toUpperCase() + formData.severity.slice(1)}
+                    </Badge>
+                  </div>
+                )}
+
                 <div className="flex gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-transparent">
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting} className="flex-1">
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={detectSeverity}
+                    disabled={detectingSeverity}
+                  >
+                    {detectingSeverity ? "Detecting..." : "Detect Severity"}
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !formData.severity}
+                    className="flex-1"
+                  >
                     {isSubmitting ? (
                       <>
                         <Upload className="h-4 w-4 mr-2 animate-spin" />

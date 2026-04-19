@@ -13,25 +13,25 @@ export function SubmissionStatusBadge({ status, size = "md", showIcon = true }: 
     switch (status) {
       case "pending":
         return {
-          color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
+          color: "bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--medium)] border-[color:color-mix(in_srgb,var(--medium)_25%,transparent)]",
           icon: <Clock className="h-3 w-3" />,
           label: "Pending Review",
         }
       case "under-review":
         return {
-          color: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+          color: "bg-[var(--accent-soft)] text-primary border-[var(--border-light)]",
           icon: <Eye className="h-3 w-3" />,
           label: "Under Review",
         }
       case "approved":
         return {
-          color: "bg-green-500/10 text-green-500 border-green-500/20",
+          color: "bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]",
           icon: <CheckCircle className="h-3 w-3" />,
           label: "Approved",
         }
       case "rejected":
         return {
-          color: "bg-red-500/10 text-red-500 border-red-500/20",
+          color: "bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] text-[var(--critical)] border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)]",
           icon: <XCircle className="h-3 w-3" />,
           label: "Rejected",
         }

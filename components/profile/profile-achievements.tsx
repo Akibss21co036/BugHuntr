@@ -24,15 +24,15 @@ export function ProfileAchievements({ badges }: ProfileAchievementsProps) {
         <h2 className="text-xl font-semibold mb-4">Earned Achievements ({earnedBadges.length})</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {earnedBadges.map((badge) => (
-            <Card key={badge.id} className="border-cyber-blue/30 bg-cyber-blue/5">
+            <Card key={badge.id} className="border-[var(--border-light)] bg-[var(--accent-soft)]">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className="text-3xl">{badge.icon}</div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-cyber-blue">{badge.name}</h3>
+                    <h3 className="font-semibold text-primary">{badge.name}</h3>
                     <p className="text-sm text-muted-foreground">{badge.description}</p>
                   </div>
-                  <Badge className="bg-neon-green/10 text-neon-green border-neon-green/30">Earned</Badge>
+                  <Badge className="bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_35%,transparent)]">Earned</Badge>
                 </div>
               </CardContent>
             </Card>

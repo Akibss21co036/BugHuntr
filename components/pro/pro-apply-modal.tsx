@@ -131,7 +131,7 @@ export function ProApplyModal({
             <p className="text-sm text-gray-400 mb-2">
               Upload certifications, portfolio, or other supporting documents
             </p>
-            <div className="border-2 border-dashed border-[#23272f] rounded-lg p-8 text-center bg-[#10151c] hover:border-blue-500/30 transition-colors cursor-pointer">
+            <div className="border-2 border-dashed border-[#23272f] rounded-lg p-8 text-center bg-[#10151c] hover:border-[var(--border-light)] transition-colors cursor-pointer">
               <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
               <p className="text-sm text-gray-400">
                 Click to upload or drag and drop
@@ -153,7 +153,7 @@ export function ProApplyModal({
           </div>
 
           {/* NDA Agreement Checkbox */}
-          <div className="flex items-start space-x-3 bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+          <div className="flex items-start space-x-3 bg-[var(--accent-soft)] border border-[var(--border-light)] rounded-lg p-4">
             <Checkbox
               id="nda-agree"
               checked={agreedToNDA}
@@ -176,8 +176,8 @@ export function ProApplyModal({
           </div>
 
           {/* Requirements Notice */}
-          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-            <h4 className="font-semibold text-amber-400 mb-2 flex items-center gap-2">
+          <div className="bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] border border-[color:color-mix(in_srgb,var(--high)_25%,transparent)] rounded-lg p-4">
+            <h4 className="font-semibold text-[var(--high)] mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Important Requirements
             </h4>
@@ -207,7 +207,7 @@ export function ProApplyModal({
           <Button
             onClick={handleSubmit}
             disabled={submitting || !agreedToNDA}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-primary hover:bg-[var(--accent-hover)]"
           >
             {submitting ? "Submitting..." : "Submit Application"}
           </Button>

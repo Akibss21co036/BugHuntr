@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-context";
 import { Button } from "@/components/ui/button";
@@ -37,19 +37,27 @@ import { toast } from "sonner";
 interface ProHuntWizardProps {
   companyId: string;
   companyName: string;
+  editHuntId?: string;
   onComplete?: () => void;
 }
 
 export function ProHuntWizard({
   companyId,
   companyName,
+  editHuntId,
   onComplete,
 }: ProHuntWizardProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const { createProHunt } = useProHunts();
+  const {
+    proHunts,
+    loading: huntsLoading,
+    createProHunt,
+    updateProHunt,
+    getProHuntById,
+  } = useProHunts();
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -75,30 +83,73 @@ export function ProHuntWizard({
     endsAt: "",
   });
 
+  // Load hunt data if editing
+  useEffect(() => {
+    if (editHuntId && !huntsLoading && proHunts.length > 0) {
+      const hunt = proHunts.find((h) => h.id === editHuntId);
+      if (hunt) {
+        setFormData({
+          title: hunt.title,
+          description: hunt.description,
+          allowedTargetSegments: hunt.allowedTargetSegments,
+          ndaTemplateId: hunt.ndaTemplateId || "standard",
+          requireKYC: hunt.requireKYC,
+          requireCerts: hunt.requireCerts,
+          allowBids: hunt.allowBids,
+          inviteOnly: hunt.inviteOnly,
+          minRank: hunt.minRank,
+          minHuntsParticipated: hunt.minHuntsParticipated,
+          requiredCertifications: hunt.requiredCertifications,
+          rewards: hunt.rewards,
+          maxHunters: hunt.maxHunters,
+          startsAt: hunt.startsAt,
+          endsAt: hunt.endsAt,
+        });
+      }
+    }
+  }, [editHuntId, huntsLoading, proHunts]);
+
   const handleSubmit = async () => {
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       const selectedNDA = NDA_TEMPLATES.find(
-        (t) => t.id === formData.ndaTemplateId
+        (t) => t.id === formData.ndaTemplateId,
       );
-      await createProHunt({
-        companyId,
-        companyName,
-        ...formData,
-        ndaTemplateText: selectedNDA?.text || "",
-        allowedTargetSegments: formData.allowedTargetSegments.filter((s) =>
-          s.trim()
-        ),
-        status: "active",
-        createdBy: user?.id || "unknown_creator",
-      });
-      toast.success("Pro Hunt created successfully!");
+
+      if (editHuntId) {
+        // Update existing hunt
+        await updateProHunt(editHuntId, {
+          ...formData,
+          ndaTemplateText: selectedNDA?.text || "",
+          allowedTargetSegments: formData.allowedTargetSegments.filter((s) =>
+            s.trim(),
+          ),
+        });
+        toast.success("Pro Hunt updated successfully!");
+      } else {
+        // Create new hunt
+        await createProHunt({
+          companyId,
+          companyName,
+          ...formData,
+          ndaTemplateText: selectedNDA?.text || "",
+          allowedTargetSegments: formData.allowedTargetSegments.filter((s) =>
+            s.trim(),
+          ),
+          status: "active",
+          createdBy: user?.id || "unknown_creator",
+        });
+        toast.success("Pro Hunt created successfully!");
+      }
+
       onComplete?.();
-      router.push("/pro/hunts");
+      router.push("/pro/hunts?view=manage");
     } catch (error) {
-      toast.error("Failed to create Pro Hunt");
+      toast.error(
+        editHuntId ? "Failed to update Pro Hunt" : "Failed to create Pro Hunt",
+      );
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -113,7 +164,7 @@ export function ProHuntWizard({
     setFormData((prev) => ({
       ...prev,
       allowedTargetSegments: prev.allowedTargetSegments.map((s, i) =>
-        i === index ? value : s
+        i === index ? value : s,
       ),
     }));
   };
@@ -127,10 +178,10 @@ export function ProHuntWizard({
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
                 s === step
-                  ? "bg-blue-600 text-white"
+                  ? "bg-primary text-white"
                   : s < step
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-700 text-gray-400"
+                    ? "bg-[var(--low)] text-white"
+                    : "bg-gray-700 text-gray-400"
               }`}
             >
               {s}
@@ -138,7 +189,7 @@ export function ProHuntWizard({
             {s < 4 && (
               <div
                 className={`w-20 h-1 ${
-                  s < step ? "bg-green-600" : "bg-gray-700"
+                  s < step ? "bg-[var(--low)]" : "bg-gray-700"
                 }`}
               />
             )}
@@ -151,7 +202,7 @@ export function ProHuntWizard({
         <Card className="bg-[#181e26] border-[#23272f]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-400" />
+              <FileText className="w-5 h-5 text-primary" />
               Basic Information
             </CardTitle>
             <CardDescription>
@@ -212,7 +263,7 @@ export function ProHuntWizard({
         <Card className="bg-[#181e26] border-[#23272f]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-blue-400" />
+              <Users className="w-5 h-5 text-primary" />
               Hunter Requirements
             </CardTitle>
             <CardDescription>
@@ -269,7 +320,7 @@ export function ProHuntWizard({
                           requiredCertifications: checked
                             ? [...prev.requiredCertifications, cert]
                             : prev.requiredCertifications.filter(
-                                (c) => c !== cert
+                                (c) => c !== cert,
                               ),
                         }));
                       }}
@@ -328,7 +379,7 @@ export function ProHuntWizard({
         <Card className="bg-[#181e26] border-[#23272f]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-blue-400" />
+              <Shield className="w-5 h-5 text-primary" />
               NDA & Security
             </CardTitle>
             <CardDescription>
@@ -379,7 +430,7 @@ export function ProHuntWizard({
         <Card className="bg-[#181e26] border-[#23272f]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-blue-400" />
+              <DollarSign className="w-5 h-5 text-primary" />
               Rewards & Timeline
             </CardTitle>
             <CardDescription>
@@ -519,8 +570,14 @@ export function ProHuntWizard({
             Next
           </Button>
         ) : (
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Creating..." : "Create Pro Hunt"}
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting
+              ? editHuntId
+                ? "Saving..."
+                : "Creating..."
+              : editHuntId
+                ? "Save Changes"
+                : "Create Pro Hunt"}
           </Button>
         )}
       </div>

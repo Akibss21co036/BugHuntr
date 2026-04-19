@@ -69,11 +69,19 @@ export default function BugDetailsPage() {
           console.log("User role:", user?.role);
           console.log("User company:", user?.companyName);
 
+          const normalizeCompany = (value?: string | null) =>
+            value?.trim().toLowerCase() || "";
+
+          const bugCompanyNormalized =
+            normalizeCompany(data.normalizedCompany) ||
+            normalizeCompany(bugData.company);
+          const userCompanyNormalized = normalizeCompany(user?.companyName);
+
           // Check access permissions based on user role and company
           if (user?.role === "admin" && user?.companyName) {
             console.log("User is admin with company");
             // Company admins can only access bugs from their own company (all severities)
-            if (bugData.company === user.companyName) {
+            if (bugCompanyNormalized && userCompanyNormalized && bugCompanyNormalized === userCompanyNormalized) {
               console.log("Company match - access granted");
               setBug(bugData);
             } else {
@@ -115,7 +123,7 @@ export default function BugDetailsPage() {
       <div className="p-6 text-center">
         <div className="max-w-md mx-auto">
           <div className="mb-4">
-            <Shield className="h-16 w-16 text-red-500 mx-auto mb-4" />
+            <Shield className="h-16 w-16 text-[var(--critical)] mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">Access Restricted</h2>
             <p className="text-muted-foreground mb-2">
               {user?.role === "admin" && user?.companyName ? 
@@ -164,10 +172,10 @@ export default function BugDetailsPage() {
             <span className="px-2 py-1 text-xs rounded bg-severity-critical text-white font-bold">
               {bug.severity.toUpperCase()}
             </span>
-            <span className="px-2 py-1 text-xs rounded bg-blue-600/20 text-blue-400">
+            <span className="px-2 py-1 text-xs rounded bg-primary/20 text-primary">
               {bug.category}
             </span>
-            <span className="px-2 py-1 text-xs rounded bg-purple-600/20 text-purple-400">
+            <span className="px-2 py-1 text-xs rounded bg-secondary/20 text-secondary">
               {bug.company}
             </span>
           </div>
@@ -185,7 +193,7 @@ export default function BugDetailsPage() {
                 : "Unknown date"}
             </span>
             {typeof bug.bounty === "number" && bug.bounty > 0 && (
-              <span className="text-green-500 font-semibold">
+              <span className="text-[var(--low)] font-semibold">
                 ${bug.bounty}
               </span>
             )}
@@ -200,7 +208,7 @@ export default function BugDetailsPage() {
               onClick={() => setActiveTab(tab)}
               className={`pb-2 px-2 text-sm font-medium ${
                 activeTab === tab
-                  ? "border-b-2 border-cyber-blue text-cyber-blue"
+                  ? "border-b-2 border-border text-primary"
                   : "text-muted-foreground"
               }`}
             >
@@ -265,7 +273,7 @@ export default function BugDetailsPage() {
                       href={bug.proofOfConceptUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-500 underline"
+                      className="text-primary underline"
                     >
                       View Proof of Concept
                     </a>
@@ -326,7 +334,7 @@ export default function BugDetailsPage() {
                 className="p-3 rounded bg-muted/40 hover:bg-muted/60 cursor-pointer"
               >
                 <p className="font-medium">{vuln.title}</p>
-                <p className="text-green-500 text-sm">${vuln.bounty}</p>
+                <p className="text-[var(--low)] text-sm">${vuln.bounty}</p>
               </div>
             ))}
           </div>

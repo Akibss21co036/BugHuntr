@@ -54,10 +54,10 @@ export function RelatedBugsSidebar({ bugs }: RelatedBugsSidebarProps) {
                   {bug.company}
                 </Badge>
               </div>
-              <h4 className="text-sm font-medium leading-tight group-hover:text-cyber-blue transition-colors">
+              <h4 className="text-sm font-medium leading-tight group-hover:text-primary transition-colors">
                 {bug.title}
               </h4>
-              <div className="flex items-center gap-1 text-xs text-neon-green">
+              <div className="flex items-center gap-1 text-xs text-[var(--low)]">
                 <DollarSign className="h-3 w-3" />
                 <span className="font-semibold">${bug.bounty.toLocaleString()}</span>
               </div>

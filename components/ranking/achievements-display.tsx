@@ -40,11 +40,11 @@ export function AchievementsDisplay() {
       case "common":
         return "bg-gray-500/10 text-gray-500 border-gray-500/20"
       case "rare":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20"
+        return "bg-[var(--accent-soft)] text-primary border-[var(--border-light)]"
       case "epic":
-        return "bg-purple-500/10 text-purple-500 border-purple-500/20"
+        return "bg-secondary text-secondary border-border"
       case "legendary":
-        return "bg-orange-500/10 text-orange-500 border-orange-500/20"
+        return "bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]"
       default:
         return "bg-muted text-muted-foreground border-border"
     }
@@ -77,18 +77,18 @@ export function AchievementsDisplay() {
 
     return (
       <Card
-        className={`transition-all duration-200 ${unlocked ? "bg-cyber-blue/5 border-cyber-blue/20" : "opacity-60"}`}
+        className={`transition-all duration-200 ${unlocked ? "bg-[var(--accent-soft)] border-[var(--border-light)]" : "opacity-60"}`}
       >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
               <div
                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  unlocked ? "bg-cyber-blue/10" : "bg-muted"
+                  unlocked ? "bg-[var(--accent-soft)]" : "bg-muted"
                 }`}
               >
                 {unlocked ? (
-                  <IconComponent className="w-5 h-5 text-cyber-blue" />
+                  <IconComponent className="w-5 h-5 text-primary" />
                 ) : (
                   <Lock className="w-5 h-5 text-muted-foreground" />
                 )}
@@ -101,7 +101,7 @@ export function AchievementsDisplay() {
               </div>
             </div>
             <div className="text-right">
-              <div className="font-bold text-neon-green">+{achievement.pointsReward}</div>
+              <div className="font-bold text-[var(--low)]">+{achievement.pointsReward}</div>
               <div className="text-xs text-muted-foreground">points</div>
             </div>
           </div>
@@ -110,7 +110,7 @@ export function AchievementsDisplay() {
           <p className="text-sm text-muted-foreground">{achievement.description}</p>
 
           {unlocked && userAchievement ? (
-            <div className="text-xs text-cyber-blue">
+            <div className="text-xs text-primary">
               Unlocked {formatDistanceToNow(new Date(userAchievement.unlockedAt), { addSuffix: true })}
             </div>
           ) : (
@@ -137,7 +137,7 @@ export function AchievementsDisplay() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-cyber-blue">{unlockedAchievements.length}</div>
+            <div className="text-2xl font-bold text-primary">{unlockedAchievements.length}</div>
             <div className="text-sm text-muted-foreground">Unlocked</div>
           </CardContent>
         </Card>
@@ -149,7 +149,7 @@ export function AchievementsDisplay() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-neon-green">
+            <div className="text-2xl font-bold text-[var(--low)]">
               {unlockedAchievements.reduce((sum, ach) => sum + ach.pointsReward, 0)}
             </div>
             <div className="text-sm text-muted-foreground">Bonus Points</div>

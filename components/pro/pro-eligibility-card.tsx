@@ -14,7 +14,7 @@ export function ProEligibilityCard({ eligibility }: ProEligibilityCardProps) {
     <Card className="bg-[#181e26] border-[#23272f]">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Shield className="w-5 h-5 text-blue-400" />
+          <Shield className="w-5 h-5 text-primary" />
           BugHuntr Pro Eligibility
         </CardTitle>
       </CardHeader>
@@ -23,12 +23,12 @@ export function ProEligibilityCard({ eligibility }: ProEligibilityCardProps) {
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-400">Status</span>
           {eligibility.isEligible ? (
-            <Badge className="bg-green-600 text-white">
+            <Badge className="bg-[var(--low)] text-white">
               <CheckCircle2 className="w-4 h-4 mr-1" />
               Eligible
             </Badge>
           ) : (
-            <Badge className="bg-red-600 text-white">
+            <Badge className="bg-[var(--critical)] text-white">
               <XCircle className="w-4 h-4 mr-1" />
               Not Eligible
             </Badge>
@@ -56,7 +56,7 @@ export function ProEligibilityCard({ eligibility }: ProEligibilityCardProps) {
         {/* Requirements Met */}
         {eligibility.reasons.length > 0 && (
           <div>
-            <h4 className="text-sm font-semibold text-green-400 mb-2 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-[var(--low)] mb-2 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4" />
               Requirements Met
             </h4>
@@ -73,7 +73,7 @@ export function ProEligibilityCard({ eligibility }: ProEligibilityCardProps) {
         {/* Missing Requirements */}
         {eligibility.missingRequirements.length > 0 && (
           <div>
-            <h4 className="text-sm font-semibold text-red-400 mb-2 flex items-center gap-2">
+            <h4 className="text-sm font-semibold text-[var(--critical)] mb-2 flex items-center gap-2">
               <AlertCircle className="w-4 h-4" />
               Missing Requirements
             </h4>
@@ -95,7 +95,7 @@ export function ProEligibilityCard({ eligibility }: ProEligibilityCardProps) {
               {eligibility.certifications.map((cert) => (
                 <Badge
                   key={cert}
-                  className="bg-amber-500/10 text-amber-400 border-amber-500/30"
+                  className="bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]"
                 >
                   {cert}
                 </Badge>

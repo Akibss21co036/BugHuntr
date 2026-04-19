@@ -35,6 +35,327 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
   const { user } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const pageDetails = [
+    {
+      keys: ["home", "homepage"],
+      title: "Home",
+      bullets: [
+        "Quick entry point to the platform and key features",
+        "Highlights active hunts, community activity, and updates",
+        "Shows recommended actions based on your role",
+        "Links to core sections like Feed, Submit, and Dashboard",
+        "Displays recent announcements and platform notices",
+      ],
+    },
+    {
+      keys: ["select role", "role"],
+      title: "Select Role",
+      bullets: [
+        "Choose a role to tailor your experience",
+        "Sets permissions for researcher or admin workflows",
+        "Guides you into the right onboarding path",
+        "Can be updated later in settings",
+        "Ensures features are scoped properly",
+      ],
+    },
+    {
+      keys: ["feed"],
+      title: "Feed",
+      bullets: [
+        "Latest platform activity and discoveries",
+        "Quick access to new reports and updates",
+        "Filter by severity, category, or status",
+        "Shows community highlights and trending items",
+        "Great for staying current on platform activity",
+      ],
+    },
+    {
+      keys: ["dashboard"],
+      title: "Dashboard",
+      bullets: [
+        "Personal summary of your activity and progress",
+        "Key stats: submissions, points, and ranking",
+        "Quick actions for common tasks",
+        "Recent activity timeline",
+        "Notifications and actionable insights",
+      ],
+    },
+    {
+      keys: ["profile"],
+      title: "Profile",
+      bullets: [
+        "Public researcher profile and bio",
+        "Shows skills, badges, and achievements",
+        "Portfolio of validated submissions",
+        "Privacy and visibility controls",
+        "Shareable identity for recognition",
+      ],
+    },
+    {
+      keys: ["submissions", "my submissions"],
+      title: "My Submissions",
+      bullets: [
+        "List of all submitted reports",
+        "Tracks status, severity, and payouts",
+        "Review feedback and admin responses",
+        "Edit or resubmit when needed",
+        "Filter and sort by date or status",
+      ],
+    },
+    {
+      keys: ["submit"],
+      title: "Submit",
+      bullets: [
+        "Create a new vulnerability report",
+        "Attach evidence, steps, and screenshots",
+        "Provide severity and impact details",
+        "Align with scope and disclosure rules",
+        "Submit to begin validation",
+      ],
+    },
+    {
+      keys: ["communities"],
+      title: "Communities",
+      bullets: [
+        "Join topic-based security groups",
+        "Share knowledge and collaborate",
+        "Community events and challenges",
+        "Access mentorship and resources",
+        "Build reputation through participation",
+      ],
+    },
+    {
+      keys: ["leaderboard"],
+      title: "Leaderboard",
+      bullets: [
+        "Ranked list of top researchers",
+        "Points and severity multipliers",
+        "Filters for time ranges",
+        "Highlights achievements and milestones",
+        "Track your competitive progress",
+      ],
+    },
+    {
+      keys: ["certificates"],
+      title: "Certificates",
+      bullets: [
+        "Earned certificates and badges",
+        "Download or share verification",
+        "Shows criteria and requirements",
+        "Proof of skill and contributions",
+        "Useful for resumes and profiles",
+      ],
+    },
+    {
+      keys: ["settings"],
+      title: "Settings",
+      bullets: [
+        "Account and profile preferences",
+        "Notifications and email controls",
+        "Security options and access",
+        "Theme and UI preferences",
+        "Manage integrations and links",
+      ],
+    },
+    {
+      keys: ["bug hunt", "bug hunts"],
+      title: "Bug Hunt",
+      bullets: [
+        "Active hunt listings and scopes",
+        "Rules, rewards, and deadlines",
+        "Join and track participation",
+        "Organized targets and categories",
+        "Fast entry into scoped programs",
+      ],
+    },
+    {
+      keys: ["bug"],
+      title: "Bug Details",
+      bullets: [
+        "Detailed view of a specific report",
+        "Reproduction steps and evidence",
+        "Status history and timeline",
+        "Comments and collaboration",
+        "Severity and impact breakdown",
+      ],
+    },
+    {
+      keys: ["docs"],
+      title: "Docs",
+      bullets: [
+        "Platform guides and policy docs",
+        "Rules of engagement and scope",
+        "Submission guidelines and FAQs",
+        "Security education references",
+        "Best practices for reporting",
+      ],
+    },
+    {
+      keys: ["login"],
+      title: "Login",
+      bullets: [
+        "Sign in to your account",
+        "Supports password and email flows",
+        "Access protected features",
+        "Secure authentication and sessions",
+        "Account recovery options",
+      ],
+    },
+    {
+      keys: ["signup"],
+      title: "Sign Up",
+      bullets: [
+        "Create a new account",
+        "Choose your role and basic details",
+        "Email verification flow",
+        "Quick onboarding into the platform",
+        "Access to core features after verification",
+      ],
+    },
+    {
+      keys: ["my wallet"],
+      title: "My Wallet",
+      bullets: [
+        "Track balances and payouts",
+        "See payout history and status",
+        "Manage payout methods",
+        "KYC and compliance status",
+        "Wallet activity timeline",
+      ],
+    },
+    {
+      keys: ["payout demo"],
+      title: "Payout Demo",
+      bullets: [
+        "Sandbox payout walkthrough",
+        "Simulated transactions and steps",
+        "Test flows without real payouts",
+        "Great for onboarding and demos",
+        "Illustrates reward lifecycle",
+      ],
+    },
+    {
+      keys: ["pro"],
+      title: "Pro",
+      bullets: [
+        "Advanced tools and premium features",
+        "Enhanced analytics and insights",
+        "Priority support options",
+        "Access to exclusive hunts",
+        "Upgrade and subscription details",
+      ],
+    },
+    {
+      keys: ["cvss demo"],
+      title: "CVSS Demo",
+      bullets: [
+        "Interactive CVSS scoring guide",
+        "Examples for severity mapping",
+        "Learn how scores are calculated",
+        "Practice with real scenarios",
+        "Helps standardize report quality",
+      ],
+    },
+    {
+      keys: ["debug"],
+      title: "Debug",
+      bullets: [
+        "Diagnostics and developer tooling",
+        "Feature flags and troubleshooting",
+        "Environment and config visibility",
+        "Internal logs and test utilities",
+        "Use with caution in production",
+      ],
+    },
+    {
+      keys: ["test points"],
+      title: "Test Points",
+      bullets: [
+        "Simulate scoring and points",
+        "Preview leaderboard impact",
+        "Validate scoring logic",
+        "Useful for QA and testing",
+        "Safe testing without real rewards",
+      ],
+    },
+    {
+      keys: ["admin", "admin panel", "admin submissions", "manage submissions"],
+      title: "Admin Submissions",
+      bullets: [
+        "Review and triage incoming reports",
+        "Validate severity and impact",
+        "Assign status and manage workflow",
+        "Coordinate with researchers",
+        "Approve or reject submissions",
+      ],
+    },
+    {
+      keys: ["admin bug hunts", "admin bug hunt", "manage bug hunts"],
+      title: "Admin Bug Hunts",
+      bullets: [
+        "Create and manage hunt programs",
+        "Define scope, rules, and rewards",
+        "Track participation and results",
+        "Update hunt status and timelines",
+        "Moderate hunt activity",
+      ],
+    },
+    {
+      keys: ["admin cve requests", "manage cve requests"],
+      title: "Admin CVE Requests",
+      bullets: [
+        "Review CVE submissions",
+        "Validate required documentation",
+        "Approve or request changes",
+        "Track CVE status and history",
+        "Coordinate with vulnerability owners",
+      ],
+    },
+    {
+      keys: ["admin vulnerability", "manage vulnerability"],
+      title: "Admin Vulnerability",
+      bullets: [
+        "Manage vulnerability records",
+        "Tag severity and categories",
+        "Maintain references and metadata",
+        "Update status and visibility",
+        "Ensure consistent taxonomy",
+      ],
+    },
+    {
+      keys: ["admin migration", "user migration"],
+      title: "Admin Migration",
+      bullets: [
+        "Import or migrate user data",
+        "Map fields and validate records",
+        "Monitor migration progress",
+        "Resolve conflicts and errors",
+        "Admin-only data tools",
+      ],
+    },
+    {
+      keys: ["admin utils", "admin tools"],
+      title: "Admin Utils",
+      bullets: [
+        "Maintenance utilities and tools",
+        "Cache and system operations",
+        "Access to internal admin workflows",
+        "Feature toggles and controls",
+        "Restricted to administrators",
+      ],
+    },
+    {
+      keys: ["admin test"],
+      title: "Admin Test",
+      bullets: [
+        "QA and testing utilities",
+        "Generate sample data",
+        "Validate admin workflows",
+        "Check environment readiness",
+        "Used for internal validation",
+      ],
+    },
+  ]
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
@@ -65,33 +386,61 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
   // Navigation function with admin panel support
   const handleNavigation = (userInput: string) => {
     const input = userInput.toLowerCase()
+    const normalized = input.trim()
+    const hasActionKeyword =
+      input.includes('navigate') ||
+      input.includes('go to') ||
+      input.includes('take me') ||
+      input.includes('open') ||
+      input.includes('show')
     
     // Regular user navigation routes
     const navigationMap = {
+      'home': '/',
+      'homepage': '/',
+      'select role': '/select-role',
       'feed': '/feed',
       'dashboard': '/dashboard',
       'profile': '/profile',
       'submissions': '/my-submissions',
+      'my submissions': '/my-submissions',
       'submit': '/submit',
       'communities': '/communities',
       'leaderboard': '/leaderboard',
       'certificates': '/certificates',
       'settings': '/settings',
       'bug hunt': '/bug-hunt',
+      'bug hunts': '/bug-hunt',
+      'bug': '/bug',
+      'docs': '/docs',
+      'login': '/login',
+      'signup': '/signup',
+      'my wallet': '/my-wallet',
+      'payout demo': '/payout-demo',
+      'pro': '/pro',
+      'cvss demo': '/cvss-demo',
+      'debug': '/debug',
+      'test points': '/test-points',
       'setup profile': '/setup-profile'
     }
     
     // Admin-only navigation routes
     const adminNavigationMap = {
+      'admin': '/admin/submissions',
       'admin panel': '/admin/submissions',
       'admin dashboard': '/admin/submissions',
       'admin submissions': '/admin/submissions',
       'admin bug hunts': '/admin/bug-hunts',
+      'admin bug hunt': '/admin/bug-hunts',
+      'admin cve requests': '/admin/cve-requests',
+      'admin vulnerability': '/admin/vulnerability',
       'admin migration': '/admin-migration',
       'admin utils': '/admin-utils',
       'admin test': '/admin-test',
       'manage submissions': '/admin/submissions',
       'manage bug hunts': '/admin/bug-hunts',
+      'manage cve requests': '/admin/cve-requests',
+      'manage vulnerability': '/admin/vulnerability',
       'user migration': '/admin-migration',
       'admin tools': '/admin-utils'
     }
@@ -99,7 +448,7 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
     // Check for admin navigation first (if user is admin)
     if (user?.role === 'admin') {
       for (const [key, path] of Object.entries(adminNavigationMap)) {
-        if (input.includes(key) && (input.includes('navigate') || input.includes('go to') || input.includes('take me') || input.includes('open') || input.includes('show'))) {
+        if (input.includes(key) && (hasActionKeyword || normalized === key)) {
           router.push(path)
           return `🛡️ Navigating to Admin ${key.replace('admin ', '').charAt(0).toUpperCase() + key.replace('admin ', '').slice(1)}...`
         }
@@ -108,7 +457,7 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
     
     // Regular navigation for all users
     for (const [key, path] of Object.entries(navigationMap)) {
-      if (input.includes(key) && (input.includes('navigate') || input.includes('go to') || input.includes('take me') || input.includes('open') || input.includes('show'))) {
+      if (input.includes(key) && (hasActionKeyword || normalized === key)) {
         router.push(path)
         return `🚀 Navigating to ${key.charAt(0).toUpperCase() + key.slice(1)}...`
       }
@@ -150,6 +499,19 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, navMessage])
+      setIsLoading(false)
+      return
+    }
+
+    const pageDetailsResponse = getPageDetails(currentInput)
+    if (pageDetailsResponse) {
+      const pageMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        content: pageDetailsResponse,
+        isUser: false,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, pageMessage])
       setIsLoading(false)
       return
     }
@@ -198,6 +560,35 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const getPageDetails = (userInput: string) => {
+    const input = userInput.toLowerCase()
+    const normalized = input.trim()
+    const wantsInfo =
+      input.includes("explain") ||
+      input.includes("about") ||
+      input.includes("details") ||
+      input.includes("overview") ||
+      input.includes("what is") ||
+      input.includes("tell me") ||
+      input.includes("describe")
+
+    for (const page of pageDetails) {
+      const match = page.keys.some((key) =>
+        normalized === key ||
+        normalized === `${key} page` ||
+        input.includes(key)
+      )
+
+      if (match && (wantsInfo || normalized === page.keys[0] + " page")) {
+        return `🧭 **${page.title}**\n\n${page.bullets
+          .map((bullet) => `• ${bullet}`)
+          .join("\n")}`
+      }
+    }
+
+    return null
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -271,7 +662,7 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
       >
         <Button
           onClick={() => setIsOpen(true)}
-          className="h-14 w-14 rounded-full bg-cyber-blue hover:bg-cyber-blue/90 shadow-lg hover:shadow-xl transition-all"
+          className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
           data-testid="bughuntr-assistant-open-btn"
         >
           <MessageCircle className="h-6 w-6" />
@@ -290,7 +681,7 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <Card className={`w-80 sm:w-96 shadow-xl border-2 ${isMinimized ? 'h-16' : 'h-[min(500px,calc(100vh-8rem))]'} overflow-hidden`}>
-          <CardHeader className="pb-3 bg-gradient-to-r from-cyber-blue to-cyber-cyan text-white">
+          <CardHeader className="pb-3 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-hover)] text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-1 bg-white/20 rounded-full">
@@ -331,8 +722,8 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
                       className={`flex gap-3 ${message.isUser ? "justify-end" : "justify-start"}`}
                     >
                       {!message.isUser && (
-                        <Avatar className="h-8 w-8 bg-cyber-blue text-white flex-shrink-0 mt-0.5">
-                          <AvatarFallback className="bg-cyber-blue text-white text-xs">
+                        <Avatar className="h-8 w-8 bg-primary text-white flex-shrink-0 mt-0.5">
+                          <AvatarFallback className="bg-primary text-white text-xs">
                             <Shield className="h-4 w-4" />
                           </AvatarFallback>
                         </Avatar>
@@ -340,14 +731,14 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
                       <div
                         className={`max-w-[220px] sm:max-w-[260px] rounded-lg p-3 break-words ${
                           message.isUser
-                            ? "bg-cyber-blue text-white ml-auto"
+                            ? "bg-primary text-white ml-auto"
                             : "bg-muted/80 text-foreground border"
                         }`}
                         style={{ wordWrap: 'break-word', overflowWrap: 'anywhere' }}
                       >
                         <div className="text-sm leading-relaxed">{formatMessageContent(message.content)}</div>
                         <div className={`text-xs mt-2 opacity-60 font-mono ${
-                          message.isUser ? "text-blue-100 text-right" : "text-muted-foreground"
+                          message.isUser ? "text-primary-foreground/90 text-right" : "text-muted-foreground"
                         }`}>
                           {message.timestamp.toLocaleTimeString([], {
                             hour: "2-digit",
@@ -357,7 +748,7 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
                       </div>
                       {message.isUser && (
                         <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5">
-                          <AvatarFallback className="bg-gradient-to-br from-cyber-blue to-neon-green text-white text-xs font-semibold">
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                             U
                           </AvatarFallback>
                         </Avatar>
@@ -366,14 +757,14 @@ export function BugHuntrAssistant({ className }: BugHuntrAssistantProps) {
                   ))}
                   {isLoading && (
                     <div className="flex gap-3 justify-start">
-                      <Avatar className="h-8 w-8 bg-cyber-blue text-white flex-shrink-0 mt-0.5">
-                        <AvatarFallback className="bg-cyber-blue text-white text-xs">
+                      <Avatar className="h-8 w-8 bg-primary text-white flex-shrink-0 mt-0.5">
+                        <AvatarFallback className="bg-primary text-white text-xs">
                           <Shield className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
                       <div className="bg-muted/80 border rounded-lg p-3 max-w-[180px]">
                         <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-cyber-blue" />
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
                           <span className="text-sm text-muted-foreground">Analyzing...</span>
                         </div>
                       </div>

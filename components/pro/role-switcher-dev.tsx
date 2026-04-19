@@ -47,7 +47,7 @@ export function RoleSwitcherDev() {
     return (
       <Button
         onClick={() => setIsVisible(true)}
-        className="fixed bottom-4 right-20 bg-purple-600 hover:bg-purple-700 z-50"
+        className="fixed bottom-4 right-20 bg-secondary hover:bg-secondary/80 z-50"
         size="sm"
         data-testid="show-role-switcher-btn"
       >
@@ -58,11 +58,11 @@ export function RoleSwitcherDev() {
   }
 
   return (
-    <Card className="fixed bottom-4 right-4 w-96 bg-[#181e26] border-purple-500/50 z-50 shadow-2xl">
+    <Card className="fixed bottom-4 right-4 w-96 bg-[#181e26] border-[var(--border-light)] z-50 shadow-2xl">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Shield className="w-5 h-5 text-purple-400" />
+            <Shield className="w-5 h-5 text-secondary" />
             Role Switcher (Dev Only)
           </CardTitle>
           <Button
@@ -78,14 +78,14 @@ export function RoleSwitcherDev() {
           <div className="flex gap-2 mt-2">
             <Badge
               className={
-                user.role === "admin" ? "bg-purple-600" : "bg-blue-600"
+                user.role === "admin" ? "bg-secondary" : "bg-primary"
               }
             >
               {user.role}
             </Badge>
             <Badge
               className={
-                user.userType === "company" ? "bg-amber-600" : "bg-green-600"
+                user.userType === "company" ? "bg-[var(--high)]" : "bg-[var(--low)]"
               }
             >
               {user.userType}
@@ -99,7 +99,7 @@ export function RoleSwitcherDev() {
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => switchRole("admin", "company", mockCompanyData)}
-              className="bg-purple-600 hover:bg-purple-700 text-xs"
+              className="bg-secondary hover:bg-secondary/80 text-xs"
               size="sm"
               data-testid="switch-admin-company-btn"
             >
@@ -108,7 +108,7 @@ export function RoleSwitcherDev() {
             </Button>
             <Button
               onClick={() => switchRole("user", "company", mockCompanyData)}
-              className="bg-blue-600 hover:bg-blue-700 text-xs"
+              className="bg-primary hover:bg-[var(--accent-hover)] text-xs"
               size="sm"
               data-testid="switch-user-company-btn"
             >
@@ -123,7 +123,7 @@ export function RoleSwitcherDev() {
           <div className="grid grid-cols-2 gap-2">
             <Button
               onClick={() => switchRole("admin", "hunter", mockHunterData)}
-              className="bg-purple-600 hover:bg-purple-700 text-xs"
+              className="bg-secondary hover:bg-secondary/80 text-xs"
               size="sm"
               data-testid="switch-admin-hunter-btn"
             >
@@ -132,7 +132,7 @@ export function RoleSwitcherDev() {
             </Button>
             <Button
               onClick={() => switchRole("user", "hunter", mockHunterData)}
-              className="bg-green-600 hover:bg-green-700 text-xs"
+              className="bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)] text-xs"
               size="sm"
               data-testid="switch-user-hunter-btn"
             >

@@ -7,7 +7,7 @@ import { collection, query, where, getDocs, onSnapshot } from "firebase/firestor
 import { Trophy, Bug, Target, Star } from "lucide-react"
 
 interface UserStatsProps {
-  username: string
+  username?: string
 }
 
 interface UserStats {
@@ -27,7 +27,18 @@ export function UserStatsCards({ username }: UserStatsProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!username) return
+    if (!username) {
+      setStats({
+        points: 0,
+        bugsSubmitted: 0,
+        acceptedBugs: 0,
+        rank: "E",
+      })
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
 
     const fetchStats = async () => {
       try {
@@ -98,18 +109,18 @@ export function UserStatsCards({ username }: UserStatsProps) {
 
   const getRankColor = (rank: string) => {
     switch (rank) {
-      case "S": return "text-red-500"
-      case "A": return "text-orange-500"
-      case "B": return "text-purple-500"
-      case "C": return "text-blue-500"
-      case "D": return "text-green-500"
+      case "S": return "text-[var(--critical)]"
+      case "A": return "text-[var(--high)]"
+      case "B": return "text-secondary"
+      case "C": return "text-primary"
+      case "D": return "text-[var(--low)]"
       default: return "text-gray-500"
     }
   }
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {[1, 2, 3, 4].map((i) => (
           <Card key={i}>
             <CardHeader>
@@ -125,14 +136,14 @@ export function UserStatsCards({ username }: UserStatsProps) {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Points</CardTitle>
+          <CardTitle className="text-sm md:text-base font-medium">Total Points</CardTitle>
           <Trophy className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-cyber-blue">{stats.points}</div>
+          <div className="text-xl md:text-2xl font-bold text-primary">{stats.points}</div>
           <p className="text-xs text-muted-foreground">
             Rank: <span className={getRankColor(stats.rank)}>{stats.rank}</span>
           </p>
@@ -141,11 +152,11 @@ export function UserStatsCards({ username }: UserStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Bugs Submitted</CardTitle>
+          <CardTitle className="text-sm md:text-base font-medium">Bugs Submitted</CardTitle>
           <Bug className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.bugsSubmitted}</div>
+          <div className="text-xl md:text-2xl font-bold">{stats.bugsSubmitted}</div>
           <p className="text-xs text-muted-foreground">
             Total reports submitted
           </p>
@@ -154,11 +165,11 @@ export function UserStatsCards({ username }: UserStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Accepted Bugs</CardTitle>
+          <CardTitle className="text-sm md:text-base font-medium">Accepted Bugs</CardTitle>
           <Target className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-500">{stats.acceptedBugs}</div>
+          <div className="text-xl md:text-2xl font-bold text-[var(--low)]">{stats.acceptedBugs}</div>
           <p className="text-xs text-muted-foreground">
             Success rate: {stats.bugsSubmitted > 0 ? Math.round((stats.acceptedBugs / stats.bugsSubmitted) * 100) : 0}%
           </p>
@@ -167,12 +178,12 @@ export function UserStatsCards({ username }: UserStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Current Rank</CardTitle>
+          <CardTitle className="text-sm md:text-base font-medium">Current Rank</CardTitle>
           <Star className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${getRankColor(stats.rank)}`}>{stats.rank}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className={`text-xl md:text-2xl font-bold ${getRankColor(stats.rank)}`}>{stats.rank}</div>
+          <p className="text-xs text-muted-foreground line-clamp-1">
             {stats.rank === "S" ? "Legendary!" : `Next: ${getNextRankPoints(stats.points)} pts`}
           </p>
         </CardContent>

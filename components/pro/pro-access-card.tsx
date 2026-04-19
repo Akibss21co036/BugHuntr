@@ -43,7 +43,7 @@ export function ProAccessCard({
   return (
     <Card
       className={`bg-[#181e26] border-2 ${
-        isActive ? "border-green-500/30" : "border-red-500/30"
+        isActive ? "border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]" : "border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)]"
       }`}
     >
       <CardHeader>
@@ -51,23 +51,23 @@ export function ProAccessCard({
           <CardTitle className="flex items-center gap-2 text-lg">
             <Key
               className={`w-5 h-5 ${
-                isActive ? "text-green-400" : "text-red-400"
+                isActive ? "text-[var(--low)]" : "text-[var(--critical)]"
               }`}
             />
             Pro Access Token
           </CardTitle>
           {isActive ? (
-            <Badge className="bg-green-600">
+            <Badge className="bg-[var(--low)]">
               <CheckCircle className="w-3 h-3 mr-1" />
               Active
             </Badge>
           ) : isRevoked ? (
-            <Badge className="bg-red-600">
+            <Badge className="bg-[var(--critical)]">
               <AlertCircle className="w-3 h-3 mr-1" />
               Revoked
             </Badge>
           ) : (
-            <Badge className="bg-yellow-600">
+            <Badge className="bg-[var(--medium)]">
               <Clock className="w-3 h-3 mr-1" />
               Expired
             </Badge>
@@ -97,7 +97,7 @@ export function ProAccessCard({
                 className="flex-shrink-0"
               >
                 {copied ? (
-                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <CheckCircle className="w-4 h-4 text-[var(--low)]" />
                 ) : (
                   <Copy className="w-4 h-4" />
                 )}
@@ -110,10 +110,10 @@ export function ProAccessCard({
         {isActive && (
           <div>
             <p className="text-sm text-gray-400">Time Remaining</p>
-            <p className="text-2xl font-bold text-blue-400">{timeRemaining}h</p>
+            <p className="text-2xl font-bold text-primary">{timeRemaining}h</p>
             <div className="w-full bg-gray-700 rounded-full h-2 mt-2">
               <div
-                className="bg-blue-500 h-2 rounded-full transition-all"
+                className="bg-primary h-2 rounded-full transition-all"
                 style={{
                   width: `${Math.min(100, (timeRemaining / 24) * 100)}%`,
                 }}
@@ -143,8 +143,8 @@ export function ProAccessCard({
 
         {/* Usage Instructions */}
         {isActive && (
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-            <h4 className="font-semibold text-blue-400 mb-2 text-sm">
+          <div className="bg-[var(--accent-soft)] border border-[var(--border-light)] rounded-lg p-4">
+            <h4 className="font-semibold text-primary mb-2 text-sm">
               Usage Instructions
             </h4>
             <ul className="text-xs text-gray-300 space-y-1">

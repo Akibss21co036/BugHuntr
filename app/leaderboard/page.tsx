@@ -133,7 +133,7 @@ export default function LeaderboardPage() {
         <FadeIn>
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center gap-3">
-              <Trophy className="w-8 h-8 text-cyber-blue" />
+              <Trophy className="w-8 h-8 text-primary" />
               <h1 className="text-4xl font-bold text-foreground">Leaderboard</h1>
             </div>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -201,10 +201,10 @@ export default function LeaderboardPage() {
             {/* Podium */}
             {podiumUsers.length >= 3 && (
               <FadeIn delay={0.2}>
-                <Card className="bg-gradient-to-br from-cyber-blue/5 to-neon-green/5 border-cyber-blue/20">
+                <Card className="bg-gradient-to-br from-secondary/5 to-secondary/5 border-[var(--border-light)]">
                   <CardHeader>
                     <CardTitle className="text-center flex items-center justify-center gap-2">
-                      <Award className="w-6 h-6 text-cyber-blue" />
+                      <Award className="w-6 h-6 text-primary" />
                       Top Performers
                     </CardTitle>
                   </CardHeader>
@@ -222,7 +222,7 @@ export default function LeaderboardPage() {
                           <div className="space-y-2 min-w-0">
                             <div className="font-bold text-lg truncate">{podiumUsers[1]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[1]?.role === "admin"} companyName={podiumUsers[1]?.companyName} size="sm" />
-                            <div className="text-2xl font-bold text-cyber-blue">{getPointsByTimeframe(podiumUsers[1])} pts</div>
+                            <div className="text-2xl font-bold text-primary">{getPointsByTimeframe(podiumUsers[1])} pts</div>
                           </div>
                         </div>
                       </motion.div>
@@ -234,12 +234,12 @@ export default function LeaderboardPage() {
                         transition={{ delay: 0.2 }}
                         className="order-1 md:order-2"
                       >
-                        <div className="text-center space-y-4 p-6 rounded-lg bg-gradient-to-b from-yellow-100 to-yellow-200 dark:from-yellow-900/50 dark:to-yellow-800/50 transform md:scale-110">
+                        <div className="text-center space-y-4 p-6 rounded-lg bg-[var(--accent-soft)] border border-[var(--border-light)] transform md:scale-110">
                           <div className="text-8xl">🏆</div>
                           <div className="space-y-2 min-w-0">
                             <div className="font-bold text-xl truncate">{podiumUsers[0]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[0]?.role === "admin"} companyName={podiumUsers[0]?.companyName} size="md" />
-                            <div className="text-3xl font-bold text-cyber-blue">{getPointsByTimeframe(podiumUsers[0])} pts</div>
+                            <div className="text-3xl font-bold text-primary">{getPointsByTimeframe(podiumUsers[0])} pts</div>
                           </div>
                         </div>
                       </motion.div>
@@ -251,12 +251,12 @@ export default function LeaderboardPage() {
                         transition={{ delay: 0.4 }}
                         className="order-3"
                       >
-                        <div className="text-center space-y-4 p-6 rounded-lg bg-gradient-to-b from-orange-100 to-orange-200 dark:from-orange-900/50 dark:to-orange-800/50">
+                        <div className="text-center space-y-4 p-6 rounded-lg bg-[var(--surface-elevated)] border border-[var(--border-light)]">
                           <div className="text-6xl">🥉</div>
                           <div className="space-y-2 min-w-0">
                             <div className="font-bold text-lg truncate">{podiumUsers[2]?.username}</div>
                             <VerificationBadge isAdmin={podiumUsers[2]?.role === "admin"} companyName={podiumUsers[2]?.companyName} size="sm" />
-                            <div className="text-2xl font-bold text-cyber-blue">{getPointsByTimeframe(podiumUsers[2])} pts</div>
+                            <div className="text-2xl font-bold text-primary">{getPointsByTimeframe(podiumUsers[2])} pts</div>
                           </div>
                         </div>
                       </motion.div>
@@ -271,7 +271,7 @@ export default function LeaderboardPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-cyber-blue" />
+                    <TrendingUp className="w-5 h-5 text-primary" />
                     Full Rankings
                   </CardTitle>
                 </CardHeader>

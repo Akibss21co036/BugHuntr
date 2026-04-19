@@ -54,10 +54,10 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
 
       <CardContent className="space-y-6">
         {/* Certificate Preview */}
-        <div className="bg-gradient-to-br from-cyber-blue/5 to-cyber-purple/5 border-2 border-cyber-blue/20 rounded-lg p-8 text-center">
+        <div className="bg-gradient-to-br from-[var(--accent-soft)] to-secondary/20 border-2 border-[var(--border-light)] rounded-lg p-8 text-center">
           <div className="space-y-4">
-            <div className="w-16 h-16 mx-auto bg-cyber-blue/10 rounded-full flex items-center justify-center">
-              <Award className="h-8 w-8 text-cyber-blue" />
+            <div className="w-16 h-16 mx-auto bg-[var(--accent-soft)] rounded-full flex items-center justify-center">
+              <Award className="h-8 w-8 text-primary" />
             </div>
 
             <div>
@@ -66,7 +66,7 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
                 This certifies that <strong>Alex Chen</strong> has successfully completed
               </p>
               <p className="text-muted-foreground">the requirements for this certification as verified by</p>
-              <p className="font-semibold text-cyber-blue">{certificate.issuer}</p>
+              <p className="font-semibold text-primary">{certificate.issuer}</p>
             </div>
 
             <div className="flex items-center justify-center gap-8 pt-4 border-t border-border/50">
@@ -103,7 +103,7 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
             <h3 className="font-semibold mb-2">Skills Validated</h3>
             <div className="flex flex-wrap gap-2">
               {certificate.skills.map((skill) => (
-                <Badge key={skill} variant="secondary" className="bg-cyber-blue/10 text-cyber-blue">
+                <Badge key={skill} variant="secondary" className="bg-[var(--accent-soft)] text-primary">
                   {skill}
                 </Badge>
               ))}
@@ -125,7 +125,7 @@ export function CertificatePreview({ certificate }: CertificatePreviewProps) {
             </div>
             <div>
               <span className="text-muted-foreground">Verification:</span>
-              <Button variant="link" size="sm" onClick={handleVerify} className="h-auto p-0 text-cyber-blue">
+              <Button variant="link" size="sm" onClick={handleVerify} className="h-auto p-0 text-primary">
                 Verify Online
               </Button>
             </div>

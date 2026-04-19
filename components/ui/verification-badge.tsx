@@ -32,16 +32,16 @@ export function VerificationBadge({ isAdmin, companyName, size = "sm", className
   // For compact mode, show only the icon
   if (compact) {
     return (
-      <div className={cn("flex items-center text-blue-600", className)}>
+      <div className={cn("flex items-center text-primary", className)}>
         <CheckCircle className={cn("fill-blue-600 text-white stroke-1 stroke-blue-700 drop-shadow-sm", sizeClasses[size])} />
       </div>
     )
   }
 
   return (
-    <div className={cn("flex items-center gap-1.5 text-blue-600", className)}>
+    <div className={cn("flex items-center gap-1.5 text-primary", className)}>
       <CheckCircle className={cn("fill-blue-600 text-white stroke-1 stroke-blue-700 drop-shadow-sm", sizeClasses[size])} />
-      <span className={cn("font-semibold whitespace-nowrap text-blue-600", textSizeClasses[size])}>{verificationText}</span>
+      <span className={cn("font-semibold whitespace-nowrap text-primary", textSizeClasses[size])}>{verificationText}</span>
     </div>
   )
 }

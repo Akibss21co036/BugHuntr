@@ -63,7 +63,7 @@ export default function BugHuntPage() {
         <FadeIn>
           <div className="mb-6 lg:mb-8 flex justify-between items-center">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold mb-2 bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent">
+              <h1 className="text-2xl lg:text-3xl font-bold mb-2 text-primary">
                 Bug Hunts
               </h1>
               <p className="text-muted-foreground">

@@ -24,10 +24,10 @@ export function ProSubscriptionCard({
 }: ProSubscriptionCardProps) {
   if (!subscription) {
     return (
-      <Card className="bg-gradient-to-br from-amber-500/20 to-purple-500/20 border-amber-500/30">
+      <Card className="bg-[var(--accent-soft)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-amber-500" />
+            <Crown className="w-5 h-5 text-[var(--medium)]" />
             Upgrade to Pro
           </CardTitle>
           <CardDescription>
@@ -37,25 +37,25 @@ export function ProSubscriptionCard({
         <CardContent className="space-y-4">
           <ul className="space-y-2">
             <li className="flex items-center gap-2 text-sm">
-              <Check className="w-4 h-4 text-green-400" />
+              <Check className="w-4 h-4 text-[var(--low)]" />
               <span>AI-powered hunter recommendations</span>
             </li>
             <li className="flex items-center gap-2 text-sm">
-              <Check className="w-4 h-4 text-green-400" />
+              <Check className="w-4 h-4 text-[var(--low)]" />
               <span>Custom NDA templates</span>
             </li>
             <li className="flex items-center gap-2 text-sm">
-              <Check className="w-4 h-4 text-green-400" />
+              <Check className="w-4 h-4 text-[var(--low)]" />
               <span>KYC verification</span>
             </li>
             <li className="flex items-center gap-2 text-sm">
-              <Check className="w-4 h-4 text-green-400" />
+              <Check className="w-4 h-4 text-[var(--low)]" />
               <span>Talent pipeline features</span>
             </li>
           </ul>
           <Button
             onClick={onUpgrade}
-            className="w-full bg-gradient-to-r from-amber-500 to-purple-600"
+            className="w-full bg-primary hover:bg-[var(--accent-hover)]"
           >
             <Zap className="w-4 h-4 mr-2" />
             Upgrade Now
@@ -66,9 +66,9 @@ export function ProSubscriptionCard({
   }
 
   const statusColors = {
-    active: "bg-green-600",
-    expired: "bg-red-600",
-    suspended: "bg-yellow-600",
+    active: "bg-[var(--low)]",
+    expired: "bg-[var(--critical)]",
+    suspended: "bg-[var(--medium)]",
   };
 
   const planNames = {
@@ -78,11 +78,11 @@ export function ProSubscriptionCard({
   };
 
   return (
-    <Card className="bg-[#181e26] border-amber-500/30">
+    <Card className="bg-[#181e26] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Crown className="w-5 h-5 text-amber-500" />
+            <Crown className="w-5 h-5 text-[var(--medium)]" />
             BugHuntr Pro
           </CardTitle>
           <Badge className={statusColors[subscription.status]}>
@@ -104,7 +104,7 @@ export function ProSubscriptionCard({
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all"
+              className="bg-primary h-2 rounded-full transition-all"
               style={{
                 width: `${
                   (subscription.currentProHunts / subscription.maxProHunts) *
@@ -132,7 +132,7 @@ export function ProSubscriptionCard({
                 key={index}
                 className="flex items-center gap-2 text-xs text-gray-300"
               >
-                <Check className="w-3 h-3 text-green-400" />
+                <Check className="w-3 h-3 text-[var(--low)]" />
                 {feature}
               </li>
             ))}

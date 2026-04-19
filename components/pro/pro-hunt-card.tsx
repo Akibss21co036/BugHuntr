@@ -12,6 +12,8 @@ import {
   Shield,
   Target,
   Award,
+  Edit,
+  Trash2,
 } from "lucide-react";
 import { type ProHunt } from "@/types/pro";
 import {
@@ -24,6 +26,8 @@ interface ProHuntCardProps {
   hunt: ProHunt;
   onApply?: () => void;
   onViewDetails?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
   showActions?: boolean;
   isEligible?: boolean;
   isManageView?: boolean;
@@ -33,6 +37,8 @@ export function ProHuntCard({
   hunt,
   onApply,
   onViewDetails,
+  onEdit,
+  onDelete,
   showActions = true,
   isEligible = true,
   isManageView = false,
@@ -42,9 +48,9 @@ export function ProHuntCard({
   const spotsRemaining = hunt.maxHunters - hunt.currentHunters;
 
   return (
-    <Card className="bg-gradient-to-br from-[#181e26] to-[#10151c] border-2 border-amber-500/30 hover:border-amber-500/50 transition-all group relative overflow-hidden">
+    <Card className="bg-gradient-to-br from-[#181e26] to-[#10151c] border-2 border-[color:color-mix(in_srgb,var(--high)_25%,transparent)] hover:border-[color:color-mix(in_srgb,var(--high)_35%,transparent)] transition-all group relative overflow-hidden">
       {/* Premium Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-soft)] via-transparent to-[color:color-mix(in_srgb,var(--secondary)_10%,transparent)] pointer-events-none" />
 
       <CardHeader className="relative">
         <div className="flex items-start justify-between gap-4">
@@ -52,23 +58,23 @@ export function ProHuntCard({
             <div className="flex items-center gap-2 mb-2">
               <ProBadge size="sm" />
               {hunt.inviteOnly && (
-                <Badge className="bg-purple-600 text-white text-xs">
+                <Badge className="bg-secondary text-white text-xs">
                   Invite Only
                 </Badge>
               )}
               <Badge
                 className={`text-xs ${
                   hunt.status === "active"
-                    ? "bg-green-600"
+                    ? "bg-[var(--low)]"
                     : hunt.status === "paused"
-                    ? "bg-yellow-600"
-                    : "bg-gray-600"
+                      ? "bg-[var(--medium)]"
+                      : "bg-gray-600"
                 }`}
               >
                 {hunt.status}
               </Badge>
             </div>
-            <CardTitle className="text-xl mb-2 group-hover:text-blue-400 transition-colors">
+            <CardTitle className="text-xl mb-2 group-hover:text-primary transition-colors">
               {hunt.title}
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -90,7 +96,7 @@ export function ProHuntCard({
               <DollarSign className="w-3 h-3" />
               <span>Max Reward</span>
             </div>
-            <div className="text-lg font-bold text-green-400">
+            <div className="text-lg font-bold text-[var(--low)]">
               {formatCurrency(hunt.rewards.critical)}
             </div>
           </div>
@@ -108,7 +114,7 @@ export function ProHuntCard({
               <Calendar className="w-3 h-3" />
               <span>Time Remaining</span>
             </div>
-            <div className="text-lg font-bold text-blue-400">
+            <div className="text-lg font-bold text-primary">
               {daysRemaining}d
             </div>
           </div>
@@ -146,10 +152,10 @@ export function ProHuntCard({
         {/* Rewards Breakdown */}
         <div className="flex items-center gap-2 text-xs">
           <span className="text-gray-400">Rewards:</span>
-          <Badge className="bg-red-600/20 text-red-400 text-xs">
+          <Badge className="bg-[var(--critical)]/20 text-[var(--critical)] text-xs">
             Critical: {formatCurrency(hunt.rewards.critical)}
           </Badge>
-          <Badge className="bg-orange-600/20 text-orange-400 text-xs">
+          <Badge className="bg-[var(--high)]/20 text-[var(--high)] text-xs">
             High: {formatCurrency(hunt.rewards.high)}
           </Badge>
         </div>
@@ -161,20 +167,22 @@ export function ProHuntCard({
               <>
                 {/* Company Management Actions */}
                 <Button
-                  onClick={onViewDetails}
-                  variant="outline"
-                  className="flex-1 border-[#23272f] hover:border-purple-500"
+                  onClick={onEdit}
+                  className="flex-1 bg-primary hover:bg-[var(--accent-hover)]"
                   size="sm"
-                  data-testid="view-details-manage-btn"
+                  data-testid="edit-hunt-btn"
                 >
-                  Manage Hunt
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
                 </Button>
                 <Button
-                  className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  onClick={onDelete}
+                  className="flex-1 bg-[var(--critical)] hover:bg-[color:color-mix(in_srgb,var(--critical)_85%,black)]"
                   size="sm"
-                  data-testid="view-recommendations-btn"
+                  data-testid="delete-hunt-btn"
                 >
-                  Get Recommendations
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
                 </Button>
               </>
             ) : (
@@ -183,7 +191,7 @@ export function ProHuntCard({
                 <Button
                   onClick={onViewDetails}
                   variant="outline"
-                  className="flex-1 border-[#23272f] hover:border-blue-500"
+                  className="flex-1 border-[#23272f] hover:border-[var(--border-light)]"
                   size="sm"
                   data-testid="view-details-browse-btn"
                 >
@@ -192,7 +200,7 @@ export function ProHuntCard({
                 {!hunt.inviteOnly && isEligible && (
                   <Button
                     onClick={onApply}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="flex-1 bg-primary hover:bg-[var(--accent-hover)]"
                     size="sm"
                     data-testid="apply-now-btn"
                   >
@@ -215,8 +223,8 @@ export function ProHuntCard({
         )}
 
         {!isEligible && showActions && !isManageView && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-            <p className="text-sm text-red-400 text-center">
+          <div className="bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] border border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)] rounded-lg p-3">
+            <p className="text-sm text-[var(--critical)] text-center">
               ⚠️ You don't meet the eligibility requirements for this hunt
             </p>
           </div>

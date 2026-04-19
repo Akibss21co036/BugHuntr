@@ -49,13 +49,13 @@ export function RewardsStore() {
   const getCategoryColor = (category: RewardItem["category"]) => {
     switch (category) {
       case "badge":
-        return "bg-cyber-blue/10 text-cyber-blue border-cyber-blue/20"
+        return "bg-[var(--accent-soft)] text-primary border-[var(--border-light)]"
       case "perk":
-        return "bg-cyber-purple/10 text-cyber-purple border-cyber-purple/20"
+        return "bg-secondary/10 text-secondary border-cyber-purple/20"
       case "physical":
-        return "bg-neon-orange/10 text-neon-orange border-neon-orange/20"
+        return "bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]"
       case "access":
-        return "bg-neon-green/10 text-neon-green border-neon-green/20"
+        return "bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]"
       default:
         return "bg-muted text-muted-foreground border-border"
     }
@@ -72,11 +72,11 @@ export function RewardsStore() {
             <div className="flex items-center gap-3">
               <div
                 className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                  available ? "bg-cyber-blue/10" : "bg-muted"
+                  available ? "bg-[var(--accent-soft)]" : "bg-muted"
                 }`}
               >
                 {available ? (
-                  <IconComponent className="w-5 h-5 text-cyber-blue" />
+                  <IconComponent className="w-5 h-5 text-primary" />
                 ) : (
                   <Lock className="w-5 h-5 text-muted-foreground" />
                 )}
@@ -89,7 +89,7 @@ export function RewardsStore() {
               </div>
             </div>
             <div className="text-right">
-              <div className="font-bold text-cyber-blue">{reward.pointsCost.toLocaleString()}</div>
+              <div className="font-bold text-primary">{reward.pointsCost.toLocaleString()}</div>
               <div className="text-xs text-muted-foreground">points</div>
             </div>
           </div>
@@ -147,7 +147,7 @@ export function RewardsStore() {
         </div>
         {userRanking && (
           <div className="text-right">
-            <div className="text-2xl font-bold text-cyber-blue">{userRanking.totalPoints.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-primary">{userRanking.totalPoints.toLocaleString()}</div>
             <div className="text-sm text-muted-foreground">Available Points</div>
           </div>
         )}

@@ -167,10 +167,10 @@ export function TriageCvssEditor({
 
   const getSeverityColor = (score?: number) => {
     if (!score) return "text-gray-500";
-    if (score >= 9) return "text-red-600";
-    if (score >= 7) return "text-orange-600";
-    if (score >= 4) return "text-yellow-600";
-    return "text-blue-600";
+    if (score >= 9) return "text-[var(--critical)]";
+    if (score >= 7) return "text-[var(--high)]";
+    if (score >= 4) return "text-[var(--medium)]";
+    return "text-primary";
   };
 
   const getSeverityBadge = (score?: number) => {
@@ -190,15 +190,15 @@ export function TriageCvssEditor({
           <p className="text-sm text-gray-500 mt-1">{vulnId}</p>
         </div>
         <div className="flex gap-2">
-          {status === "triaged" && <Lock className="w-5 h-5 text-green-600" />}
+          {status === "triaged" && <Lock className="w-5 h-5 text-[var(--low)]" />}
         </div>
       </div>
 
       {/* Status Alert */}
       {status === "triaged" && (
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-700">
+        <Alert className="bg-[color:color-mix(in_srgb,var(--low)_10%,transparent)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]">
+          <CheckCircle2 className="h-4 w-4 text-[var(--low)]" />
+          <AlertDescription className="text-[var(--low)]">
             This vulnerability has been triaged and locked. Changes require
             admin override.
           </AlertDescription>
@@ -287,7 +287,7 @@ export function TriageCvssEditor({
                 <Button
                   onClick={() => setShowSignOffModal(true)}
                   disabled={status === "triaged" || isSaving}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
                 >
                   {isSaving ? "Saving..." : "Approve & Sign-off"}
                 </Button>
@@ -475,9 +475,9 @@ export function TriageCvssEditor({
               <CardTitle>Confirm Triage Sign-off</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert className="bg-yellow-50 border-yellow-200">
-                <AlertCircle className="h-4 w-4 text-yellow-600" />
-                <AlertDescription className="text-yellow-700">
+              <Alert className="bg-[color:color-mix(in_srgb,var(--medium)_10%,transparent)] border-[color:color-mix(in_srgb,var(--medium)_25%,transparent)]">
+                <AlertCircle className="h-4 w-4 text-[var(--medium)]" />
+                <AlertDescription className="text-[var(--medium)]">
                   Signing off will lock this CVSS and trigger reward decision.
                   This action is audited.
                 </AlertDescription>
@@ -501,7 +501,7 @@ export function TriageCvssEditor({
               <Button
                 onClick={() => handleApprove(true)}
                 disabled={isSaving}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
               >
                 {isSaving ? "Signing off..." : "Confirm Sign-off"}
               </Button>

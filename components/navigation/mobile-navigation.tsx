@@ -36,8 +36,8 @@ export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b border-border">
             <div className="flex items-center gap-2">
-              <Shield className="h-8 w-8 text-cyber-blue" />
-              <span className="text-lg font-bold bg-gradient-to-r from-cyber-blue to-cyber-cyan bg-clip-text text-transparent">
+              <Shield className="h-8 w-8 text-primary" />
+              <span className="text-lg font-semibold text-foreground">
                 BugHuntr
               </span>
             </div>
@@ -58,7 +58,7 @@ export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
                       variant={isActive ? "secondary" : "ghost"}
                       className={cn(
                         "w-full justify-start gap-3 h-12 text-left",
-                        isActive && "bg-cyber-blue/10 text-cyber-blue border-r-2 border-cyber-blue",
+                        isActive && "bg-[var(--accent-soft)] text-primary border-r-2 border-primary",
                       )}
                     >
                       <Icon className="h-5 w-5" />
@@ -74,7 +74,7 @@ export function MobileNavigation({ isOpen, onClose }: MobileNavigationProps) {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               <Avatar className="h-10 w-10">
                 <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                <AvatarFallback className="bg-cyber-blue text-white">JD</AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground">JD</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">John Doe</p>

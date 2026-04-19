@@ -45,6 +45,8 @@ export interface CommunityMember {
   joinedAt: string
   isOnline: boolean
   permissions: string[]
+  reputation?: number
+  skills?: string[]
 }
 
 export interface CommunityMessage {
@@ -60,3 +62,80 @@ export interface CommunityMessage {
 }
 
 export type CommunityRole = "owner" | "admin" | "moderator" | "member"
+
+export type BugSeverity = "low" | "medium" | "critical"
+export type BugThreadStatus = "open" | "in_progress" | "solved" | "closed"
+
+export interface ThreadAttachment {
+  name: string
+  url: string
+  type: string
+  size: number
+}
+
+export interface BugThread {
+  id: string
+  communityId: string
+  channelId: string
+  title: string
+  description: string
+  severity: BugSeverity
+  status: BugThreadStatus
+  tags: string[]
+  authorId: string
+  authorUsername: string
+  createdAt: string
+  updatedAt: string
+  solutionCommentId?: string
+  solutionByUserId?: string
+  commentCount: number
+  attachmentUrls: ThreadAttachment[]
+}
+
+export interface ThreadComment {
+  id: string
+  threadId: string
+  communityId: string
+  content: string
+  authorId: string
+  authorUsername: string
+  parentId?: string
+  mentions: string[]
+  createdAt: string
+  updatedAt: string
+  isSolution?: boolean
+  attachmentUrls: ThreadAttachment[]
+}
+
+export interface ThreadChatMessage {
+  id: string
+  threadId: string
+  communityId: string
+  content: string
+  authorId: string
+  authorUsername: string
+  createdAt: string
+}
+
+export interface CommunityNotification {
+  id: string
+  communityId: string
+  type: "reply" | "mention" | "solution_accepted"
+  title: string
+  message: string
+  threadId: string
+  commentId?: string
+  createdAt: string
+  read: boolean
+}
+
+export interface LeaderboardEntry {
+  userId: string
+  username: string
+  role: CommunityRole
+  reputation: number
+  solvedCount: number
+  helpfulCount: number
+  bugsPosted: number
+  skills: string[]
+}

@@ -37,18 +37,18 @@ export function PointsNotification({ points, reason, newRank, onClose }: PointsN
           exit={{ opacity: 0, y: -100, scale: 0.9 }}
           className="fixed top-4 right-4 z-50 w-96"
         >
-          <Card className="border-cyber-blue/30 bg-background/95 backdrop-blur-sm shadow-lg">
+          <Card className="border-[var(--border-light)] bg-background/95 backdrop-blur-sm shadow-lg">
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-cyber-blue/10 rounded-full flex items-center justify-center">
-                    <Trophy className="w-5 h-5 text-cyber-blue" />
+                  <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-full flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold text-foreground">Points Earned!</div>
                     <div className="text-sm text-muted-foreground">{reason}</div>
                     <div className="flex items-center gap-2 mt-2">
-                      <Badge variant="outline" className="bg-cyber-blue/10 text-cyber-blue border-cyber-blue/20">
+                      <Badge variant="outline" className="bg-[var(--accent-soft)] text-primary border-[var(--border-light)]">
                         +{points} points
                       </Badge>
                       {newRank && (

@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isCommunityMember(communityId) {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid));
+    }
+
+    function isCommunityModerator(communityId) {
+      return isCommunityMember(communityId) &&
+        get(/databases/$(database)/documents/communities/$(communityId)/members/$(request.auth.uid)).data.role in ['owner', 'admin', 'moderator'];
+    }
+
+    match /communities/{communityId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update, delete: if isCommunityModerator(communityId);
+
+      match /channels/{channelId} {
+        allow read: if isCommunityMember(communityId);
+        allow create, update, delete: if isCommunityModerator(communityId);
+      }
+
+      match /members/{userId} {
+        allow read: if isCommunityMember(communityId);
+        allow create: if isAuthenticated() && request.auth.uid == userId;
+        allow update: if isAuthenticated() && (request.auth.uid == userId || isCommunityModerator(communityId));
+        allow delete: if isCommunityModerator(communityId);
+      }
+
+      match /threads/{threadId} {
+        allow read: if isCommunityMember(communityId);
+        allow create: if isCommunityMember(communityId);
+        allow update, delete: if isCommunityModerator(communityId) ||
+          (isAuthenticated() && request.auth.uid == resource.data.authorId);
+
+        match /comments/{commentId} {
+          allow read: if isCommunityMember(communityId);
+          allow create: if isCommunityMember(communityId);
+          allow update, delete: if isCommunityModerator(communityId) ||
+            (isAuthenticated() && request.auth.uid == resource.data.authorId);
+        }
+
+        match /chat/{messageId} {
+          allow read, create: if isCommunityMember(communityId);
+          allow update, delete: if isCommunityModerator(communityId) ||
+            (isAuthenticated() && request.auth.uid == resource.data.authorId);
+        }
+      }
+
+      match /reputation_events/{eventId} {
+        allow read: if isCommunityMember(communityId);
+        allow write: if isCommunityModerator(communityId);
+      }
+    }
+
+    match /community_memberships/{membershipId} {
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow update: if false;
+    }
+
+    match /users/{userId}/notifications/{notificationId} {
+      allow read, update, delete: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated();
+    }
+  }
+}

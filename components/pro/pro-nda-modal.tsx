@@ -75,7 +75,7 @@ export function ProNdaModal({
       <DialogContent className="bg-[#181e26] border-[#23272f] max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Shield className="w-6 h-6 text-blue-400" />
+            <Shield className="w-6 h-6 text-primary" />
             Non-Disclosure Agreement
           </DialogTitle>
           <DialogDescription>
@@ -94,7 +94,7 @@ export function ProNdaModal({
           {/* Signature Section */}
           <div className="border-t border-[#23272f] pt-6">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <FileSignature className="w-5 h-5 text-blue-400" />
+              <FileSignature className="w-5 h-5 text-primary" />
               Electronic Signature
             </h3>
 
@@ -109,8 +109,8 @@ export function ProNdaModal({
                 />
               </div>
 
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-400 mb-2">
+              <div className="bg-[var(--accent-soft)] border border-[var(--border-light)] rounded-lg p-4">
+                <h4 className="font-semibold text-primary mb-2">
                   By signing this agreement, you acknowledge:
                 </h4>
                 <ul className="text-sm text-gray-300 space-y-1">
@@ -127,8 +127,8 @@ export function ProNdaModal({
                 </ul>
               </div>
 
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-                <p className="text-sm text-amber-400 font-medium">
+              <div className="bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] border border-[color:color-mix(in_srgb,var(--high)_25%,transparent)] rounded-lg p-4">
+                <p className="text-sm text-[var(--high)] font-medium">
                   ⚠️ This is a legally binding agreement. By clicking "Sign
                   NDA", you are creating an immutable record that cannot be
                   revoked.
@@ -149,7 +149,7 @@ export function ProNdaModal({
           <Button
             onClick={handleSign}
             disabled={signing || !fullName.trim()}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="bg-primary hover:bg-[var(--accent-hover)]"
           >
             {signing ? (
               "Signing..."

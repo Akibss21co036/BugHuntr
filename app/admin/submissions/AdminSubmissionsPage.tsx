@@ -38,6 +38,7 @@ import { FadeIn } from "@/components/animations/fade-in";
 import { useBugHunt } from "@/hooks/use-bug-hunt";
 import { useAuth } from "@/components/auth/auth-context";
 import type { BugHuntSubmission } from "@/types/bug-hunt";
+import { formatCurrency } from "@/lib/pro-utils";
 
 export default function AdminSubmissionsPage() {
   const { user } = useAuth();
@@ -49,7 +50,6 @@ export default function AdminSubmissionsPage() {
   const [severityFilter, setSeverityFilter] = useState("all");
   const [huntFilter, setHuntFilter] = useState("all");
   const [adminNotes, setAdminNotes] = useState("");
-  const [pointsToAward, setPointsToAward] = useState("");
 
   // Filter bug hunts and submissions
   // Company admins should only see submissions for their company's bug hunts
@@ -92,30 +92,45 @@ export default function AdminSubmissionsPage() {
     return myBugHunts.find((hunt) => hunt.id === huntId);
   };
 
+  const getRewardAmount = (submission: BugHuntSubmission) => {
+    const hunt = getHuntForSubmission(submission.huntId);
+    if (!hunt?.rewards) return 0;
+    const severity = submission.severity as keyof typeof hunt.rewards;
+    return hunt.rewards[severity] || 0;
+  };
+
   const handleReviewSubmission = async (action: "approve" | "reject") => {
     if (!selectedSubmission) return;
-    await reviewSubmission(
-      selectedSubmission.id,
-      action === "approve" ? "approved" : "rejected",
-      adminNotes,
-      action === "approve" ? Number.parseInt(pointsToAward) || 0 : undefined,
-      "admin"
-    );
-    setAdminNotes("");
-    setPointsToAward("");
-    setSelectedSubmission(null);
+    const rewardAmount = getRewardAmount(selectedSubmission);
+    try {
+      await reviewSubmission(
+        selectedSubmission.id,
+        action === "approve" ? "approved" : "rejected",
+        adminNotes,
+        action === "approve" ? rewardAmount : undefined,
+        user?.username || "admin"
+      );
+      setAdminNotes("");
+      setSelectedSubmission(null);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to approve submission. Please try again.";
+      alert(message);
+    }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "bg-red-500/10 text-red-500 border-red-500/20";
+        return "bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] text-[var(--critical)] border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)]";
       case "high":
-        return "bg-orange-500/10 text-orange-500 border-orange-500/20";
+        return "bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]";
       case "medium":
-        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+        return "bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--medium)] border-[color:color-mix(in_srgb,var(--medium)_25%,transparent)]";
       case "low":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+        return "bg-[var(--accent-soft)] text-primary border-[var(--border-light)]";
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20";
     }
@@ -124,11 +139,11 @@ export default function AdminSubmissionsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
+        return "bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--medium)] border-[color:color-mix(in_srgb,var(--medium)_25%,transparent)]";
       case "approved":
-        return "bg-green-500/10 text-green-500 border-green-500/20";
+        return "bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]";
       case "rejected":
-        return "bg-red-500/10 text-red-500 border-red-500/20";
+        return "bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] text-[var(--critical)] border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)]";
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20";
     }
@@ -171,14 +186,14 @@ export default function AdminSubmissionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-                <Shield className="h-8 w-8 text-cyber-blue" />
+                <Shield className="h-8 w-8 text-primary" />
                 Submission Review Dashboard
               </h1>
               <p className="text-muted-foreground mt-1">
                 Review bug submissions from researchers
               </p>
             </div>
-            <Badge className="bg-orange-600 text-white">Admin Panel</Badge>
+            <Badge className="bg-[var(--high)] text-white">Admin Panel</Badge>
           </div>
         </FadeIn>
 
@@ -201,11 +216,11 @@ export default function AdminSubmissionsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Pending</p>
-                    <p className="text-2xl font-bold text-yellow-500">
+                    <p className="text-2xl font-bold text-[var(--medium)]">
                       {stats.pending}
                     </p>
                   </div>
-                  <Clock className="h-8 w-8 text-yellow-500 opacity-50" />
+                  <Clock className="h-8 w-8 text-[var(--medium)] opacity-50" />
                 </div>
               </CardContent>
             </Card>
@@ -214,11 +229,11 @@ export default function AdminSubmissionsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Approved</p>
-                    <p className="text-2xl font-bold text-green-500">
+                    <p className="text-2xl font-bold text-[var(--low)]">
                       {stats.approved}
                     </p>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-green-500 opacity-50" />
+                  <CheckCircle className="h-8 w-8 text-[var(--low)] opacity-50" />
                 </div>
               </CardContent>
             </Card>
@@ -227,11 +242,11 @@ export default function AdminSubmissionsPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Rejected</p>
-                    <p className="text-2xl font-bold text-red-500">
+                    <p className="text-2xl font-bold text-[var(--critical)]">
                       {stats.rejected}
                     </p>
                   </div>
-                  <XCircle className="h-8 w-8 text-red-500 opacity-50" />
+                  <XCircle className="h-8 w-8 text-[var(--critical)] opacity-50" />
                 </div>
               </CardContent>
             </Card>
@@ -336,7 +351,7 @@ export default function AdminSubmissionsPage() {
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ delay: index * 0.05 }}
                   >
-                    <Card className="hover:shadow-lg transition-all duration-300 border-border/50 hover:border-cyber-blue/30">
+                    <Card className="hover:shadow-lg transition-all duration-300 border-border/50 hover:border-[var(--border-light)]">
                       <CardContent className="p-6 flex justify-between items-start gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -398,7 +413,7 @@ export default function AdminSubmissionsPage() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-cyber-blue" /> Review Submission:{" "}
+              <Shield className="h-5 w-5 text-primary" /> Review Submission:{" "}
               {selectedSubmission?.title}
             </DialogTitle>
           </DialogHeader>
@@ -493,7 +508,7 @@ export default function AdminSubmissionsPage() {
                       href={selectedSubmission.proofOfConcept}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-cyber-blue text-sm underline"
+                      className="text-primary text-sm underline"
                     >
                       Open in new tab
                     </a>
@@ -521,19 +536,21 @@ export default function AdminSubmissionsPage() {
                     </div>
                     <div>
                       <label className="text-sm font-medium">
-                        Points to Award
+                        Reward Amount
                       </label>
                       <Input
-                        type="number"
-                        value={pointsToAward}
-                        onChange={(e) => setPointsToAward(e.target.value)}
-                        placeholder="Enter points"
+                        type="text"
+                        value={formatCurrency(getRewardAmount(selectedSubmission))}
+                        readOnly
                       />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Amount is set automatically based on severity.
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       <Button
                         onClick={() => handleReviewSubmission("approve")}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
                       >
                         <CheckCircle className="h-4 w-4 mr-2" /> Approve
                       </Button>

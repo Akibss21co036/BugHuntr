@@ -1,11 +1,17 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -13,62 +19,78 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Switch } from "@/components/ui/switch"
-import { Search, Plus, Users, Lock, Globe, TrendingUp } from "lucide-react"
-import { useCommunity } from "@/hooks/use-community"
-import { motion } from "framer-motion"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Search, Plus, Users, Lock, Globe, TrendingUp } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-context";
+import { useCommunity } from "@/hooks/use-community";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function CommunitiesPage() {
-  const { communities, joinedCommunities, joinCommunity, leaveCommunity, createCommunity } = useCommunity()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
+  const { user } = useAuth();
+  const {
+    communities,
+    joinedCommunityIds,
+    isLoading,
+    joinCommunity,
+    leaveCommunity,
+    createCommunity,
+    getCommunityChannels,
+  } = useCommunity();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [newCommunity, setNewCommunity] = useState({
     name: "",
     description: "",
     isPrivate: false,
     tags: "",
-  })
+  });
 
-  // Defer rendering until after mount to prevent hydration issues
   useEffect(() => {
-    setIsMounted(true)
-  }, [])
+    setIsMounted(true);
+  }, []);
 
   const filteredCommunities = communities.filter(
     (community) =>
       community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       community.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      community.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
-  )
+      (community.tags ?? []).some((tag) =>
+        tag.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
+  );
 
   const handleCreateCommunity = async () => {
-    if (!newCommunity.name.trim()) return
+    if (!newCommunity.name.trim()) return;
 
-    await createCommunity({
-      name: newCommunity.name,
-      description: newCommunity.description,
-      isPrivate: newCommunity.isPrivate,
-      tags: newCommunity.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter(Boolean),
-    })
+    const tags = newCommunity.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
 
-    setNewCommunity({ name: "", description: "", isPrivate: false, tags: "" })
-    setIsCreateDialogOpen(false)
-  }
+    try {
+      await createCommunity({
+        name: newCommunity.name,
+        description: newCommunity.description,
+        isPrivate: newCommunity.isPrivate,
+        tags,
+      });
+      setNewCommunity({ name: "", description: "", isPrivate: false, tags: "" });
+      setIsCreateDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to create community", error);
+    }
+  };
 
   const isJoined = (communityId: string) => {
-    return joinedCommunities.some((c) => c.id === communityId)
-  }
+    return joinedCommunityIds.includes(communityId);
+  };
 
-  // Don't render heavy content until mounted
   if (!isMounted) {
-    return null
+    return null;
   }
 
   return (
@@ -78,10 +100,15 @@ export default function CommunitiesPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Communities</h1>
-            <p className="text-muted-foreground">Discover and join security research communities</p>
+            <p className="text-muted-foreground">
+              Discover and join security research communities
+            </p>
           </div>
 
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -91,7 +118,9 @@ export default function CommunitiesPage() {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Create New Community</DialogTitle>
-                <DialogDescription>Start a new community for security researchers to collaborate</DialogDescription>
+                <DialogDescription>
+                  Start a new community for security researchers to collaborate
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -99,8 +128,14 @@ export default function CommunitiesPage() {
                   <Input
                     id="name"
                     value={newCommunity.name}
-                    onChange={(e) => setNewCommunity((prev) => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) =>
+                      setNewCommunity((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
                     placeholder="Enter community name"
+                    className="border-[0.5px]"
                   />
                 </div>
                 <div>
@@ -108,9 +143,15 @@ export default function CommunitiesPage() {
                   <Textarea
                     id="description"
                     value={newCommunity.description}
-                    onChange={(e) => setNewCommunity((prev) => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewCommunity((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     placeholder="Describe your community"
                     rows={3}
+                    className="border-[0.5px]"
                   />
                 </div>
                 <div>
@@ -118,15 +159,26 @@ export default function CommunitiesPage() {
                   <Input
                     id="tags"
                     value={newCommunity.tags}
-                    onChange={(e) => setNewCommunity((prev) => ({ ...prev, tags: e.target.value }))}
+                    onChange={(e) =>
+                      setNewCommunity((prev) => ({
+                        ...prev,
+                        tags: e.target.value,
+                      }))
+                    }
                     placeholder="web-security, research, vulnerabilities"
+                    className="border-[0.5px]"
                   />
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="private"
                     checked={newCommunity.isPrivate}
-                    onCheckedChange={(checked) => setNewCommunity((prev) => ({ ...prev, isPrivate: checked }))}
+                    onCheckedChange={(checked) =>
+                      setNewCommunity((prev) => ({
+                        ...prev,
+                        isPrivate: checked,
+                      }))
+                    }
                   />
                   <Label htmlFor="private">Private Community</Label>
                 </div>
@@ -134,7 +186,10 @@ export default function CommunitiesPage() {
                   <Button onClick={handleCreateCommunity} className="flex-1">
                     Create Community
                   </Button>
-                  <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
                     Cancel
                   </Button>
                 </div>
@@ -159,12 +214,14 @@ export default function CommunitiesPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-cyber-blue/10 rounded-lg">
-                  <Users className="h-5 w-5 text-cyber-blue" />
+                <div className="p-2 bg-[var(--accent-soft)] rounded-lg">
+                  <Users className="h-5 w-5 text-primary" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{communities.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Communities</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Communities
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -172,12 +229,16 @@ export default function CommunitiesPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-neon-green/10 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-neon-green" />
+                <div className="p-2 bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] rounded-lg">
+                  <TrendingUp className="h-5 w-5 text-[var(--low)]" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{joinedCommunities.length}</p>
-                  <p className="text-sm text-muted-foreground">Joined Communities</p>
+                  <p className="text-2xl font-bold">
+                    {joinedCommunityIds.length}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Joined Communities
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -185,12 +246,16 @@ export default function CommunitiesPage() {
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-cyber-cyan/10 rounded-lg">
-                  <Globe className="h-5 w-5 text-cyber-cyan" />
+                <div className="p-2 bg-secondary/10 rounded-lg">
+                  <Globe className="h-5 w-5 text-secondary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{communities.filter((c) => !c.isPrivate).length}</p>
-                  <p className="text-sm text-muted-foreground">Public Communities</p>
+                  <p className="text-2xl font-bold">
+                    {communities.filter((c) => !c.isPrivate).length}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Public Communities
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -199,20 +264,30 @@ export default function CommunitiesPage() {
 
         {/* Communities Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCommunities.map((community, index) => (
-            <motion.div
-              key={community.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="h-full hover:shadow-lg transition-shadow">
+          {!isLoading &&
+            filteredCommunities.map((community, index) => {
+            const channels = getCommunityChannels(community.id);
+            const firstChannelId = channels[0]?.id ?? community.channels[0]?.id;
+            const workspaceHref = firstChannelId
+              ? `/communities/${community.id}/channels/${firstChannelId}`
+              : `/communities/${community.id}`;
+
+            return (
+              <motion.div
+                key={community.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="h-full hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={community.avatar || "/placeholder.svg"} />
-                        <AvatarFallback className="bg-gradient-to-br from-cyber-blue to-neon-green text-white font-bold">
+                        <AvatarImage
+                          src={community.avatar || "/placeholder.svg"}
+                        />
+                        <AvatarFallback className="bg-primary text-primary-foreground font-bold">
                           {community.name.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
@@ -234,51 +309,79 @@ export default function CommunitiesPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <CardDescription className="line-clamp-3">{community.description}</CardDescription>
+                  <CardDescription className="line-clamp-3">
+                    {community.description}
+                  </CardDescription>
 
                   <div className="flex flex-wrap gap-1">
-                    {community.tags.slice(0, 3).map((tag) => (
+                    {(community.tags ?? []).slice(0, 3).map((tag) => (
                       <Badge key={tag} variant="secondary" className="text-xs">
                         {tag}
                       </Badge>
                     ))}
-                    {community.tags.length > 3 && (
+                    {(community.tags ?? []).length > 3 && (
                       <Badge variant="outline" className="text-xs">
-                        +{community.tags.length - 3}
+                        +{(community.tags ?? []).length - 3}
                       </Badge>
                     )}
                   </div>
 
                   <div className="pt-2">
                     {isJoined(community.id) ? (
-                      <Button
-                        variant="outline"
-                        className="w-full bg-transparent"
-                        onClick={() => leaveCommunity(community.id)}
-                      >
-                        Leave Community
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link href={workspaceHref}>
+                          <Button className="w-full">Open</Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          className="w-full bg-transparent"
+                          onClick={() => leaveCommunity(community.id)}
+                        >
+                          Leave
+                        </Button>
+                      </div>
                     ) : (
-                      <Button className="w-full" onClick={() => joinCommunity(community.id)}>
+                      <Button
+                        className="w-full"
+                        disabled={!user?.id}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          await joinCommunity(community.id);
+                        }}
+                      >
                         Join Community
                       </Button>
                     )}
                   </div>
                 </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {filteredCommunities.length === 0 && (
+        {isLoading && (
+          <div className="text-center py-12">
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Loading communities...</h3>
+            <p className="text-muted-foreground">Please wait while we fetch data.</p>
+          </div>
+        )}
+
+        {!isLoading && filteredCommunities.length === 0 && (
           <div className="text-center py-12">
             <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No communities found</h3>
             <p className="text-muted-foreground mb-4">
-              {searchQuery ? "Try adjusting your search terms" : "Be the first to create a community!"}
+              {searchQuery
+                ? "Try adjusting your search terms"
+                : "Be the first to create a community!"}
             </p>
             {!searchQuery && (
-              <Button onClick={() => setIsCreateDialogOpen(true)} className="gap-2">
+              <Button
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="gap-2"
+              >
                 <Plus className="h-4 w-4" />
                 Create Community
               </Button>
@@ -287,5 +390,5 @@ export default function CommunitiesPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -45,11 +45,11 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "issued":
-        return "bg-blue-600";
+        return "bg-primary";
       case "accepted":
-        return "bg-green-600";
+        return "bg-[var(--low)]";
       case "declined":
-        return "bg-red-600";
+        return "bg-[var(--critical)]";
       case "expired":
         return "bg-gray-600";
       default:
@@ -95,13 +95,13 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
         return (
           <Card
             key={offer.id}
-            className="bg-[#181e26] border-[#23272f] hover:border-blue-500/30 transition-colors"
+            className="bg-[#181e26] border-[#23272f] hover:border-[var(--border-light)] transition-colors"
           >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3 flex-1">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-6 h-6 text-white" />
+                  <div className="w-12 h-12 bg-[var(--accent-soft)] border border-[var(--border-light)] rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
@@ -111,8 +111,8 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
                       <Badge
                         className={`text-xs ${
                           offer.offerType === "job"
-                            ? "bg-purple-600"
-                            : "bg-blue-600"
+                            ? "bg-secondary"
+                            : "bg-primary"
                         }`}
                       >
                         {offer.offerType === "job" ? "Full-Time" : "Internship"}
@@ -137,7 +137,7 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
               <div className="grid grid-cols-2 gap-4">
                 {offer.salary && (
                   <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-green-400" />
+                    <DollarSign className="w-4 h-4 text-[var(--low)]" />
                     <div>
                       <p className="text-xs text-gray-400">Salary</p>
                       <p className="text-sm font-semibold">{offer.salary}</p>
@@ -146,7 +146,7 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
                 )}
                 {offer.duration && (
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-400" />
+                    <Clock className="w-4 h-4 text-primary" />
                     <div>
                       <p className="text-xs text-gray-400">Duration</p>
                       <p className="text-sm font-semibold">{offer.duration}</p>
@@ -154,7 +154,7 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
                   </div>
                 )}
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-purple-400" />
+                  <MapPin className="w-4 h-4 text-secondary" />
                   <div>
                     <p className="text-xs text-gray-400">Location</p>
                     <p className="text-sm font-semibold">{offer.location}</p>
@@ -172,8 +172,8 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
 
               {/* Expiration Warning */}
               {isPending && isExpiringSoon && (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-                  <p className="text-sm text-amber-400">
+                <div className="bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] border border-[color:color-mix(in_srgb,var(--high)_25%,transparent)] rounded-lg p-3">
+                  <p className="text-sm text-[var(--high)]">
                     ⚠️ Offer expires on{" "}
                     {new Date(offer.expiresAt).toLocaleDateString()}
                   </p>
@@ -186,7 +186,7 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
                   <Button
                     onClick={() => handleRespond(offer.id, true)}
                     disabled={responding === offer.id}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    className="flex-1 bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Accept Offer
@@ -204,8 +204,8 @@ export function ProOffersPanel({ offers, onRespond }: ProOffersPanelProps) {
               )}
 
               {offer.status === "accepted" && offer.acceptedAt && (
-                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                  <p className="text-sm text-green-400">
+                <div className="bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] border border-[color:color-mix(in_srgb,var(--low)_25%,transparent)] rounded-lg p-3">
+                  <p className="text-sm text-[var(--low)]">
                     ✓ Accepted on{" "}
                     {new Date(offer.acceptedAt).toLocaleDateString()}
                   </p>

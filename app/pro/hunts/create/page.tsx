@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ProHuntWizard } from "@/components/pro/pro-hunt-wizard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,9 @@ import { getUserPermissions } from "@/lib/pro-utils";
 
 export default function CreateProHuntPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
+  const editHuntId = searchParams.get("edit");
 
   // Get user permissions
   const permissions = user
@@ -44,7 +46,7 @@ export default function CreateProHuntPage() {
       <div className="min-h-screen bg-[#10151c] flex items-center justify-center p-6">
         <Card className="max-w-md bg-[#181e26] border-[#23272f]">
           <CardContent className="p-8 text-center space-y-4">
-            <AlertCircle className="w-16 h-16 mx-auto text-red-400" />
+            <AlertCircle className="w-16 h-16 mx-auto text-[var(--critical)]" />
             <h2 className="text-2xl font-bold">Access Denied</h2>
             <p className="text-gray-400">
               Only companies can create Pro hunts. If you're a hunter and want
@@ -53,7 +55,7 @@ export default function CreateProHuntPage() {
             <div className="flex gap-2">
               <Button
                 onClick={() => router.push("/pro")}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
+                className="flex-1 bg-primary hover:bg-[var(--accent-hover)]"
               >
                 Go to Pro Dashboard
               </Button>
@@ -86,11 +88,15 @@ export default function CreateProHuntPage() {
             Back to My Hunts
           </Button>
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Shield className="w-10 h-10 text-blue-400" />
-            <h1 className="text-4xl font-black">Create Pro Hunt</h1>
+            <Shield className="w-10 h-10 text-primary" />
+            <h1 className="text-4xl font-black">
+              {editHuntId ? "Edit Pro Hunt" : "Create Pro Hunt"}
+            </h1>
           </div>
           <p className="text-gray-400 text-lg">
-            Launch an invite-only bug hunt with elite security researchers
+            {editHuntId
+              ? "Update your bug hunt details and settings"
+              : "Launch an invite-only bug hunt with elite security researchers"}
           </p>
         </div>
 
@@ -98,8 +104,9 @@ export default function CreateProHuntPage() {
         <ProHuntWizard
           companyId={companyData.id}
           companyName={companyData.name}
+          editHuntId={editHuntId || undefined}
           onComplete={() => {
-            console.log("Pro Hunt created successfully");
+            console.log("Pro Hunt saved successfully");
             router.push("/pro/hunts?view=manage");
           }}
         />

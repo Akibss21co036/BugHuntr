@@ -9,11 +9,11 @@ import { useRouter } from "next/navigation";
 import {
   Eye,
   EyeOff,
-  Shield,
   ArrowLeft,
   Building2,
   Mail,
   AlertCircle,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,8 +172,6 @@ export default function LoginPage() {
       // Show success message instead of auto-redirect
       alert("Login successful! Welcome back.");
 
-      // alert("Login successful! Welcome back.")
-      
       // Optional: redirect after user acknowledgment
       setTimeout(() => {
         router.push("/feed");
@@ -187,51 +185,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 relative"
-      style={{
-        backgroundImage: "url(/signup-bg.png)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="w-full max-w-md">
-        <Card className="border-slate-700 bg-slate-800/50 backdrop-blur-sm">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex items-center justify-center mb-4">
-              <div className="relative">
-                {isAdminLogin ? (
-                  <Building2 className="h-12 w-12 text-orange-400" />
-                ) : (
-                  <Shield className="h-12 w-12 text-blue-400" />
-                )}
-                <div
-                  className={`absolute inset-0 ${
-                    isAdminLogin ? "bg-orange-400/20" : "bg-blue-400/20"
-                  } rounded-full blur-lg`}
-                />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold text-white">
-              {showTwoFactor ? "Two-Factor Authentication" : "Welcome Back"}
+    <div className="min-h-screen flex items-center justify-center py-10 px-4 bg-background relative">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--border)_20%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--border)_20%,transparent)_1px,transparent_1px)] bg-[size:64px_64px] opacity-25 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,color-mix(in_srgb,var(--accent-primary)_8%,transparent),transparent_60%)] pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10">
+        <Card className="bg-secondary bg-gradient-to-b from-[var(--bg-secondary)] to-[var(--bg-tertiary)] border border-border shadow-lg rounded-xl p-6 sm:p-8">
+          <CardHeader className="p-0 pb-6 space-y-2 text-left">
+            <CardTitle className="text-primary text-3xl font-semibold tracking-tight border-l-2 border-[var(--accent-primary)] pl-2">
+              Login
             </CardTitle>
-            <CardDescription className="text-slate-400">
-              {showTwoFactor
-                ? "Enter the verification code sent to your company email"
-                : isAdminLogin
-                ? "Sign in to your company admin account to manage bug hunts"
-                : "Sign in to your BugHuntr account to continue hunting"}
+            <CardDescription className="text-sm text-muted-foreground">
+              Enter your credentials to continue
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+
+          <CardContent className="p-0 space-y-6">
             {validationErrors.length > 0 && (
-              <Alert className="border-red-500/50 bg-red-500/10">
-                <AlertCircle className="h-4 w-4 text-red-400" />
-                <AlertDescription className="text-red-400">
+              <Alert className="border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--critical)_10%,transparent)]">
+                <AlertCircle className="h-4 w-4 text-[var(--critical)]" />
+                <AlertDescription className="text-[var(--critical)]">
                   <ul className="list-disc list-inside space-y-1">
                     {validationErrors.map((error, index) => (
-                      <li key={index}>{error}</li>
+                      <li key={index} className="text-sm">{error}</li>
                     ))}
                   </ul>
                 </AlertDescription>
@@ -239,60 +215,58 @@ export default function LoginPage() {
             )}
 
             {!showTwoFactor && (
-              <div className="flex items-center justify-center space-x-4 mb-4">
+              <div className="grid grid-cols-2 gap-2 rounded-lg border border-border bg-tertiary p-1">
                 <Button
                   type="button"
-                  variant={!isAdminLogin ? "default" : "outline"}
-                  size="sm"
+                  variant="ghost"
                   onClick={() => setIsAdminLogin(false)}
-                  className={
+                  className={`h-10 w-full rounded-md font-medium transition-all duration-200 ease-in-out ${
                     !isAdminLogin
-                      ? "bg-blue-600 hover:bg-blue-700"
-                      : "border-slate-600 text-slate-300"
-                  }
+                      ? "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)]"
+                      : "bg-tertiary text-muted-foreground hover:bg-muted"
+                  }`}
                 >
-                  User Login
+                  Hunter
                 </Button>
                 <Button
                   type="button"
-                  variant={isAdminLogin ? "default" : "outline"}
-                  size="sm"
+                  variant="ghost"
                   onClick={() => setIsAdminLogin(true)}
-                  className={
+                  className={`h-10 w-full rounded-md font-medium transition-all duration-200 ease-in-out ${
                     isAdminLogin
-                      ? "bg-orange-600 hover:bg-orange-700"
-                      : "border-slate-600 text-slate-300"
-                  }
+                      ? "bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-hover)]"
+                      : "bg-tertiary text-muted-foreground hover:bg-muted"
+                  }`}
                 >
-                  Company Admin
+                  Admin
                 </Button>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {showTwoFactor ? (
                 <div className="space-y-2">
-                  <Label htmlFor="twoFactorCode" className="text-slate-300">
-                    Verification Code
+                  <Label htmlFor="twoFactorCode" className="text-sm text-muted-foreground">
+                    Verification code
                   </Label>
                   <Input
                     id="twoFactorCode"
                     type="text"
-                    placeholder="Enter 6-digit code"
+                    placeholder="000000"
                     value={formData.twoFactorCode}
                     onChange={(e) =>
                       handleInputChange("twoFactorCode", e.target.value)
                     }
-                    className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-500 text-center text-lg tracking-widest"
+                    className="bg-tertiary border border-border rounded-lg px-4 py-2 h-11 text-foreground placeholder:text-muted-foreground focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--accent-primary)_30%,transparent)] transition-all duration-200 ease-in-out"
                     maxLength={6}
                     required
                   />
-                  <p className="text-xs text-slate-400 text-center">
-                    Didn't receive the code?{" "}
+                  <p className="text-xs text-muted-foreground">
+                    Code not received?{" "}
                     <button
                       type="button"
                       onClick={() => sendTwoFactorCode(formData.email)}
-                      className="text-orange-400 hover:text-orange-300"
+                      className="text-[var(--accent-primary)] hover:text-[var(--accent-hover)]"
                     >
                       Resend
                     </button>
@@ -301,111 +275,111 @@ export default function LoginPage() {
               ) : (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-slate-300">
-                      {isAdminLogin ? "Admin Email Address" : "Email"}
+                    <Label htmlFor="email" className="text-sm text-muted-foreground">
+                      {isAdminLogin ? "Admin email" : "Email"}
                     </Label>
                     <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="email"
                         type="email"
                         placeholder={
-                          isAdminLogin
-                            ? "admin@company.com"
-                            : "john.doe@example.com"
+                          isAdminLogin ? "admin@company.com" : "hunter@example.com"
                         }
                         value={formData.email}
                         onChange={(e) =>
                           handleInputChange("email", e.target.value)
                         }
-                        className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 pl-10"
+                        className="bg-tertiary border border-border rounded-lg pl-10 pr-4 py-2 h-11 text-foreground placeholder:text-muted-foreground focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--accent-primary)_30%,transparent)] transition-all duration-200 ease-in-out"
                         required
                       />
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                     </div>
                     {isAdminLogin && (
-                      <p className="text-xs text-slate-400">
-                        Use the email you registered with as admin
+                      <p className="text-xs text-muted-foreground">
+                        Use your registered admin email.
                       </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-300">
+                    <Label htmlFor="password" className="text-sm text-muted-foreground">
                       Password
                     </Label>
                     <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
+                        placeholder="••••••••••••"
                         value={formData.password}
                         onChange={(e) =>
                           handleInputChange("password", e.target.value)
                         }
-                        className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-blue-500 pr-10"
+                        className="bg-tertiary border border-border rounded-lg pl-10 pr-11 py-2 h-11 text-foreground placeholder:text-muted-foreground focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--accent-primary)_30%,transparent)] transition-all duration-200 ease-in-out"
                         required
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 ease-in-out"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
-                          <EyeOff className="h-4 w-4 text-slate-400" />
+                          <EyeOff className="h-4 w-4" />
                         ) : (
-                          <Eye className="h-4 w-4 text-slate-400" />
+                          <Eye className="h-4 w-4" />
                         )}
                       </Button>
                     </div>
                     {isAdminLogin && (
-                      <p className="text-xs text-slate-400">
-                        Must contain 8+ chars, uppercase, lowercase, number, and
-                        special character
+                      <p className="text-xs text-muted-foreground">
+                        Use at least 8 characters with uppercase, lowercase, number, and symbol.
                       </p>
                     )}
                   </div>
 
                   {isAdminLogin && (
                     <div className="space-y-2">
-                      <Label htmlFor="companyId" className="text-slate-300">
-                        Company ID / Registration Number{" "}
-                        <span className="text-slate-500">(Optional)</span>
+                      <Label htmlFor="companyId" className="text-sm text-muted-foreground">
+                        Company ID (optional)
                       </Label>
-                      <Input
-                        id="companyId"
-                        type="text"
-                        placeholder="COMP001 or REG123456"
-                        value={formData.companyId}
-                        onChange={(e) =>
-                          handleInputChange("companyId", e.target.value)
-                        }
-                        className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-orange-500"
-                      />
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="companyId"
+                          type="text"
+                          placeholder="COMP_001 or REG_123456"
+                          value={formData.companyId}
+                          onChange={(e) =>
+                            handleInputChange("companyId", e.target.value)
+                          }
+                          className="bg-tertiary border border-border rounded-lg pl-10 pr-4 py-2 h-11 text-foreground placeholder:text-muted-foreground focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[color:color-mix(in_srgb,var(--accent-primary)_30%,transparent)] transition-all duration-200 ease-in-out"
+                        />
+                      </div>
                     </div>
                   )}
 
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         id="rememberMe"
                         checked={formData.rememberMe}
                         onCheckedChange={(checked: boolean) =>
                           handleInputChange("rememberMe", checked)
                         }
-                        className="border-slate-600 data-[state=checked]:bg-blue-600"
+                        className="border-border data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <Label
                         htmlFor="rememberMe"
-                        className="text-sm text-slate-300"
+                        className="text-sm text-muted-foreground cursor-pointer"
                       >
                         Remember me
                       </Label>
                     </div>
                     <Link
                       href="/forgot-password"
-                      className="text-sm text-blue-400 hover:text-blue-300"
+                      className="text-sm text-[var(--accent-primary)] hover:text-[var(--accent-hover)]"
                     >
                       Forgot password?
                     </Link>
@@ -415,47 +389,45 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className={`w-full text-white ${
-                  isAdminLogin
-                    ? "bg-orange-600 hover:bg-orange-700"
-                    : "bg-blue-600 hover:bg-blue-700"
-                }`}
+                className="w-full h-auto rounded-lg py-3 text-sm font-medium text-white bg-[var(--accent-primary)] hover:bg-[var(--accent-hover)] shadow-md transition-all duration-200 ease-in-out hover:scale-[1.02] active:scale-95"
                 disabled={isLoading}
               >
-                {isLoading
-                  ? showTwoFactor
-                    ? "Verifying..."
-                    : isAdminLogin
-                    ? "Authenticating..."
-                    : "Signing In..."
-                  : showTwoFactor
-                  ? "Verify & Sign In"
-                  : isAdminLogin
-                  ? "Sign In as Company Admin"
-                  : "Sign In"}
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    {showTwoFactor
+                      ? "Verifying..."
+                      : isAdminLogin
+                      ? "Authenticating..."
+                      : "Logging in..."}
+                  </div>
+                ) : (
+                  <span>{showTwoFactor ? "Verify & Login" : "Login"}</span>
+                )}
               </Button>
 
               {showTwoFactor && (
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
+                  className="w-full h-11 rounded-lg border border-border bg-tertiary text-foreground hover:bg-muted"
                   onClick={() => setShowTwoFactor(false)}
                 >
-                  Back to Login
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
                 </Button>
               )}
             </form>
 
             {!showTwoFactor && (
-              <div className="text-center">
-                <p className="text-slate-400 text-sm">
-                  Don't have an account?{" "}
+              <div className="text-center pt-2">
+                <p className="text-sm text-muted-foreground">
+                  No account?{" "}
                   <Link
                     href="/signup"
-                    className="text-blue-400 hover:text-blue-300 font-medium"
+                    className="text-[var(--accent-primary)] hover:text-[var(--accent-hover)] font-medium"
                   >
-                    Sign up
+                    Register
                   </Link>
                 </p>
               </div>
@@ -463,13 +435,13 @@ export default function LoginPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-4 text-center">
+        <div className="mt-5 text-center">
           <Link
             href="/"
-            className="inline-flex items-center text-slate-400 hover:text-white transition-colors"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Home
+            Back to home
           </Link>
         </div>
       </div>

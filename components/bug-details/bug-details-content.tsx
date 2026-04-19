@@ -105,7 +105,7 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
                   <Badge variant="outline" className="shrink-0 truncate max-w-24">
                     {bug.category}
                   </Badge>
-                  <Badge variant="secondary" className="bg-cyber-blue/10 text-cyber-blue shrink-0 truncate max-w-32">
+                  <Badge variant="secondary" className="bg-[var(--accent-soft)] text-primary shrink-0 truncate max-w-32">
                     {bug.company}
                   </Badge>
                   <Badge variant="outline" className="gap-1 shrink-0">
@@ -119,7 +119,7 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
                 <CardTitle className="text-xl sm:text-2xl leading-tight break-words">{bug.title}</CardTitle>
               </div>
               {bug.isLocked && !isSubscribed && (
-                <div className="flex items-center gap-1 text-neon-orange bg-neon-orange/10 px-3 py-2 rounded-lg shrink-0">
+                <div className="flex items-center gap-1 text-[var(--high)] bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] px-3 py-2 rounded-lg shrink-0">
                   <Lock className="h-4 w-4" />
                   <span className="text-sm font-medium">Premium</span>
                 </div>
@@ -130,7 +130,7 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage src={`/placeholder.svg?height=32&width=32&query=${bug.author}`} />
-                  <AvatarFallback className="bg-cyber-blue/20 text-cyber-blue">
+                  <AvatarFallback className="bg-[var(--accent-soft)] text-primary">
                     {bug.author.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -140,7 +140,7 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
                 </div>
               </div>
               <div className="flex items-center gap-3 sm:gap-4 text-sm text-muted-foreground flex-wrap">
-                <div className="flex items-center gap-1 text-neon-green shrink-0">
+                <div className="flex items-center gap-1 text-[var(--low)] shrink-0">
                   <DollarSign className="h-4 w-4" />
                   <span className="font-semibold">${bug.bounty.toLocaleString()}</span>
                 </div>
@@ -207,14 +207,14 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 Proof of Concept
-                {bug.isLocked && !isSubscribed && <Lock className="h-5 w-5 text-neon-orange" />}
+                {bug.isLocked && !isSubscribed && <Lock className="h-5 w-5 text-[var(--high)]" />}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {bug.isLocked && !isSubscribed ? (
                 <div className="text-center py-12 space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-neon-orange/10 rounded-full flex items-center justify-center">
-                    <Lock className="h-8 w-8 text-neon-orange" />
+                  <div className="w-16 h-16 mx-auto bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] rounded-full flex items-center justify-center">
+                    <Lock className="h-8 w-8 text-[var(--high)]" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold mb-2">Premium Content</h3>
@@ -248,7 +248,7 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
                 {bug.timeline.map((item, index) => (
                   <div key={index} className="flex gap-4">
                     <div className="flex flex-col items-center shrink-0">
-                      <div className="w-3 h-3 bg-cyber-blue rounded-full"></div>
+                      <div className="w-3 h-3 bg-primary rounded-full"></div>
                       {index < bug.timeline.length - 1 && <div className="w-px h-8 bg-border mt-2"></div>}
                     </div>
                     <div className="flex-1 pb-4 min-w-0">
@@ -276,7 +276,7 @@ export function BugDetailsContent({ bug }: BugDetailsContentProps) {
                   <Badge
                     key={tag}
                     variant="secondary"
-                    className="bg-cyber-blue/10 text-cyber-blue text-xs truncate max-w-32"
+                    className="bg-[var(--accent-soft)] text-primary text-xs truncate max-w-32"
                   >
                     {tag}
                   </Badge>

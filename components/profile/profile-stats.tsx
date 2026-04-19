@@ -34,7 +34,7 @@ export function ProfileStats({ user }: ProfileStatsProps) {
           <Target className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-neon-green">{successRate}%</div>
+          <div className="text-2xl font-bold text-[var(--low)]">{successRate}%</div>
           <Progress value={successRate} className="mt-2" />
           <p className="text-xs text-muted-foreground mt-2">
             {user.validReports} valid out of {user.totalReports} reports
@@ -48,10 +48,10 @@ export function ProfileStats({ user }: ProfileStatsProps) {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-cyber-blue">${user.averageBounty}</div>
+          <div className="text-2xl font-bold text-primary">${user.averageBounty}</div>
           <div className="flex items-center gap-1 mt-2">
-            <TrendingUp className="h-3 w-3 text-neon-green" />
-            <span className="text-xs text-neon-green">+12% from last month</span>
+            <TrendingUp className="h-3 w-3 text-[var(--low)]" />
+            <span className="text-xs text-[var(--low)]">+12% from last month</span>
           </div>
         </CardContent>
       </Card>
@@ -65,7 +65,7 @@ export function ProfileStats({ user }: ProfileStatsProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-3 w-3 text-neon-green" />
+                <CheckCircle className="h-3 w-3 text-[var(--low)]" />
                 <span className="text-sm">Valid</span>
               </div>
               <Badge variant="secondary">{user.validReports}</Badge>
@@ -93,11 +93,11 @@ export function ProfileStats({ user }: ProfileStatsProps) {
             {monthlyEarnings.map((data, index) => (
               <div key={data.month} className="flex flex-col items-center gap-2 flex-1">
                 <div
-                  className="w-full bg-cyber-blue/20 rounded-t-sm relative overflow-hidden"
+                  className="w-full bg-[var(--accent-soft)] rounded-t-sm relative overflow-hidden"
                   style={{ height: `${(data.amount / 3200) * 100}%` }}
                 >
                   <div
-                    className="absolute bottom-0 left-0 right-0 bg-cyber-blue rounded-t-sm transition-all duration-500"
+                    className="absolute bottom-0 left-0 right-0 bg-primary rounded-t-sm transition-all duration-500"
                     style={{
                       height: "100%",
                       animationDelay: `${index * 100}ms`,

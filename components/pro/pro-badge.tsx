@@ -23,9 +23,9 @@ export function ProBadge({ className, size = "md" }: ProBadgeProps) {
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full font-bold",
-        "bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600",
-        "text-black shadow-lg shadow-amber-500/50",
-        "border border-amber-300",
+        "bg-gradient-to-r from-primary to-secondary",
+        "text-primary-foreground shadow-sm",
+        "border border-[var(--border-light)]",
         sizeClasses[size],
         className
       )}

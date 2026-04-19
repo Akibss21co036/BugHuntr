@@ -4,7 +4,16 @@ import { useState, useEffect } from "react";
 import { type ProHunt, type ProSubmission } from "@/types/pro";
 import { mockProHunts } from "@/data/mock-pro-data";
 import { db } from "@/firebaseConfig";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  Query,
+  where,
+  query,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 
 export function useProHunts() {
   const [proHunts, setProHunts] = useState<ProHunt[]>([]);
@@ -34,7 +43,7 @@ export function useProHunts() {
       } catch (err) {
         console.error(
           "Failed to load persisted pro hunts, falling back to mocks:",
-          err
+          err,
         );
         setProHunts(mockProHunts);
       } finally {
@@ -47,7 +56,10 @@ export function useProHunts() {
   }, []);
 
   const createProHunt = async (
-    huntData: Omit<ProHunt, "id" | "createdAt" | "updatedAt" | "currentHunters">
+    huntData: Omit<
+      ProHunt,
+      "id" | "createdAt" | "updatedAt" | "currentHunters"
+    >,
   ) => {
     const newHunt: ProHunt = {
       ...huntData,
@@ -73,9 +85,24 @@ export function useProHunts() {
       prev.map((hunt) =>
         hunt.id === huntId
           ? { ...hunt, ...updates, updatedAt: new Date().toISOString() }
-          : hunt
-      )
+          : hunt,
+      ),
     );
+
+    // Persist to Firestore
+    try {
+      const q = query(collection(db, "proBugHunts"), where("id", "==", huntId));
+      const snapshot = await getDocs(q);
+      if (snapshot.docs.length > 0) {
+        const docRef = snapshot.docs[0].ref;
+        await updateDoc(docRef, {
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      console.error("Failed to update pro hunt in Firestore:", err);
+    }
   };
 
   const deleteProHunt = async (huntId: string) => {

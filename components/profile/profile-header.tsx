@@ -78,7 +78,7 @@ export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
               <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
                 <Avatar className="h-24 w-24 sm:h-32 sm:w-32 mb-4 ring-4 ring-cyber-blue/20">
                   <AvatarImage src={user.avatar || "/placeholder.svg"} />
-                  <AvatarFallback className="text-lg sm:text-2xl bg-cyber-blue/20 text-cyber-blue">
+                  <AvatarFallback className="text-lg sm:text-2xl bg-[var(--accent-soft)] text-primary">
                     {user.displayName
                       .split(" ")
                       .map((n) => n[0])
@@ -114,7 +114,7 @@ export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.4, type: "spring" }}
                       >
-                        <Badge className="bg-cyber-blue/10 text-cyber-blue border-cyber-blue/30 shrink-0">
+                        <Badge className="bg-[var(--accent-soft)] text-primary border-[var(--border-light)] shrink-0">
                           Rank #{user.rank}
                         </Badge>
                       </motion.div>
@@ -144,17 +144,17 @@ export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
                 </div>
                 <div className="flex items-center gap-1 min-w-0">
                   <Globe className="h-4 w-4 shrink-0" />
-                  <a href={user.website} className="text-cyber-blue hover:underline truncate">
+                  <a href={user.website} className="text-primary hover:underline truncate">
                     {user.website.replace("https://", "")}
                   </a>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Star className="h-4 w-4 fill-neon-orange text-neon-orange" />
+                  <Star className="h-4 w-4 fill-[var(--high)] text-[var(--high)]" />
                   <span>{user.reputation}/5.0</span>
                 </div>
                 {userRanking && userRanking.streak > 0 && (
                   <div className="flex items-center gap-1 shrink-0">
-                    <Trophy className="h-4 w-4 text-orange-500" />
+                    <Trophy className="h-4 w-4 text-[var(--high)]" />
                     <span>{userRanking.streak} day streak</span>
                   </div>
                 )}
@@ -164,7 +164,7 @@ export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
             <SlideIn direction="up" delay={0.5}>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-border/50">
                 <motion.div className="text-center" whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-                  <div className="flex items-center justify-center gap-1 text-neon-green mb-1">
+                  <div className="flex items-center justify-center gap-1 text-[var(--low)] mb-1">
                     <DollarSign className="h-4 w-4" />
                     <span className="text-xl sm:text-2xl font-bold">
                       ${(userRanking?.totalEarnings || user.totalEarnings).toLocaleString()}
@@ -173,19 +173,19 @@ export function ProfileHeader({ user, userRanking }: ProfileHeaderProps) {
                   <p className="text-xs sm:text-sm text-muted-foreground">Total Earnings</p>
                 </motion.div>
                 <motion.div className="text-center" whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-                  <div className="flex items-center justify-center gap-1 text-cyber-blue mb-1">
+                  <div className="flex items-center justify-center gap-1 text-primary mb-1">
                     <FileText className="h-4 w-4" />
                     <span className="text-xl sm:text-2xl font-bold">{userRanking?.bugsFound || user.totalReports}</span>
                   </div>
                   <p className="text-xs sm:text-sm text-muted-foreground">Reports Submitted</p>
                 </motion.div>
                 <motion.div className="text-center" whileHover={{ scale: 1.05 }} transition={{ duration: 0.2 }}>
-                  <div className="flex items-center justify-center gap-1 text-cyber-purple mb-1">
+                  <div className="flex items-center justify-center gap-1 text-secondary mb-1">
                     <Trophy className="h-4 w-4" />
                     {pointsLoading ? (
-                      <span className="text-cyber-blue text-lg">Loading...</span>
+                      <span className="text-primary text-lg">Loading...</span>
                     ) : pointsError ? (
-                      <span className="text-red-500 text-sm">{pointsError}</span>
+                      <span className="text-[var(--critical)] text-sm">{pointsError}</span>
                     ) : (
                       <span className="text-xl sm:text-2xl font-bold">{pointsToShow?.toLocaleString?.() ?? pointsToShow}</span>
                     )}

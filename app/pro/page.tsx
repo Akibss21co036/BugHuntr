@@ -50,7 +50,7 @@ export default function ProDashboardPage() {
   if (subLoading || huntsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--border-light)]" />
       </div>
     );
   }
@@ -58,7 +58,7 @@ export default function ProDashboardPage() {
   const handleBackToFeed = () => {
     console.log(
       "Back button clicked in BugDetailsContent, isAuthenticated:",
-      isAuthenticated
+      isAuthenticated,
     );
     if (isAuthenticated) {
       console.log("Navigating to /feed");
@@ -85,8 +85,8 @@ export default function ProDashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <Crown className="w-10 h-10 text-amber-500" />
-              <h1 className="text-4xl font-black bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 bg-clip-text text-transparent">
+              <Crown className="w-10 h-10 text-[var(--medium)]" />
+              <h1 className="text-4xl font-black text-primary">
                 BugHuntr Pro
               </h1>
             </div>
@@ -107,52 +107,52 @@ export default function ProDashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-gradient-to-br from-blue-600/20 to-blue-900/20 border-blue-500/30">
+          <Card className="bg-[var(--surface-elevated)] border-[var(--border-light)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Active Pro Hunts</p>
-                  <p className="text-3xl font-black text-blue-400">
+                  <p className="text-3xl font-black text-primary">
                     {proHunts.filter((h) => h.status === "active").length}
                   </p>
                 </div>
-                <Shield className="w-12 h-12 text-blue-400 opacity-50" />
+                <Shield className="w-12 h-12 text-primary opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-600/20 to-green-900/20 border-green-500/30">
+          <Card className="bg-[var(--surface-elevated)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Total Rewards</p>
-                  <p className="text-3xl font-black text-green-400">$127K</p>
+                  <p className="text-3xl font-black text-[var(--low)]">$127K</p>
                 </div>
-                <TrendingUp className="w-12 h-12 text-green-400 opacity-50" />
+                <TrendingUp className="w-12 h-12 text-[var(--low)] opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-600/20 to-purple-900/20 border-purple-500/30">
+          <Card className="bg-[var(--surface-elevated)] border-[var(--border-light)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Elite Hunters</p>
-                  <p className="text-3xl font-black text-purple-400">156</p>
+                  <p className="text-3xl font-black text-secondary">156</p>
                 </div>
-                <Users className="w-12 h-12 text-purple-400 opacity-50" />
+                <Users className="w-12 h-12 text-secondary opacity-50" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-600/20 to-amber-900/20 border-amber-500/30">
+          <Card className="bg-[var(--surface-elevated)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Companies</p>
-                  <p className="text-3xl font-black text-amber-400">24</p>
+                  <p className="text-3xl font-black text-[var(--high)]">24</p>
                 </div>
-                <Building2 className="w-12 h-12 text-amber-400 opacity-50" />
+                <Building2 className="w-12 h-12 text-[var(--high)] opacity-50" />
               </div>
             </CardContent>
           </Card>
@@ -164,13 +164,13 @@ export default function ProDashboardPage() {
           {isAdmin && (
             <>
               <Card
-                className="bg-[#181e26] border-[#23272f] hover:border-blue-500/50 transition-colors cursor-pointer"
+                className="bg-[#181e26] border-[#23272f] hover:border-[var(--border-light)] transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/hunts/create")}
                 data-testid="create-pro-hunt-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-blue-400" />
+                    <Shield className="w-5 h-5 text-primary" />
                     Create Pro Hunt
                   </CardTitle>
                   <CardDescription>
@@ -179,7 +179,7 @@ export default function ProDashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-primary hover:bg-[var(--accent-hover)]"
                     data-testid="create-hunt-btn"
                   >
                     Get Started
@@ -189,13 +189,13 @@ export default function ProDashboardPage() {
               </Card>
 
               <Card
-                className="bg-[#181e26] border-[#23272f] hover:border-purple-500/50 transition-colors cursor-pointer"
+                className="bg-[#181e26] border-[#23272f] hover:border-[var(--border-light)] transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/applications")}
                 data-testid="review-applications-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-purple-400" />
+                    <Users className="w-5 h-5 text-secondary" />
                     Review Applications
                   </CardTitle>
                   <CardDescription>
@@ -204,7 +204,7 @@ export default function ProDashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <Button
-                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    className="w-full bg-secondary hover:bg-secondary/80"
                     data-testid="review-apps-btn"
                   >
                     View Applications
@@ -214,13 +214,13 @@ export default function ProDashboardPage() {
               </Card>
 
               <Card
-                className="bg-[#181e26] border-[#23272f] hover:border-amber-500/50 transition-colors cursor-pointer"
+                className="bg-[#181e26] border-[#23272f] hover:border-[color:color-mix(in_srgb,var(--high)_35%,transparent)] transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/hunts?view=manage")}
                 data-testid="manage-hunts-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="w-5 h-5 text-amber-400" />
+                    <Briefcase className="w-5 h-5 text-[var(--high)]" />
                     Manage My Hunts
                   </CardTitle>
                   <CardDescription>
@@ -229,7 +229,7 @@ export default function ProDashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <Button
-                    className="w-full bg-amber-600 hover:bg-amber-700"
+                    className="w-full bg-[var(--high)] hover:bg-[color:color-mix(in_srgb,var(--high)_85%,black)]"
                     data-testid="manage-hunts-btn"
                   >
                     Manage Hunts
@@ -239,13 +239,13 @@ export default function ProDashboardPage() {
               </Card>
 
               <Card
-                className="bg-[#181e26] border-[#23272f] hover:border-green-500/50 transition-colors cursor-pointer"
-                onClick={() => router.push("/pro/hunts?view=browse")}
+                className="bg-[#181e26] border-[#23272f] hover:border-[color:color-mix(in_srgb,var(--low)_35%,transparent)] transition-colors cursor-pointer"
+                onClick={() => router.push("/pro/hunts?view=find")}
                 data-testid="browse-hunters-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Target className="w-5 h-5 text-green-400" />
+                    <Target className="w-5 h-5 text-[var(--low)]" />
                     Find Elite Hunters
                   </CardTitle>
                   <CardDescription>
@@ -254,7 +254,7 @@ export default function ProDashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <Button
-                    className="w-full bg-green-600 hover:bg-green-700"
+                    className="w-full bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
                     data-testid="find-hunters-btn"
                   >
                     Get Recommendations
@@ -269,13 +269,13 @@ export default function ProDashboardPage() {
           {isUser && (
             <>
               <Card
-                className="bg-[#181e26] border-[#23272f] hover:border-blue-500/50 transition-colors cursor-pointer"
+                className="bg-[#181e26] border-[#23272f] hover:border-[var(--border-light)] transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/hunts")}
                 data-testid="browse-hunts-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-blue-400" />
+                    <Shield className="w-5 h-5 text-primary" />
                     Browse Pro Hunts
                   </CardTitle>
                   <CardDescription>
@@ -284,7 +284,7 @@ export default function ProDashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-primary hover:bg-[var(--accent-hover)]"
                     data-testid="browse-hunts-btn"
                   >
                     Explore Hunts
@@ -294,13 +294,13 @@ export default function ProDashboardPage() {
               </Card>
 
               <Card
-                className="bg-[#181e26] border-[#23272f] hover:border-green-500/50 transition-colors cursor-pointer"
+                className="bg-[#181e26] border-[#23272f] hover:border-[color:color-mix(in_srgb,var(--low)_35%,transparent)] transition-colors cursor-pointer"
                 onClick={() => router.push("/pro/applications")}
                 data-testid="my-applications-card"
               >
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-green-400" />
+                    <TrendingUp className="w-5 h-5 text-[var(--low)]" />
                     My Applications
                   </CardTitle>
                   <CardDescription>
@@ -309,7 +309,7 @@ export default function ProDashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <Button
-                    className="w-full bg-green-600 hover:bg-green-700"
+                    className="w-full bg-[var(--low)] hover:bg-[color:color-mix(in_srgb,var(--low)_85%,black)]"
                     data-testid="my-apps-btn"
                   >
                     View Status

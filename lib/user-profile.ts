@@ -6,6 +6,7 @@ export async function createUserProfile(username: string) {
   return addDoc(collection(db, "userProfiles"), {
     username,
     points: 0,
+    walletBalance: 0,
     createdAt: new Date().toISOString(),
   })
 }

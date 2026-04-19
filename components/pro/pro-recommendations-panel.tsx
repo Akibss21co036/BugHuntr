@@ -1,57 +1,192 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Mail, TrendingUp, Award, Shield } from "lucide-react";
 import { type ProRecommendation } from "@/types/pro";
-import { useProRecommendations } from "@/hooks/use-pro-recommendations";
 import { toast } from "sonner";
+import { db } from "@/firebaseConfig";
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  addDoc,
+} from "firebase/firestore";
+import {
+  calculateHunterScore,
+  checkEligibility,
+  generateReasonTags,
+} from "@/lib/pro-utils";
+import { useAuth } from "@/components/auth/auth-context";
 
 interface ProRecommendationsPanelProps {
   huntId: string;
+  huntTitle: string;
+  companyName: string;
   minRank: string;
   minHunts: number;
   requiredCerts: string[];
+  searchQuery?: string;
+  hunterFilter?: string;
   onInvite?: (hunterId: string, hunterName: string) => void;
 }
 
 export function ProRecommendationsPanel({
   huntId,
+  huntTitle,
+  companyName,
   minRank,
   minHunts,
   requiredCerts,
+  searchQuery,
+  hunterFilter,
   onInvite,
 }: ProRecommendationsPanelProps) {
-  const { generateRecommendations, loading } = useProRecommendations();
+  const { user } = useAuth();
   const [recommendations, setRecommendations] = useState<ProRecommendation[]>(
-    []
+    [],
   );
+  const [loading, setLoading] = useState(false);
   const [inviting, setInviting] = useState<string | null>(null);
+  const [invitedHunterIds, setInvitedHunterIds] = useState<Set<string>>(
+    () => new Set(),
+  );
 
-  const handleGenerate = async () => {
-    const recs = await generateRecommendations(
-      huntId,
-      minRank,
-      minHunts,
-      requiredCerts
+  useEffect(() => {
+    setLoading(true);
+
+    const unsubscribe = onSnapshot(
+      collection(db, "userProfiles"),
+      (snapshot) => {
+        const allHunters = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data() as Record<string, unknown>;
+          const hunterName =
+            (data.username as string) ||
+            (data.name as string) ||
+            (data.email as string) ||
+            "Hunter";
+          const hunterUsername = (data.username as string) || hunterName;
+          const rank = (data.rank as string) || "C";
+          const huntsParticipated =
+            (data.huntsParticipated as number) ||
+            (data.bugsSubmitted as number) ||
+            0;
+          const certifications = Array.isArray(data.certifications)
+            ? (data.certifications as string[])
+            : [];
+          const reputation = (data.reputation as number) || 0;
+          const successRate = (data.successRate as number) || 0;
+
+          const eligibility = checkEligibility(
+            rank,
+            huntsParticipated,
+            certifications,
+            minRank,
+            minHunts,
+            requiredCerts,
+          );
+
+          const score = calculateHunterScore(
+            rank,
+            reputation,
+            huntsParticipated,
+            successRate,
+            certifications,
+            requiredCerts,
+          );
+
+          const reasonTags = generateReasonTags(
+            rank,
+            reputation,
+            huntsParticipated,
+            successRate,
+            certifications,
+            requiredCerts,
+          );
+
+          return {
+            hunterId: docSnap.id,
+            hunterName,
+            hunterUsername,
+            score,
+            rank,
+            reputation,
+            huntsParticipated,
+            successRate,
+            certifications,
+            reasonTags,
+            matchPercentage: Math.round(score),
+            isEligible: eligibility.isEligible,
+            missingRequirements: eligibility.missingRequirements,
+          };
+        });
+
+        setRecommendations(allHunters);
+        setLoading(false);
+      },
+      () => {
+        setRecommendations([]);
+        setLoading(false);
+      },
     );
-    setRecommendations(recs);
-  };
 
-  const handleInvite = async (hunterId: string, hunterName: string) => {
+    return () => unsubscribe();
+  }, [minRank, minHunts, requiredCerts]);
+
+  useEffect(() => {
+    if (!huntId) {
+      setInvitedHunterIds(new Set());
+      return;
+    }
+
+    const invitesQuery = query(
+      collection(db, "proInvitations"),
+      where("huntId", "==", huntId),
+      where("status", "in", ["pending", "accepted"]),
+    );
+
+    const unsubscribe = onSnapshot(invitesQuery, (snapshot) => {
+      const next = new Set<string>();
+      snapshot.docs.forEach((docSnap) => {
+        const data = docSnap.data() as Record<string, unknown>;
+        const hunterId = data.hunterId as string | undefined;
+        if (hunterId) {
+          next.add(hunterId);
+        }
+      });
+      setInvitedHunterIds(next);
+    });
+
+    return () => unsubscribe();
+  }, [huntId]);
+
+  const handleInvite = async (
+    hunterId: string,
+    hunterName: string,
+    hunterUsername?: string,
+  ) => {
     setInviting(hunterId);
     try {
-      // Simulate invite
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await addDoc(collection(db, "proInvitations"), {
+        huntId,
+        huntTitle,
+        companyName,
+        hunterId,
+        hunterName,
+        hunterUsername: hunterUsername || hunterName,
+        token: `inv_${Date.now()}_${hunterId}`,
+        invitedBy: user?.email || user?.username || "admin",
+        status: "pending",
+        invitedAt: new Date().toISOString(),
+        expiresAt: new Date(
+          Date.now() + 14 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+      });
+      setInvitedHunterIds((prev) => new Set(prev).add(hunterId));
       toast.success(`Invitation sent to ${hunterName}`);
       onInvite?.(hunterId, hunterName);
     } catch (error) {
@@ -64,47 +199,69 @@ export function ProRecommendationsPanel({
   const getRankColor = (rank: string) => {
     switch (rank) {
       case "S":
-        return "text-purple-400 bg-purple-500/10 border-purple-500/30";
+        return "text-secondary-foreground bg-secondary border-[var(--border-light)]";
       case "A":
-        return "text-blue-400 bg-blue-500/10 border-blue-500/30";
+        return "text-primary bg-[var(--accent-soft)] border-[var(--border-light)]";
       case "B":
-        return "text-green-400 bg-green-500/10 border-green-500/30";
+        return "text-[var(--low)] bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]";
       default:
-        return "text-gray-400 bg-gray-500/10 border-gray-500/30";
+        return "text-muted-foreground bg-muted border-border";
     }
   };
 
+  const normalizedQuery = (searchQuery || "").trim().toLowerCase();
+  const filteredRecommendations = recommendations.filter((rec) => {
+    const matchesSearch = normalizedQuery.length
+      ? [
+          rec.hunterName,
+          rec.hunterUsername,
+          rec.rank,
+          rec.certifications.join(" "),
+        ]
+          .filter(Boolean)
+          .some((value) =>
+            String(value).toLowerCase().includes(normalizedQuery),
+          )
+      : true;
+
+    const filterValue = hunterFilter || "all";
+    const matchesFilter = (() => {
+      switch (filterValue) {
+        case "eligible":
+          return Boolean(rec.isEligible);
+        case "top-rated":
+          return rec.matchPercentage >= 75 || rec.reputation >= 4.5;
+        case "invited":
+          return invitedHunterIds.has(rec.hunterId);
+        case "all":
+        default:
+          return true;
+      }
+    })();
+
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <div className="space-y-6">
-      {recommendations.length === 0 ? (
+      {loading ? (
         <Card className="bg-[#181e26] border-[#23272f]">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Sparkles className="w-16 h-16 text-blue-400 mb-4" />
-            <h3 className="text-xl font-bold mb-2">
-              AI-Powered Hunter Recommendations
-            </h3>
+            <Sparkles className="w-16 h-16 text-primary mb-4" />
+            <h3 className="text-xl font-bold mb-2">Loading hunters</h3>
             <p className="text-gray-400 text-center mb-6 max-w-md">
-              Our algorithm will analyze hunter profiles, expertise, reputation,
-              and track records to recommend the best candidates for your Pro
-              Hunt.
+              Fetching eligible and ineligible hunters for this hunt.
             </p>
-            <Button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {loading ? (
-                <>
-                  <span className="animate-spin mr-2">⚙️</span>
-                  Generating Recommendations...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  Generate Recommendations
-                </>
-              )}
-            </Button>
+          </CardContent>
+        </Card>
+      ) : recommendations.length === 0 ? (
+        <Card className="bg-[#181e26] border-[#23272f]">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Sparkles className="w-16 h-16 text-primary mb-4" />
+            <h3 className="text-xl font-bold mb-2">No hunters found</h3>
+            <p className="text-gray-400 text-center mb-6 max-w-md">
+              Add hunter profiles to see eligibility and recommendation details.
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -112,41 +269,37 @@ export function ProRecommendationsPanel({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">
-                Top {recommendations.length} Recommended Hunters
+                All Hunters ({filteredRecommendations.length}/
+                {recommendations.length})
               </h2>
               <p className="text-gray-400">
-                Ranked by expertise, reputation, and eligibility
+                Eligibility is based on the selected hunt requirements
               </p>
             </div>
-            <Button
-              onClick={handleGenerate}
-              variant="outline"
-              disabled={loading}
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
+            <Badge variant="outline" className="text-xs">
+              {minRank}-rank+, {minHunts}+ hunts
+            </Badge>
           </div>
 
           <div className="grid gap-4">
-            {recommendations.map((rec, index) => (
+            {filteredRecommendations.map((rec, index) => (
               <Card
                 key={rec.hunterId}
-                className="bg-[#181e26] border-[#23272f] hover:border-blue-500/30 transition-colors"
+                className="bg-[#181e26] border-[#23272f] hover:border-[var(--border-light)] transition-colors"
               >
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
                       {/* Rank Badge */}
                       <div className="relative">
-                        <Avatar className="w-16 h-16 border-2 border-blue-500">
-                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-xl">
+                        <Avatar className="w-16 h-16 border-2 border-[var(--border-light)]">
+                          <AvatarFallback className="bg-[var(--accent-soft)] text-primary font-bold text-xl">
                             {rec.hunterName.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div
                           className={`absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 border-[#181e26] ${getRankColor(
-                            rec.rank
+                            rec.rank,
                           )}`}
                         >
                           {rec.rank}
@@ -159,9 +312,15 @@ export function ProRecommendationsPanel({
                           <h3 className="text-xl font-bold">
                             {rec.hunterName}
                           </h3>
-                          <Badge className="bg-blue-600 text-white">
-                            #{index + 1} Match
-                          </Badge>
+                          {rec.isEligible ? (
+                            <Badge className="bg-[var(--low)] text-white">
+                              Eligible
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-[var(--critical)] text-white">
+                              Ineligible
+                            </Badge>
+                          )}
                         </div>
 
                         {/* Stats */}
@@ -188,17 +347,37 @@ export function ProRecommendationsPanel({
                         <div className="mb-3">
                           <div className="flex items-center justify-between text-sm mb-1">
                             <span className="text-gray-400">Match Score</span>
-                            <span className="font-bold text-green-400">
+                            <span className="font-bold text-[var(--low)]">
                               {rec.matchPercentage}%
                             </span>
                           </div>
                           <div className="w-full bg-gray-700 rounded-full h-2">
                             <div
-                              className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full transition-all"
+                              className="bg-primary h-2 rounded-full transition-all"
                               style={{ width: `${rec.matchPercentage}%` }}
                             />
                           </div>
                         </div>
+
+                        {/* Missing Requirements */}
+                        {!rec.isEligible && rec.missingRequirements?.length ? (
+                          <div className="mb-3">
+                            <p className="text-xs text-[var(--critical)] mb-1">
+                              Missing requirements:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {rec.missingRequirements.map((item, i) => (
+                                <Badge
+                                  key={`${rec.hunterId}-missing-${i}`}
+                                  variant="outline"
+                                  className="border-[color:color-mix(in_srgb,var(--critical)_35%,transparent)] text-[var(--critical)]"
+                                >
+                                  {item}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
 
                         {/* Reason Tags */}
                         <div className="flex flex-wrap gap-2">
@@ -223,7 +402,7 @@ export function ProRecommendationsPanel({
                               {rec.certifications.map((cert) => (
                                 <Badge
                                   key={cert}
-                                  className="bg-amber-500/10 text-amber-400 border-amber-500/30 text-xs"
+                                  className="bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)] text-xs"
                                 >
                                   {cert}
                                 </Badge>
@@ -236,12 +415,23 @@ export function ProRecommendationsPanel({
 
                     {/* Invite Button */}
                     <Button
-                      onClick={() => handleInvite(rec.hunterId, rec.hunterName)}
-                      disabled={inviting === rec.hunterId}
-                      className="bg-blue-600 hover:bg-blue-700 ml-4"
+                      onClick={() =>
+                        handleInvite(
+                          rec.hunterId,
+                          rec.hunterName,
+                          rec.hunterUsername,
+                        )
+                      }
+                      disabled={
+                        inviting === rec.hunterId ||
+                        invitedHunterIds.has(rec.hunterId)
+                      }
+                      className="bg-primary hover:bg-[var(--accent-hover)] ml-4"
                     >
                       {inviting === rec.hunterId ? (
                         "Sending..."
+                      ) : invitedHunterIds.has(rec.hunterId) ? (
+                        "Sent"
                       ) : (
                         <>
                           <Mail className="w-4 h-4 mr-2" />

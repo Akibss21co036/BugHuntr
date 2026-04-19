@@ -296,7 +296,7 @@ export function AdminPayoutPanel({ orgId }: AdminPayoutPanelProps) {
         variant: "default",
         icon: CheckCircle2,
         label: "Completed",
-        className: "bg-green-600",
+        className: "bg-[var(--low)]",
       },
       failed: { variant: "destructive", icon: XCircle, label: "Failed" },
       cancelled: { variant: "outline", icon: AlertCircle, label: "Cancelled" },
@@ -428,7 +428,7 @@ export function AdminPayoutPanel({ orgId }: AdminPayoutPanelProps) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Reserved</p>
-                <p className="text-2xl font-bold text-orange-600">
+                <p className="text-2xl font-bold text-[var(--high)]">
                   {formatCurrency(wallet.reserved)}
                 </p>
               </div>
@@ -436,7 +436,7 @@ export function AdminPayoutPanel({ orgId }: AdminPayoutPanelProps) {
                 <p className="text-sm text-muted-foreground">
                   Available for Payouts
                 </p>
-                <p className="text-3xl font-bold text-green-600">
+                <p className="text-3xl font-bold text-[var(--low)]">
                   {formatCurrency(wallet.balance - wallet.reserved)}
                 </p>
               </div>
@@ -616,7 +616,7 @@ export function AdminPayoutPanel({ orgId }: AdminPayoutPanelProps) {
                         href={getExplorerUrl(payout.tx_hash, payout.network)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-blue-600 hover:underline"
+                        className="flex items-center gap-1 text-primary hover:underline"
                       >
                         <span className="font-mono text-xs">
                           {payout.tx_hash.substring(0, 8)}...

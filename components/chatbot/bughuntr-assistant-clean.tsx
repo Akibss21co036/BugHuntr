@@ -13,14 +13,11 @@ import {
   Shield,
   Minimize2,
   Maximize2,
-  Navigation,
   Settings,
   Award,
   Users,
-  Bug,
   Target,
   Loader2,
-  BookOpen,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -64,7 +61,7 @@ I'm your comprehensive cybersecurity and platform guide. I can help you with:
 • Penetration testing fundamentals
 
 **💡 Getting Started**
-Try: "What is a bug bounty?", "Explain XSS", "Navigate to feed", or "How to submit a bug"
+Try: "What is a bug bounty?", "Explain XSS", or "Platform overview"
 
 ${
   user?.role === "admin"
@@ -89,33 +86,60 @@ ${
 
   const handleNavigation = (userInput: string) => {
     const input = userInput.toLowerCase();
+    const normalized = input.trim();
+    const hasActionKeyword =
+      input.includes("navigate") ||
+      input.includes("go to") ||
+      input.includes("open") ||
+      input.includes("show");
 
     // Navigation routes for users
     const userRoutes = {
+      home: "/",
+      homepage: "/",
+      "select role": "/select-role",
       feed: "/feed",
       dashboard: "/dashboard",
       profile: "/profile",
       submissions: "/my-submissions",
+      "my submissions": "/my-submissions",
       submit: "/submit",
       communities: "/communities",
       leaderboard: "/leaderboard",
       certificates: "/certificates",
       settings: "/settings",
       "bug hunt": "/bug-hunt",
+      "bug hunts": "/bug-hunt",
+      bug: "/bug",
+      docs: "/docs",
+      login: "/login",
+      signup: "/signup",
+      "my wallet": "/my-wallet",
+      "payout demo": "/payout-demo",
+      pro: "/pro",
+      "cvss demo": "/cvss-demo",
+      debug: "/debug",
+      "test points": "/test-points",
       "setup profile": "/setup-profile",
     };
 
     // Admin-only routes
     const adminRoutes = {
+      admin: "/admin/submissions",
       "admin panel": "/admin/submissions",
       "admin dashboard": "/admin/submissions",
       "admin submissions": "/admin/submissions",
       "admin bug hunts": "/admin/bug-hunts",
+      "admin bug hunt": "/admin/bug-hunts",
+      "admin cve requests": "/admin/cve-requests",
+      "admin vulnerability": "/admin/vulnerability",
       "admin migration": "/admin-migration",
       "admin utils": "/admin-utils",
       "admin test": "/admin-test",
       "manage submissions": "/admin/submissions",
       "manage bug hunts": "/admin/bug-hunts",
+      "manage cve requests": "/admin/cve-requests",
+      "manage vulnerability": "/admin/vulnerability",
     };
 
     // Check for admin navigation (admin users only)
@@ -123,10 +147,7 @@ ${
       for (const [key, path] of Object.entries(adminRoutes)) {
         if (
           input.includes(key) &&
-          (input.includes("navigate") ||
-            input.includes("go to") ||
-            input.includes("open") ||
-            input.includes("show"))
+          (hasActionKeyword || normalized === key)
         ) {
           router.push(path);
           return `🔑 **Admin Navigation** - Taking you to ${key}...`;
@@ -138,10 +159,7 @@ ${
     for (const [key, path] of Object.entries(userRoutes)) {
       if (
         input.includes(key) &&
-        (input.includes("navigate") ||
-          input.includes("go to") ||
-          input.includes("open") ||
-          input.includes("show"))
+        (hasActionKeyword || normalized === key)
       ) {
         router.push(path);
         return `🚀 **Navigating** to ${
@@ -624,7 +642,6 @@ I can assist you with:
 
 **📚 Information Requests**:
 • "Platform overview" - Complete platform guide
-• "How to submit a bug" - Bug submission process
 • "Communities info" - Community features
 • "Leaderboard info" - Ranking system details
 
@@ -642,6 +659,24 @@ What would you like to explore?`,
     const lines = content.split("\n");
 
     return lines.map((line, lineIndex) => {
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
+        const headingText = trimmed.replace(/^\*\*|\*\*$/g, "");
+        return (
+          <div
+            key={lineIndex}
+            className={
+              lineIndex > 0
+                ? "mt-3 text-sm font-semibold text-[var(--bh-heading)]"
+                : "text-sm font-semibold text-[var(--bh-heading)]"
+            }
+          >
+            {headingText}
+          </div>
+        );
+      }
+
       // Handle bold text **text**
       if (line.includes("**")) {
         const parts = line.split(/\*\*(.*?)\*\*/g);
@@ -657,16 +692,19 @@ What would you like to explore?`,
                 </strong>
               ) : (
                 <span key={partIndex}>{part}</span>
-              )
+              ),
             )}
           </div>
         );
       }
 
       // Handle bullet points
-      if (line.trim().startsWith("•")) {
+      if (trimmed.startsWith("•")) {
         return (
-          <div key={lineIndex} className="flex items-start gap-2 my-1 ml-2">
+          <div
+            key={lineIndex}
+            className="flex items-start gap-2 my-1.5 ml-2 text-[var(--bh-text)]"
+          >
             <span className="text-cyan-500 font-bold mt-0.5 text-sm">•</span>
             <span className="flex-1 text-sm">{line.replace(/^•\s*/, "")}</span>
           </div>
@@ -674,12 +712,12 @@ What would you like to explore?`,
       }
 
       // Regular text
-      return line.trim() ? (
+      return trimmed ? (
         <div key={lineIndex} className={lineIndex > 0 ? "mt-1" : ""}>
           {line}
         </div>
       ) : (
-        <div key={lineIndex} className="h-2"></div>
+        <div key={lineIndex} className="h-3"></div>
       );
     });
   };
@@ -713,11 +751,11 @@ What would you like to explore?`,
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
         <Card
-          className={`w-80 sm:w-96 shadow-2xl border-2 border-cyan-200/50 dark:border-cyan-800/50 ${
+          className={`w-[calc(100vw-2rem)] sm:w-[420px] max-w-[420px] border border-[var(--bh-border)] shadow-[var(--bh-shadow)] dark:shadow-[var(--bh-shadow-dark)] ${
             isMinimized ? "h-16" : "h-[min(600px,calc(100vh-8rem))]"
-          } overflow-hidden backdrop-blur-sm bg-white/95 dark:bg-gray-900/95`}
+          } overflow-hidden rounded-2xl !bg-[var(--bh-bg)] text-[var(--bh-text)] backdrop-blur-xl transition-colors duration-300 flex flex-col [--bh-bg:rgba(255,255,255,0.98)] [--bh-panel:#F8FAFC] [--bh-surface:#FFFFFF] [--bh-border:rgba(15,23,42,0.08)] [--bh-text:#0F172A] [--bh-muted:#64748B] [--bh-heading:#0B1220] [--bh-scroll-thumb:rgba(15,23,42,0.22)] [--bh-shadow:0_18px_40px_-24px_rgba(15,23,42,0.35)] [--bh-shadow-dark:0_0_0_1px_rgba(56,189,248,0.18),0_30px_70px_-30px_rgba(2,6,23,0.95)] dark:[--bh-bg:rgba(2,6,23,0.78)] dark:[--bh-panel:rgba(15,23,42,0.70)] dark:[--bh-surface:rgba(15,23,42,0.92)] dark:[--bh-border:rgba(148,163,184,0.25)] dark:[--bh-text:#E2E8F0] dark:[--bh-muted:#94A3B8] dark:[--bh-heading:#F8FAFC] dark:[--bh-scroll-thumb:rgba(148,163,184,0.40)]`}
         >
-          <CardHeader className="pb-3 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white">
+          <CardHeader className="px-4 py-3.5 bg-gradient-to-r from-cyan-500 via-blue-600 to-purple-600 text-white rounded-t-2xl border-b border-white/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-1.5 bg-white/20 rounded-full backdrop-blur-sm">
@@ -758,28 +796,31 @@ What would you like to explore?`,
           </CardHeader>
 
           {!isMinimized && (
-            <CardContent className="p-0 flex flex-col h-[calc(100%-90px)] overflow-hidden">
-              <ScrollArea className="flex-1 p-4 overflow-y-auto">
+            <CardContent className="p-0 flex flex-col flex-1 min-h-0 overflow-hidden !bg-[var(--bh-panel)] transition-colors duration-300">
+              <ScrollArea
+                className="flex-1 min-h-0 px-4 py-4 pr-3 overflow-y-auto [scrollbar-color:var(--bh-scroll-thumb)_transparent] [&_[data-radix-scroll-area-viewport]::-webkit-scrollbar]:w-2 [&_[data-radix-scroll-area-viewport]::-webkit-scrollbar-track]:bg-transparent [&_[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb]:bg-[var(--bh-scroll-thumb)] [&_[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb]:rounded-full"
+                style={{ scrollbarColor: "var(--bh-scroll-thumb) transparent" }}
+              >
                 <div className="space-y-4">
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex gap-3 ${
+                      className={`flex gap-2 ${
                         message.isUser ? "justify-end" : "justify-start"
                       }`}
                     >
                       {!message.isUser && (
-                        <Avatar className="h-8 w-8 bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex-shrink-0 mt-0.5 border-2 border-white/20">
+                        <Avatar className="h-8 w-8 bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex-shrink-0 mt-0.5">
                           <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-xs">
                             <Shield className="h-4 w-4" />
                           </AvatarFallback>
                         </Avatar>
                       )}
                       <div
-                        className={`max-w-[240px] sm:max-w-[280px] rounded-xl p-3 break-words shadow-sm ${
+                        className={`w-fit max-w-[85%] sm:max-w-[320px] rounded-2xl px-4 py-3 break-words shadow-[0_10px_25px_-18px_rgba(15,23,42,0.35)] dark:shadow-[0_10px_25px_-18px_rgba(2,6,23,0.9)] ${
                           message.isUser
                             ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white ml-auto"
-                            : "bg-gray-50 dark:bg-gray-800 text-foreground border border-gray-200 dark:border-gray-700"
+                            : "!bg-[var(--bh-surface)] text-[var(--bh-text)] border border-[var(--bh-border)]"
                         }`}
                         style={{
                           wordWrap: "break-word",
@@ -793,7 +834,7 @@ What would you like to explore?`,
                           className={`text-xs mt-2 opacity-60 font-mono ${
                             message.isUser
                               ? "text-blue-100 text-right"
-                              : "text-muted-foreground"
+                              : "text-[var(--bh-muted)]"
                           }`}
                         >
                           {message.timestamp.toLocaleTimeString([], {
@@ -803,7 +844,7 @@ What would you like to explore?`,
                         </div>
                       </div>
                       {message.isUser && (
-                        <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5 border-2 border-gray-200 dark:border-gray-700">
+                        <Avatar className="h-8 w-8 flex-shrink-0 mt-0.5">
                           <AvatarFallback className="bg-gradient-to-br from-orange-400 to-pink-500 text-white text-xs font-semibold">
                             {user?.email?.charAt(0).toUpperCase() || "U"}
                           </AvatarFallback>
@@ -812,16 +853,16 @@ What would you like to explore?`,
                     </div>
                   ))}
                   {isLoading && (
-                    <div className="flex gap-3 justify-start">
-                      <Avatar className="h-8 w-8 bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex-shrink-0 mt-0.5 border-2 border-white/20">
+                    <div className="flex gap-2 justify-start">
+                      <Avatar className="h-8 w-8 bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex-shrink-0 mt-0.5">
                         <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-xs">
                           <Shield className="h-4 w-4" />
                         </AvatarFallback>
                       </Avatar>
-                      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 max-w-[200px]">
+                      <div className="bg-[var(--bh-surface)] border border-[var(--bh-border)] rounded-2xl px-3.5 py-3 max-w-[200px] shadow-[0_10px_25px_-18px_rgba(15,23,42,0.35)] dark:shadow-[0_10px_25px_-18px_rgba(2,6,23,0.9)]">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin text-cyan-500" />
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-sm text-[var(--bh-text)]">
                             Analyzing...
                           </span>
                         </div>
@@ -832,57 +873,13 @@ What would you like to explore?`,
                 </div>
               </ScrollArea>
 
-              {/* Quick Action Buttons */}
-              <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex gap-2 text-xs">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
-                    onClick={() => {
-                      if (!isLoading) {
-                        setInputMessage("Navigate to feed");
-                        // We need to trigger sendMessage after the state update
-                        setTimeout(() => sendMessage(), 0);
-                      }
-                    }}
-                  >
-                    <Navigation className="h-3 w-3 mr-1" />
-                    Feed
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
-                    onClick={() => {
-                      if (!isLoading) {
-                        setInputMessage("How to submit a bug");
-                        setTimeout(() => sendMessage(), 0);
-                      }
-                    }}
-                  >
-                    <Bug className="h-3 w-3 mr-1" />
-                    Submit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
-                    onClick={() => {
-                      if (!isLoading) {
-                        setInputMessage("What is a bug bounty?");
-                        setTimeout(() => sendMessage(), 0);
-                      }
-                    }}
-                  >
-                    <BookOpen className="h-3 w-3 mr-1" />
-                    Learn
-                  </Button>
-                  {user?.role === "admin" && (
+              {user?.role === "admin" && (
+                <div className="px-4 py-2.5 bg-[var(--bh-panel)] border-t border-[var(--bh-border)]">
+                  <div className="flex gap-2 text-xs">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs hover:bg-cyan-100 dark:hover:bg-cyan-900/30"
+                      className="h-7 px-3 text-xs font-medium hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-[var(--bh-text)]"
                       onClick={() => {
                         if (!isLoading) {
                           setInputMessage("Navigate to admin panel");
@@ -890,15 +887,15 @@ What would you like to explore?`,
                         }
                       }}
                     >
-                      <Settings className="h-3 w-3 mr-1" />
+                      <Settings className="h-3 w-3 mr-1.5" />
                       Admin
                     </Button>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="p-4 border-t bg-background flex-shrink-0">
-                <div className="flex gap-2">
+              <div className="px-4 py-3.5 border-t border-[var(--bh-border)] !bg-[var(--bh-surface)] flex-shrink-0 transition-colors duration-300">
+                <div className="flex items-stretch gap-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
@@ -908,19 +905,15 @@ What would you like to explore?`,
                       !isLoading &&
                       sendMessage()
                     }
-                    placeholder={
-                      user?.role === "admin"
-                        ? "Navigate, get info, or manage platform..."
-                        : "Navigate, submit bugs, or ask questions..."
-                    }
+                    placeholder="Navigate or ask a question..."
                     disabled={isLoading}
-                    className="flex-1 min-w-0 border-gray-300 dark:border-gray-600 focus:border-cyan-500 dark:focus:border-cyan-400"
+                    className="flex-1 min-w-0 h-10 rounded-lg !bg-[var(--bh-surface)] border border-[var(--bh-border)] focus:border-cyan-500 dark:focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 dark:focus:ring-cyan-900/30 transition-colors duration-300"
                   />
                   <Button
                     onClick={sendMessage}
                     disabled={!inputMessage.trim() || isLoading}
                     size="icon"
-                    className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                    className="h-10 w-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 shadow-sm"
                   >
                     {isLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -929,21 +922,24 @@ What would you like to explore?`,
                     )}
                   </Button>
                 </div>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1">
+                <div className="flex items-center justify-between mt-3">
+                  <p className="text-xs text-[var(--bh-muted)]">
+                    <span className="inline-flex items-center gap-1.5">
                       <Shield className="h-3 w-3" />
                       <span className="font-medium">BugHuntr AI</span>
                     </span>
                   </p>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs">
                     {user?.role === "admin" && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full font-medium">
                         <Award className="h-3 w-3" />
                         Admin
                       </span>
                     )}
-                    <span className="text-xs">Online</span>
+                    <span className="inline-flex items-center gap-1.5 text-[var(--bh-muted)]">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      Online
+                    </span>
                   </div>
                 </div>
               </div>

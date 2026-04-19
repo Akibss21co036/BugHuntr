@@ -56,15 +56,15 @@ const getSeverityColor = (severity: string) => {
 const getSeverityGlow = (severity: string) => {
   switch (severity) {
     case "critical":
-      return "hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]";
+      return "hover:shadow-md";
     case "high":
-      return "hover:shadow-[0_0_30px_rgba(249,115,22,0.4)]";
+      return "hover:shadow-md";
     case "medium":
-      return "hover:shadow-[0_0_30px_rgba(234,179,8,0.4)]";
+      return "hover:shadow-md";
     case "low":
-      return "hover:shadow-[0_0_30px_rgba(34,197,94,0.4)]";
+      return "hover:shadow-md";
     default:
-      return "hover:shadow-xl";
+      return "hover:shadow-md";
   }
 };
 
@@ -149,27 +149,27 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
                   {bug.severity ? (
                     bug.severity.toUpperCase()
                   ) : (
-                    <span className="bg-cyber-blue text-white px-2 py-0.5 rounded">
+                    <span className="bg-primary text-white px-2 py-0.5 rounded">
                       UNKNOWN
                     </span>
                   )}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className="border-cyber-blue/30 text-xs shrink-0 truncate max-w-24"
+                  className="border-[var(--border-light)] text-xs shrink-0 truncate max-w-24"
                 >
                   {bug.category || "Web Application"}
                 </Badge>
                 {bug.company && (
                   <Badge
                     variant="secondary"
-                    className="bg-cyber-blue/10 text-cyber-blue text-xs shrink-0 truncate max-w-32"
+                    className="bg-[var(--accent-soft)] text-primary text-xs shrink-0 truncate max-w-32"
                   >
                     {bug.company}
                   </Badge>
                 )}
               </motion.div>
-              <CardTitle className="text-base sm:text-lg leading-tight group-hover:text-cyber-blue transition-colors duration-200 line-clamp-2">
+              <CardTitle className="text-base sm:text-lg leading-tight group-hover:text-primary transition-colors duration-200 line-clamp-2">
                 {bug.title || (
                   <span className="text-muted-foreground">
                     No title provided
@@ -179,7 +179,7 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
             </div>
             {bug.isLocked && (
               <motion.div
-                className="flex items-center gap-1 text-neon-orange bg-neon-orange/10 px-2 py-1 rounded-md shrink-0"
+                className="flex items-center gap-1 text-[var(--high)] bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] px-2 py-1 rounded-md shrink-0"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.2 }}
               >
@@ -204,7 +204,7 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-border/50">
             <div className="flex items-center justify-end gap-3 min-w-0 pt-2 border-t border-border/50">
               {/* <button
-                  className="px-3 py-1 text-xs bg-cyber-blue text-white rounded hover:bg-cyber-blue/80"
+                  className="px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/80"
                   onClick={(e) => {
                     e.stopPropagation();
                     window.location.href = `/bug/${bug.id}`;
@@ -242,7 +242,7 @@ export function BugCard({ bug, className, index = 0 }: BugCardProps) {
             <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground flex-wrap">
               {bug.bounty ? (
                 <motion.div
-                  className="flex items-center gap-1 text-neon-green shrink-0"
+                  className="flex items-center gap-1 text-[var(--low)] shrink-0"
                   whileHover={{ scale: 1.1 }}
                   transition={{ duration: 0.2 }}
                 >

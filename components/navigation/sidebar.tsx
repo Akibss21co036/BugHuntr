@@ -10,7 +10,6 @@ import {
   Settings,
   X,
   Hash,
-  Plus,
   ChevronDown,
   ChevronRight,
   Users,
@@ -123,7 +122,7 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
       icon: Users,
       href: "/communities",
     },
-    { id: "docs", label: "Docs", icon: FileText, href: "/docs" },
+    { id: "docs", label: "Documentations", icon: FileText, href: "/docs" },
     ...(user?.role === "admin"
       ? [
           {
@@ -147,7 +146,7 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
     setExpandedCommunities((prev) =>
       prev.includes(communityId)
         ? prev.filter((id) => id !== communityId)
-        : [...prev, communityId]
+        : [...prev, communityId],
     );
   };
 
@@ -167,10 +166,9 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          "w-64 bg-sidebar border-r border-sidebar-border",
-          "lg:static lg:block",
-          "fixed inset-y-0 left-0 z-40",
-          isOpen ? "block" : "hidden lg:block"
+          "fixed inset-y-0 left-0 z-50 w-[88vw] max-w-72 border-r border-sidebar-border bg-sidebar transition-transform duration-300 ease-out",
+          "lg:sticky lg:top-16 lg:z-30 lg:block lg:h-[calc(100dvh-4rem)] lg:w-64 lg:max-w-none lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div className="flex flex-col h-full">
@@ -180,14 +178,14 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
             </Button>
           </div>
 
-          <div className="hidden lg:flex items-center px-6 py-4 border-b border-sidebar-border">
+          <div className="hidden lg:flex items-center px-4 xl:px-6 py-4 border-b border-sidebar-border">
             <div className="flex items-center gap-2">
-              <Shield className="h-8 w-8 text-cyber-blue" />
+              <Shield className="h-8 w-8 text-primary" />
               <span className="text-xl font-bold text-sidebar-foreground">
                 BugHuntr
               </span>
               {user?.role === "admin" && (
-                <span className="px-2 py-1 text-xs bg-orange-600 text-white rounded-full font-medium">
+                <span className="px-2 py-1 text-xs bg-[var(--high)] text-white rounded-full font-medium">
                   ADMIN
                 </span>
               )}
@@ -195,14 +193,11 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="px-4 py-4 border-b border-sidebar-border">
+            <div className="px-3 sm:px-4 py-4 border-b border-sidebar-border">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider">
                   Communities
                 </h3>
-                <Button variant="ghost" size="icon" className="h-6 w-6">
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
 
               <div className="space-y-1">
@@ -216,8 +211,8 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
                       <Button
                         variant="ghost"
                         className={cn(
-                          "w-full justify-start gap-2 h-8 text-sm px-2",
-                          isCurrentCommunity && "bg-sidebar-accent"
+                          "w-full justify-start gap-2 h-8 text-xs sm:text-sm px-2",
+                          isCurrentCommunity && "bg-sidebar-accent",
                         )}
                         onClick={() => {
                           setCurrentCommunity(community);
@@ -229,8 +224,8 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
                         ) : (
                           <ChevronRight className="h-3 w-3" />
                         )}
-                        <div className="w-4 h-4 rounded bg-gradient-to-br from-cyber-blue to-neon-green flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
+                        <div className="w-4 h-4 rounded bg-primary/15 flex items-center justify-center">
+                          <span className="text-primary text-xs font-bold">
                             {community.name.charAt(0)}
                           </span>
                         </div>
@@ -251,7 +246,7 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
                             {community.channels.map((channel) => (
                               <Link
                                 key={channel.id}
-                                href={`/community/${community.id}/channel/${channel.id}`}
+                                href={`/communities/${community.id}/channels/${channel.id}`}
                                 onClick={onClose}
                               >
                                 <Button
@@ -274,7 +269,7 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
               </div>
             </div>
 
-            <nav className="px-4 py-4 space-y-1">
+            <nav className="px-3 sm:px-4 py-4 space-y-1">
               <h3 className="text-xs font-semibold text-sidebar-foreground/70 uppercase tracking-wider mb-3">
                 Navigation
               </h3>
@@ -296,23 +291,23 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
                           "w-full justify-start gap-3 h-10 text-sm font-medium transition-all",
                           isActive
                             ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                            : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
                           user?.role === "admin" &&
                             item.id === "submit-bug" &&
-                            "border-l-2 border-orange-500",
+                            "border-l-2 border-[var(--high)]",
                           (item as any).isPro &&
-                            "bg-gradient-to-r from-amber-500/10 to-purple-500/10 border-l-2 border-amber-500"
+                            "bg-[var(--accent-soft)] border-l-2 border-primary",
                         )}
                       >
                         <Icon
                           className={cn(
                             "h-4 w-4",
-                            (item as any).isPro && "text-amber-500"
+                            (item as any).isPro && "text-primary",
                           )}
                         />
                         {item.label}
                         {(item as any).isPro && (
-                          <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 text-black rounded-full">
+                          <span className="ml-auto px-2 py-0.5 text-xs font-semibold bg-primary text-primary-foreground rounded-full">
                             PRO
                           </span>
                         )}
@@ -330,10 +325,10 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <div className="bg-sidebar-accent rounded-lg p-3 space-y-3 overflow-hidden">
+            <div className="bg-sidebar-accent rounded-lg p-3 space-y-3 overflow-hidden shadow-sm border border-sidebar-border">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 bg-gradient-to-br from-cyber-blue to-neon-green rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-sm">
+                <div className="w-10 h-10 bg-primary/15 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-primary font-bold text-sm">
                     {user?.username
                       ? user.username.charAt(0).toUpperCase()
                       : "JD"}
@@ -374,13 +369,13 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
               </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div className="text-center">
-                  <div className="font-semibold text-cyber-blue">
+                  <div className="font-semibold text-primary">
                     {userRanking ? `#${userRanking.rank}` : "#247"}
                   </div>
                   <div className="text-sidebar-foreground/70">Rank</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-neon-green">
+                  <div className="font-semibold text-[var(--low)]">
                     $
                     {userRanking
                       ? (userRanking.totalEarnings / 1000).toFixed(1)
@@ -390,7 +385,7 @@ function SidebarComponent({ isOpen = false, onClose }: SidebarProps) {
                   <div className="text-sidebar-foreground/70">Earned</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-cyber-cyan">
+                  <div className="font-semibold text-sidebar-foreground">
                     {userRanking?.bugsFound || 23}
                   </div>
                   <div className="text-sidebar-foreground/70">Reports</div>

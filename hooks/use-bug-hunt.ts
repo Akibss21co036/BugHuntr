@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { type BugHunt, type BugHuntSubmission, BUG_HUNT_TEMPLATES } from "@/types/bug-hunt"
 import { db } from "@/firebaseConfig"
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from "firebase/firestore"
-import { addPointsToUserProfile } from "@/lib/add-points"
+import { transferRewardFromAdmin } from "@/lib/transfer-reward"
 
 
 
@@ -136,23 +136,6 @@ export function useBugHunt() {
     const submissionWithId: BugHuntSubmission = { ...newSubmission, id: docRef.id }
     setSubmissions(prev => [...prev, submissionWithId])
 
-    // Also save to 'bugs' collection for My Submissions page
-    const bugData = {
-      title: submission.title,
-      huntId: submission.huntId,
-      // huntTitle: submission.huntTitle || "Unknown Hunt",
-      severity: submission.severity,
-      description: submission.description,
-      // stepsToReproduce: submission.stepsToReproduce || "",
-      // impact: submission.impact || "",
-      proofOfConcept: submission.proofOfConcept || "",
-      // attachments: submission.attachments || [],
-      submittedBy: submission.userId,
-      submittedAt: new Date().toISOString(),
-      status: "pending",
-    };
-    await addDoc(collection(db, "bugs"), bugData);
-
     // Update hunt's current participants count
     const hunt = bugHunts.find((h) => h.id === submission.huntId)
     if (hunt) {
@@ -175,6 +158,22 @@ export function useBugHunt() {
     pointsAwarded?: number,
     reviewedBy?: string,
   ) => {
+    if (status === "approved" && pointsAwarded && pointsAwarded > 0 && reviewedBy) {
+      const sub = submissions.find(s => s.id === submissionId)
+      if (sub && sub.username && sub.userId) {
+        await transferRewardFromAdmin({
+          adminUsername: reviewedBy,
+          hunterUsername: sub.username,
+          hunterUid: sub.userId,
+          huntId: sub.huntId,
+          submissionId: sub.id,
+          amount: pointsAwarded,
+        })
+      } else {
+        throw new Error("Missing submission user profile")
+      }
+    }
+
     await updateDoc(doc(db, "bugHuntSubmissions", submissionId), {
       status,
       reviewNotes,
@@ -194,14 +193,6 @@ export function useBugHunt() {
           }
         : submission
     ))
-    // If approved and pointsAwarded, add points to user profile
-    if (status === "approved" && pointsAwarded && pointsAwarded > 0) {
-      // Find the submission to get username
-      const sub = submissions.find(s => s.id === submissionId)
-      if (sub && sub.username) {
-        await addPointsToUserProfile(sub.username, pointsAwarded)
-      }
-    }
   }
 
   const getActiveBugHunts = () => {

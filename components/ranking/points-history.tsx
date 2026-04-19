@@ -24,7 +24,7 @@ export function PointsHistory({ userId, limit }: PointsHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-cyber-blue" />
+            <Trophy className="w-5 h-5 text-primary" />
             Points History
           </CardTitle>
         </CardHeader>
@@ -43,7 +43,7 @@ export function PointsHistory({ userId, limit }: PointsHistoryProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-cyber-blue" />
+          <Trophy className="w-5 h-5 text-primary" />
           Points History
         </CardTitle>
       </CardHeader>
@@ -55,8 +55,8 @@ export function PointsHistory({ userId, limit }: PointsHistoryProps) {
               className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-cyber-blue/10 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-cyber-blue" />
+                <div className="w-8 h-8 bg-[var(--accent-soft)] rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-primary" />
                 </div>
                 <div>
                   <div className="font-medium text-sm">{transaction.reason}</div>
@@ -65,7 +65,7 @@ export function PointsHistory({ userId, limit }: PointsHistoryProps) {
                   </div>
                 </div>
               </div>
-              <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+              <Badge variant="outline" className="bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]">
                 +{transaction.points}
               </Badge>
             </div>

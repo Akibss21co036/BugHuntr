@@ -10,10 +10,9 @@ import { RouteProtection } from "@/components/auth/route-protection"
 import { CommunityProvider } from "@/hooks/use-community"
 import { TopNavbar } from "@/components/navigation/top-navbar"
 import { Sidebar } from "@/components/navigation/sidebar"
-import { MobileNavigation } from "@/components/navigation/mobile-navigation"
 import { useAuth } from "@/components/auth/auth-context"
 import { usePathname } from "next/navigation"
-import "./globals.css"
+import { SearchProvider } from "@/components/search/search-context"
 
 // Lazy-load the chatbot to improve initial page load
 const BugHuntrAssistant = dynamic(() => import("@/components/chatbot/bughuntr-assistant-clean").then(mod => ({ default: mod.BugHuntrAssistant })), { ssr: false })
@@ -34,16 +33,18 @@ function InnerLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      {!isLandingPage && isAuthenticated && <Sidebar />}
+    <div className="flex min-h-screen bg-background text-foreground">
+      {!isLandingPage && isAuthenticated && (
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      )}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col">
         <TopNavbar onMenuClick={() => setSidebarOpen(true)} />
 
-        <main className="flex-1 overflow-auto" style={{ scrollBehavior: 'smooth' }}>{children}</main>
+        <main className="flex-1 overflow-auto" style={{ scrollBehavior: 'smooth' }}>
+          {children}
+        </main>
       </div>
-
-      {!isLandingPage && isAuthenticated && <MobileNavigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />}
       
       {/* BugHuntr Assistant - Available on all authenticated pages except landing */}
       {!isLandingPage && isAuthenticated && <BugHuntrAssistant />}
@@ -56,7 +57,6 @@ export default function ClientLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { SearchProvider } = require("@/components/search/search-context");
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

@@ -28,6 +28,9 @@ import {
   Plus,
   X,
   Trash2,
+  DollarSign,
+  GraduationCap,
+  Briefcase,
 } from "lucide-react";
 import { FadeIn } from "@/components/animations/fade-in";
 import type { BugHunt } from "@/types/bug-hunt";
@@ -214,6 +217,33 @@ export function BugHuntCreationForm() {
     "Data Storage",
   ];
 
+  const rewardTypeOptions = [
+    {
+      id: "cash",
+      label: "Cash",
+      description: "Payouts by severity",
+      icon: DollarSign,
+    },
+    {
+      id: "certificates",
+      label: "Certificates",
+      description: "Recognition and credentials",
+      icon: Award,
+    },
+    {
+      id: "internship",
+      label: "Internship",
+      description: "Paid or unpaid roles",
+      icon: GraduationCap,
+    },
+    {
+      id: "jobs",
+      label: "Jobs",
+      description: "Full-time opportunities",
+      icon: Briefcase,
+    },
+  ] as const;
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 max-w-4xl">
@@ -244,7 +274,7 @@ export function BugHuntCreationForm() {
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-cyber-blue" />
+                  <Settings className="w-5 h-5 text-primary" />
                   Existing Bug Hunts
                 </CardTitle>
               </CardHeader>
@@ -262,8 +292,8 @@ export function BugHuntCreationForm() {
                             variant="outline"
                             className={
                               hunt.status === "active"
-                                ? "bg-green-500/10 text-green-500 border-green-500/20"
-                                : "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                                ? "bg-[color:color-mix(in_srgb,var(--low)_12%,transparent)] text-[var(--low)] border-[color:color-mix(in_srgb,var(--low)_25%,transparent)]"
+                                : "bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--medium)] border-[color:color-mix(in_srgb,var(--medium)_25%,transparent)]"
                             }
                           >
                             {hunt.status}
@@ -286,7 +316,7 @@ export function BugHuntCreationForm() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleRemoveHunt(hunt.id, hunt.title)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                        className="text-[var(--critical)] hover:text-[var(--critical)] hover:bg-[color:color-mix(in_srgb,var(--critical)_10%,transparent)] dark:hover:bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)]"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Remove Hunt
@@ -305,7 +335,7 @@ export function BugHuntCreationForm() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-cyber-blue" />
+                  <Settings className="w-5 h-5 text-primary" />
                   Quick Start Templates
                 </CardTitle>
               </CardHeader>
@@ -316,8 +346,8 @@ export function BugHuntCreationForm() {
                       key={template.id}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${
                         selectedTemplate === template.id
-                          ? "border-cyber-blue bg-cyber-blue/5"
-                          : "border-border hover:border-cyber-blue/50"
+                          ? "border-border bg-[var(--accent-soft)]"
+                          : "border-border hover:border-[var(--border-light)]"
                       }`}
                       onClick={() => handleTemplateSelect(template.id)}
                     >
@@ -340,7 +370,7 @@ export function BugHuntCreationForm() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-cyber-blue" />
+                  <Target className="w-5 h-5 text-primary" />
                   Basic Information
                 </CardTitle>
               </CardHeader>
@@ -447,7 +477,7 @@ export function BugHuntCreationForm() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-cyber-blue" />
+                  <Calendar className="w-5 h-5 text-primary" />
                   Timeline
                 </CardTitle>
               </CardHeader>
@@ -553,46 +583,159 @@ export function BugHuntCreationForm() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-cyber-blue" />
-                  Reward Types
+                  <Award className="w-5 h-5 text-primary" />
+                  Rewards
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {["cash", "certificates", "internship", "jobs"].map(
-                    (rewardType) => (
-                      <div
-                        key={rewardType}
-                        className="flex items-center space-x-2"
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {rewardTypeOptions.map((option) => {
+                    const Icon = option.icon;
+                    const isSelected = formData.rewardTypes.includes(
+                      option.id as any
+                    );
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() =>
+                          handleRewardTypeToggle(option.id as any)
+                        }
+                        className={`flex items-start gap-3 rounded-lg border p-4 text-left transition-all ${
+                          isSelected
+                            ? "border-border bg-[var(--accent-soft)]"
+                            : "border-border hover:border-[var(--border-light)]"
+                        }`}
+                        aria-pressed={isSelected}
                       >
-                        <Checkbox
-                          id={rewardType}
-                          checked={formData.rewardTypes.includes(
-                            rewardType as any
-                          )}
-                          onCheckedChange={() =>
-                            handleRewardTypeToggle(rewardType as any)
-                          }
-                        />
-                        <Label
-                          htmlFor={rewardType}
-                          className="text-sm font-medium capitalize cursor-pointer"
+                        <span
+                          className={`flex h-10 w-10 items-center justify-center rounded-md border ${
+                            isSelected
+                              ? "border-border text-primary"
+                              : "border-border text-muted-foreground"
+                          }`}
                         >
-                          {rewardType}
-                        </Label>
-                      </div>
-                    )
-                  )}
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <span className="flex-1">
+                          <span className="block text-sm font-semibold">
+                            {option.label}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {option.description}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {formData.rewardTypes.includes("cash") && (
+                  <div className="space-y-4 rounded-lg border border-[var(--border-light)] bg-[var(--accent-soft)] p-4">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold">
+                          Cash rewards by severity
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Set per-bug payouts for each severity tier.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="critical">Critical</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            ₹
+                          </span>
+                          <Input
+                            id="critical"
+                            type="number"
+                            className="pl-6"
+                            value={formData.rewards.critical}
+                            onChange={(e) =>
+                              handleInputChange("rewards", {
+                                ...formData.rewards,
+                                critical: Number.parseInt(e.target.value) || 0,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="high">High</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            ₹
+                          </span>
+                          <Input
+                            id="high"
+                            type="number"
+                            className="pl-6"
+                            value={formData.rewards.high}
+                            onChange={(e) =>
+                              handleInputChange("rewards", {
+                                ...formData.rewards,
+                                high: Number.parseInt(e.target.value) || 0,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="medium">Medium</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            ₹
+                          </span>
+                          <Input
+                            id="medium"
+                            type="number"
+                            className="pl-6"
+                            value={formData.rewards.medium}
+                            onChange={(e) =>
+                              handleInputChange("rewards", {
+                                ...formData.rewards,
+                                medium: Number.parseInt(e.target.value) || 0,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="low">Low</Label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            ₹
+                          </span>
+                          <Input
+                            id="low"
+                            type="number"
+                            className="pl-6"
+                            value={formData.rewards.low}
+                            onChange={(e) =>
+                              handleInputChange("rewards", {
+                                ...formData.rewards,
+                                low: Number.parseInt(e.target.value) || 0,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Reward Details */}
                 <div className="space-y-4">
                   {formData.rewardTypes.includes("cash") && (
                     <div className="space-y-2">
-                      <Label htmlFor="cashDetails">Cash Reward Details</Label>
+                      <Label htmlFor="cashDetails">Cash Reward Notes</Label>
                       <Input
                         id="cashDetails"
-                        placeholder="e.g., $500 for critical, $200 for high severity bugs"
+                        placeholder="e.g., Paid via bank transfer within 30 days of approval"
                         value={formData.rewardDetails.cash}
                         onChange={(e) =>
                           handleInputChange("rewardDetails", {
@@ -663,77 +806,6 @@ export function BugHuntCreationForm() {
                       />
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-          </FadeIn>
-
-          <FadeIn delay={0.6}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-cyber-blue" />
-                  Point Rewards
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="critical">Critical</Label>
-                    <Input
-                      id="critical"
-                      type="number"
-                      value={formData.rewards.critical}
-                      onChange={(e) =>
-                        handleInputChange("rewards", {
-                          ...formData.rewards,
-                          critical: Number.parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="high">High</Label>
-                    <Input
-                      id="high"
-                      type="number"
-                      value={formData.rewards.high}
-                      onChange={(e) =>
-                        handleInputChange("rewards", {
-                          ...formData.rewards,
-                          high: Number.parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="medium">Medium</Label>
-                    <Input
-                      id="medium"
-                      type="number"
-                      value={formData.rewards.medium}
-                      onChange={(e) =>
-                        handleInputChange("rewards", {
-                          ...formData.rewards,
-                          medium: Number.parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="low">Low</Label>
-                    <Input
-                      id="low"
-                      type="number"
-                      value={formData.rewards.low}
-                      onChange={(e) =>
-                        handleInputChange("rewards", {
-                          ...formData.rewards,
-                          low: Number.parseInt(e.target.value) || 0,
-                        })
-                      }
-                    />
-                  </div>
                 </div>
               </CardContent>
             </Card>

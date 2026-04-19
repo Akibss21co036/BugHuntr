@@ -11,7 +11,7 @@ BugHuntr is a comprehensive platform designed to connect security researchers, d
 -   **Bug Hunt Marketplace:** Browse and participate in active bug bounty programs.
 -   **Secure Bug Submission:** A structured process for submitting vulnerability reports with details and evidence.
 -   **Leaderboard & Rankings:** Gamified leaderboards to recognize top security researchers.
--   **Community Engagement:** (Future) Community spaces for collaboration and knowledge sharing.
+-   **Community Collaboration:** Real-time bug-thread collaboration with channels, comments, solutions, and reputation.
 -   **Dashboard:** Personalized dashboards for users to track their submissions, rewards, and stats.
 -   **AI Assistant:** An integrated chatbot to help users navigate the platform.
 

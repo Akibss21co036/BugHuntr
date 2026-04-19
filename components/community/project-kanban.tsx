@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -23,54 +23,19 @@ interface ProjectKanbanProps {
   tasks?: Task[]
 }
 
-const mockTasks: Task[] = [
-  {
-    id: "1",
-    title: "SQL Injection Testing",
-    description: "Test login forms for SQL injection vulnerabilities",
-    priority: "high",
-    assignee: "user1",
-    tags: ["sql-injection", "testing"],
-    status: "todo",
-  },
-  {
-    id: "2",
-    title: "XSS Vulnerability Scan",
-    description: "Scan for reflected and stored XSS vulnerabilities",
-    priority: "medium",
-    assignee: "user2",
-    tags: ["xss", "scanning"],
-    status: "in-progress",
-  },
-  {
-    id: "3",
-    title: "Authentication Bypass",
-    description: "Test for authentication bypass vulnerabilities",
-    priority: "critical",
-    assignee: "user3",
-    tags: ["auth", "bypass"],
-    status: "review",
-  },
-  {
-    id: "4",
-    title: "CSRF Protection Review",
-    description: "Review CSRF protection implementation",
-    priority: "medium",
-    assignee: "user1",
-    tags: ["csrf", "review"],
-    status: "done",
-  },
-]
-
 const columns = [
   { id: "todo", title: "To Do", color: "bg-gray-100" },
-  { id: "in-progress", title: "In Progress", color: "bg-blue-100" },
-  { id: "review", title: "Review", color: "bg-yellow-100" },
-  { id: "done", title: "Done", color: "bg-green-100" },
+  { id: "in-progress", title: "In Progress", color: "bg-secondary" },
+  { id: "review", title: "Review", color: "bg-secondary" },
+  { id: "done", title: "Done", color: "bg-secondary" },
 ]
 
-export function ProjectKanban({ projectId, tasks = mockTasks }: ProjectKanbanProps) {
+export function ProjectKanban({ projectId, tasks = [] }: ProjectKanbanProps) {
   const [taskList, setTaskList] = useState<Task[]>(tasks)
+
+  useEffect(() => {
+    setTaskList(tasks)
+  }, [projectId, tasks])
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

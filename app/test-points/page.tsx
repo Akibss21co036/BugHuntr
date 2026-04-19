@@ -89,7 +89,7 @@ export default function TestPointsPage() {
           )}
 
           {profile && (
-            <div className="p-3 bg-green-100 rounded">
+            <div className="p-3 bg-secondary rounded">
               <strong>Profile Data:</strong>
               <pre>{JSON.stringify(profile, null, 2)}</pre>
             </div>

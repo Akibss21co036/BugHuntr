@@ -122,12 +122,12 @@ export function SubmitBugCvssPreview({
 
   const getSeverityColor = () => {
     if (scoring.bughuntrScore >= 9)
-      return "bg-red-100 border-red-300 text-red-900";
+      return "bg-secondary border-border text-foreground";
     if (scoring.bughuntrScore >= 7)
-      return "bg-orange-100 border-orange-300 text-orange-900";
+      return "bg-secondary border-border text-foreground";
     if (scoring.bughuntrScore >= 4)
-      return "bg-yellow-100 border-yellow-300 text-yellow-900";
-    return "bg-blue-100 border-blue-300 text-blue-900";
+      return "bg-secondary border-border text-foreground";
+    return "bg-secondary border-border text-foreground";
   };
 
   const getSeverityBadge = () => {

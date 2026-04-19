@@ -26,6 +26,7 @@ import { SubmissionStatusBadge } from "@/components/bug-submission/submission-st
 import { useBugSubmission } from "@/hooks/use-bug-submission"
 import { useAuth } from "@/components/auth/auth-context"
 import type { BugSubmission } from "@/types/bug-submission"
+import { formatCurrency } from "@/lib/pro-utils"
 
 export default function MySubmissionsPage() {
   const { user } = useAuth();
@@ -87,13 +88,13 @@ export default function MySubmissionsPage() {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "critical":
-        return "bg-red-500/10 text-red-500 border-red-500/20"
+        return "bg-[color:color-mix(in_srgb,var(--critical)_12%,transparent)] text-[var(--critical)] border-[color:color-mix(in_srgb,var(--critical)_25%,transparent)]"
       case "high":
-        return "bg-orange-500/10 text-orange-500 border-orange-500/20"
+        return "bg-[color:color-mix(in_srgb,var(--high)_12%,transparent)] text-[var(--high)] border-[color:color-mix(in_srgb,var(--high)_25%,transparent)]"
       case "medium":
-        return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+        return "bg-[color:color-mix(in_srgb,var(--medium)_12%,transparent)] text-[var(--medium)] border-[color:color-mix(in_srgb,var(--medium)_25%,transparent)]"
       case "low":
-        return "bg-blue-500/10 text-blue-500 border-blue-500/20"
+        return "bg-[var(--accent-soft)] text-primary border-[var(--border-light)]"
       default:
         return "bg-gray-500/10 text-gray-500 border-gray-500/20"
     }
@@ -111,7 +112,7 @@ export default function MySubmissionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-                <FileText className="h-8 w-8 text-cyber-blue" />
+                <FileText className="h-8 w-8 text-primary" />
                 My Submissions
               </h1>
               <p className="text-muted-foreground mt-1">Track your vulnerability reports and their review status</p>
@@ -125,55 +126,57 @@ export default function MySubmissionsPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-cyber-blue" />
+                  <FileText className="h-4 w-4 text-primary" />
                   <span className="text-sm text-muted-foreground">Total</span>
                 </div>
-                <div className="text-2xl font-bold text-cyber-blue mt-1">{stats.total}</div>
+                <div className="text-2xl font-bold text-primary mt-1">{stats.total}</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-yellow-500" />
+                  <Clock className="h-4 w-4 text-[var(--medium)]" />
                   <span className="text-sm text-muted-foreground">Pending</span>
                 </div>
-                <div className="text-2xl font-bold text-yellow-500 mt-1">{stats.pending}</div>
+                <div className="text-2xl font-bold text-[var(--medium)] mt-1">{stats.pending}</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-blue-500" />
+                  <Eye className="h-4 w-4 text-primary" />
                   <span className="text-sm text-muted-foreground">Review</span>
                 </div>
-                <div className="text-2xl font-bold text-blue-500 mt-1">{stats.underReview}</div>
+                <div className="text-2xl font-bold text-primary mt-1">{stats.underReview}</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-4 w-4 text-[var(--low)]" />
                   <span className="text-sm text-muted-foreground">Approved</span>
                 </div>
-                <div className="text-2xl font-bold text-green-500 mt-1">{stats.approved}</div>
+                <div className="text-2xl font-bold text-[var(--low)] mt-1">{stats.approved}</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-[var(--critical)]" />
                   <span className="text-sm text-muted-foreground">Rejected</span>
                 </div>
-                <div className="text-2xl font-bold text-red-500 mt-1">{stats.rejected}</div>
+                <div className="text-2xl font-bold text-[var(--critical)] mt-1">{stats.rejected}</div>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Award className="h-4 w-4 text-cyber-purple" />
-                  <span className="text-sm text-muted-foreground">Points</span>
+                  <Award className="h-4 w-4 text-secondary" />
+                  <span className="text-sm text-muted-foreground">Rewards</span>
                 </div>
-                <div className="text-2xl font-bold text-cyber-purple mt-1">{stats.totalPoints}</div>
+                <div className="text-2xl font-bold text-secondary mt-1">
+                  {formatCurrency(stats.totalPoints)}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -238,7 +241,7 @@ export default function MySubmissionsPage() {
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ delay: index * 0.05 }}
                 >
-                  <Card className="hover:shadow-lg transition-all duration-300 border-border/50 hover:border-cyber-blue/30">
+                  <Card className="hover:shadow-lg transition-all duration-300 border-border/50 hover:border-[var(--border-light)]">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
@@ -262,7 +265,9 @@ export default function MySubmissionsPage() {
                             {submission.pointsAwarded && (
                               <div className="flex items-center gap-1">
                                 <Award className="h-3 w-3" />
-                                <span className="text-cyber-purple font-medium">{submission.pointsAwarded} pts</span>
+                                <span className="text-secondary font-medium">
+                                  {formatCurrency(submission.pointsAwarded)}
+                                </span>
                               </div>
                             )}
                           </div>
@@ -276,7 +281,11 @@ export default function MySubmissionsPage() {
                                 {submission.reviewedAt && (<span><strong>Date:</strong> {new Date(submission.reviewedAt).toLocaleString()}<br /></span>)}
                                 <strong>Status:</strong> {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}<br />
                                 {submission.adminNotes && (<span><strong>Feedback:</strong> {submission.adminNotes}<br /></span>)}
-                                {submission.pointsAwarded && (<span><strong>Points Awarded:</strong> {submission.pointsAwarded}</span>)}
+                                {submission.pointsAwarded && (
+                                  <span>
+                                    <strong>Reward Amount:</strong> {formatCurrency(submission.pointsAwarded)}
+                                  </span>
+                                )}
                               </AlertDescription>
                             </Alert>
                           )}
@@ -317,7 +326,7 @@ export default function MySubmissionsPage() {
   <DialogContent className="max-w-full md:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-cyber-blue" />
+              <Shield className="h-5 w-5 text-primary" />
               Submission Details: {selectedSubmission?.title}
             </DialogTitle>
           </DialogHeader>
@@ -401,7 +410,11 @@ export default function MySubmissionsPage() {
                       {selectedSubmission.reviewedAt && (<span><strong>Date:</strong> {new Date(selectedSubmission.reviewedAt).toLocaleString()}<br /></span>)}
                       <strong>Status:</strong> {selectedSubmission.status.charAt(0).toUpperCase() + selectedSubmission.status.slice(1)}<br />
                       {selectedSubmission.adminNotes && (<span><strong>Feedback:</strong> {selectedSubmission.adminNotes}<br /></span>)}
-                      {selectedSubmission.pointsAwarded && (<span><strong>Points Awarded:</strong> {selectedSubmission.pointsAwarded}</span>)}
+                      {selectedSubmission.pointsAwarded && (
+                        <span>
+                          <strong>Reward Amount:</strong> {formatCurrency(selectedSubmission.pointsAwarded)}
+                        </span>
+                      )}
                     </AlertDescription>
                   </Alert>
                 </div>
